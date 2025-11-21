@@ -1,6 +1,8 @@
+import { useNavigate } from "react-router";
 import generateTicketPdf from "../utils/generateTicketPdf";
 
 const TicketConfirmationPage = ({ ticketData }) => {
+  const navigate = useNavigate();
   // Placeholder when no data is passed
   if (!ticketData) {
     ticketData = {
@@ -135,6 +137,28 @@ const TicketConfirmationPage = ({ ticketData }) => {
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition font-medium"
           >
             Export Ticket as PDF
+          </button>
+        </div>
+        {/* Book another ticket */}
+        <div className="text-center my-2">
+          <button
+            onClick={() => {
+              navigate("/book-ticket", { replace: true });
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition font-medium"
+          >
+            🎫 Book another ticket
+          </button>
+        </div>
+        {/* Home*/}
+        <div className="text-center">
+          <button
+            onClick={() => {
+              navigate("/", { replace: true });
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition font-medium"
+          >
+            🏠 Back to Home
           </button>
         </div>
       </div>
