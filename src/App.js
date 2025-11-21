@@ -7,6 +7,8 @@ import LoginPage from "./components/LoginPage";
 import UserHomePage from "./components/UserHomePage";
 import GenericHeader from "./components/GenericHeader";
 import Footer from "./components/Footer";
+import TermsAndConditions from "./components/TermsAndConditions";
+import PrivacyPolicy from "./components/PrivacyPolicy";
 const App = () => {
   return (
     <div>
@@ -42,6 +44,14 @@ const appRouter = createBrowserRouter([
       {
         path: "/book-ticket",
         element: <BookTicketPage />,
+      },
+      {
+        path: "/privacy-policy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "/terms-and-conditions",
+        element: <TermsAndConditions />,
       },
     ],
     errorElement: <Error />,
