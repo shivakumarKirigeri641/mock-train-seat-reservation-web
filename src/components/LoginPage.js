@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
+  const navigate = useNavigate();
   const [mobile, setMobile] = useState("");
   const [state, setState] = useState("");
   const [otp, setOtp] = useState("");
@@ -50,7 +52,9 @@ const LoginPage = () => {
 
     console.log("OTP Verified:", otp);
     // placeholder — you will replace
+
     alert("Logged in successfully!");
+    navigate("/user-home");
   };
 
   return (
