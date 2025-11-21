@@ -5,10 +5,20 @@ import BookTicketPage from "./components/BookTicketPage";
 import Error from "./components/Error";
 import LoginPage from "./components/LoginPage";
 import UserHomePage from "./components/UserHomePage";
+import GenericHeader from "./components/GenericHeader";
+import Footer from "./components/Footer";
 const App = () => {
   return (
     <div>
-      <Outlet />
+      <header class="bg-blue-600 text-white p-4">
+        <GenericHeader />
+      </header>
+      <main class="flex-1 p-4">
+        <Outlet />
+      </main>
+      <footer class="w-full fixed bottom-0 p-1 bg-gray-200">
+        <Footer />
+      </footer>
     </div>
   );
 };
