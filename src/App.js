@@ -1,5 +1,6 @@
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
+import TicketConfirmationPage from "./components/TicketConfirmationPage";
 import HomePage from "./components/HomePage";
 import BookTicketPage from "./components/BookTicketPage";
 import Error from "./components/Error";
@@ -53,6 +54,11 @@ const appRouter = createBrowserRouter([
       {
         path: "/privacy-policy",
         element: <PrivacyPolicy />,
+      },
+      //ticket-confirmation
+      {
+        path: "/ticket-confirmation",
+        element: <TicketConfirmationPage />,
       },
       {
         path: "/terms-and-conditions",
