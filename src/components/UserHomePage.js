@@ -33,7 +33,7 @@ const UserHomePage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {/* Book Ticket */}
         <Link
-          to="/book"
+          to="/book-ticket"
           className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
         >
           <div className="flex items-center gap-3 mb-2">

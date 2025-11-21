@@ -9,6 +9,7 @@ import GenericHeader from "./components/GenericHeader";
 import Footer from "./components/Footer";
 import TermsAndConditions from "./components/TermsAndConditions";
 import PrivacyPolicy from "./components/PrivacyPolicy";
+import ConfirmTicketPage from "./components/ConfirmTicketPage";
 const App = () => {
   return (
     <div>
@@ -44,6 +45,10 @@ const appRouter = createBrowserRouter([
       {
         path: "/book-ticket",
         element: <BookTicketPage />,
+      },
+      {
+        path: "/confirm-ticket",
+        element: <ConfirmTicketPage />,
       },
       {
         path: "/privacy-policy",
