@@ -1,9 +1,13 @@
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import TicketConfirmationPage from "./components/TicketConfirmationPage";
+import BookingHistoryPage from "./components/BookingHistoryPage";
+import PnrStatusPage from "./components/PnrStatusPage";
+import CancelTicketPage from "./components/CancelTicketPage";
 import HomePage from "./components/HomePage";
 import BookTicketPage from "./components/BookTicketPage";
 import Error from "./components/Error";
+import ProfilePage from "./components/ProfilePage";
 import LoginPage from "./components/LoginPage";
 import UserHomePage from "./components/UserHomePage";
 import GenericHeader from "./components/GenericHeader";
@@ -14,15 +18,7 @@ import ConfirmTicketPage from "./components/ConfirmTicketPage";
 const App = () => {
   return (
     <div>
-      <header class="bg-blue-600 text-white p-4">
-        <GenericHeader />
-      </header>
-      <main class="flex-1 p-4">
-        <Outlet />
-      </main>
-      <footer class="w-full fixed bottom-0 p-1 bg-gray-200">
-        <Footer />
-      </footer>
+      <Outlet />
     </div>
   );
 };
@@ -48,8 +44,24 @@ const appRouter = createBrowserRouter([
         element: <BookTicketPage />,
       },
       {
+        path: "/booking-history",
+        element: <BookingHistoryPage />,
+      },
+      {
+        path: "/pnr-status",
+        element: <PnrStatusPage />,
+      },
+      {
         path: "/confirm-ticket",
         element: <ConfirmTicketPage />,
+      },
+      {
+        path: "/cancel-ticket",
+        element: <CancelTicketPage />,
+      },
+      {
+        path: "/profile",
+        element: <ProfilePage />,
       },
       {
         path: "/privacy-policy",

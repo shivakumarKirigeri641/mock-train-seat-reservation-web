@@ -139,7 +139,7 @@ const UserHomePage = () => {
               }
             />
             <SidebarItem
-              to="/history"
+              to="/booking-history"
               active={false}
               label="Booking History"
               icon={
@@ -179,7 +179,7 @@ const UserHomePage = () => {
               }
             />
             <SidebarItem
-              to="/cancel"
+              to="/cancel-ticket"
               active={false}
               label="Cancellations"
               icon={
