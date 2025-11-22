@@ -15,11 +15,15 @@ import Footer from "./components/Footer";
 import TermsAndConditions from "./components/TermsAndConditions";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import ConfirmTicketPage from "./components/ConfirmTicketPage";
+import { Provider } from "react-redux";
+import appStore from "./store/appStore";
 const App = () => {
   return (
-    <div>
-      <Outlet />
-    </div>
+    <Provider store={appStore}>
+      <div>
+        <Outlet />
+      </div>
+    </Provider>
   );
 };
 const appRouter = createBrowserRouter([

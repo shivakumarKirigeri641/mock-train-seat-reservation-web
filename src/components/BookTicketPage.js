@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import { addstations } from "../store/slices/stationslistslice";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  update_date_of_journey,
+  update_destination,
+  update_source,
+} from "../store/slices/sourcedestinationdojSlice";
 
 // SVG for the swap icon
 const SwapIcon = () => (
@@ -24,9 +31,9 @@ const logoUrl =
   "/mnt/data/A_logo_design_in_navy_blue_is_displayed_on_a_trans.png";
 
 const todayISO = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().split("T")[0];
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
 };
 
 const sampleTrains = [
@@ -81,25 +88,30 @@ const BookTicketPage = () => {
   const dropdownRef = useRef(null);
   const srcRef = useRef(null);
   const dstRef = useRef(null);
-
+  const dispatch = useDispatch();
+  const mockstations_master = useSelector((store) => store?.stationslist);
+  const selected_source = useSelector(
+    (store) => store?.stationslistslicsourcedestinationdoj.selected_source
+  );
+  const selected_destination = useSelector(
+    (store) => store?.stationslistslicsourcedestinationdoj.selected_destination
+  );
+  const selected_date = useSelector(
+    (store) =>
+      store?.stationslistslicsourcedestinationdoj.selected_date_of_journey
+  );
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
 
   // fetch station suggestions (placeholder — replace with your API)
   const fetchStations = async (q) => {
-    if (!q || q.length < 2) return [];
+    if (!q || q?.code?.length < 2) return [];
     try {
-      // Placeholder static matches
-      const samples = [
-        "SBC - Bangalore",
-        "SBCN - Bengaluru Cantt",
-        "NDLS - New Delhi",
-        "HPT - Hospet",
-        "MYS - Mysore",
-      ];
-      return samples
-        .filter((s) => s.toLowerCase().includes(q.toLowerCase()))
-        .slice(0, 8);
+      return mockstations_master?.filter(
+        (s) =>
+          s?.code.toLowerCase().includes(q?.toLowerCase()) ||
+          s?.station_name.toLowerCase().includes(q?.toLowerCase())
+      );
     } catch (err) {
       console.error(err);
       return [];
@@ -143,6 +155,18 @@ const BookTicketPage = () => {
     }
   }, [coachOptions, reservationOptions]);
 
+  //on load
+  useEffect(() => {
+    const loadStations = async () => {
+      const result = await axios.get("http://localhost:8888/stations", {
+        withCredentials: true,
+      });
+      dispatch(addstations(result?.data?.data?.rows));
+    };
+    loadStations();
+    console.log("stations:", mockstations_master);
+  }, []);
+
   // keyboard navigation for suggestions
   const onKeyDownSuggestions = (e) => {
     if (!suggestions.length) return;
@@ -165,9 +189,11 @@ const BookTicketPage = () => {
 
   const selectSuggestion = (index, focusNext = true) => {
     const value = suggestions[index];
+    console.log(suggestions[index]);
     if (!value) return;
     if (activeInput === "src") {
-      setSource(value);
+      setSource(value?.code + "-" + value?.station_name);
+      dispatch(update_source(value));
       setStationQuery({ ...stationQuery, src: value });
       setSuggestions([]);
       if (focusNext) {
@@ -175,7 +201,8 @@ const BookTicketPage = () => {
         setActiveInput("dst");
       }
     } else {
-      setDest(value);
+      setDest(value?.code + "-" + value?.station_name);
+      dispatch(update_destination(value));
       setStationQuery({ ...stationQuery, dst: value });
       setSuggestions([]);
       if (focusNext) {
@@ -332,7 +359,7 @@ const BookTicketPage = () => {
                 >
                   {suggestions.map((s, i) => (
                     <li
-                      key={s}
+                      key={s?.code}
                       onMouseDown={() => selectSuggestion(i)}
                       className={`px-4 py-3 cursor-pointer text-gray-200 hover:bg-indigo-600 hover:text-white transition-colors ${
                         i === selectedIndex ? "bg-indigo-700 text-white" : ""
@@ -340,7 +367,7 @@ const BookTicketPage = () => {
                       role="option"
                       aria-selected={i === selectedIndex}
                     >
-                      {s}
+                      🪧 {s?.code} - {s?.station_name}
                     </li>
                   ))}
                 </ul>
@@ -379,7 +406,7 @@ const BookTicketPage = () => {
                 >
                   {suggestions.map((s, i) => (
                     <li
-                      key={s}
+                      key={s?.code}
                       onMouseDown={() => selectSuggestion(i)}
                       className={`px-4 py-3 cursor-pointer text-gray-200 hover:bg-indigo-600 hover:text-white transition-colors ${
                         i === selectedIndex ? "bg-indigo-700 text-white" : ""
@@ -387,7 +414,7 @@ const BookTicketPage = () => {
                       role="option"
                       aria-selected={i === selectedIndex}
                     >
-                      {s}
+                      🪧 {s?.code} - {s?.station_name}
                     </li>
                   ))}
                 </ul>
@@ -405,7 +432,11 @@ const BookTicketPage = () => {
                 type="date"
                 value={date}
                 min={todayISO()}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  dispatch(update_date_of_journey(e.target.value));
+                  console.log(selected_date);
+                }}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all [color-scheme:dark]"
               />
             </div>

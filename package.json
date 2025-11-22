@@ -18,12 +18,14 @@
   },
   "homepage": "https://github.com/shivakumarKirigeri641/mock-train-seat-reservation-web#readme",
   "dependencies": {
+    "@reduxjs/toolkit": "^2.10.1",
     "axios": "^1.13.2",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
     "parcel": "^2.13.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-redux": "^9.2.0",
     "react-router": "^7.9.6",
     "react-to-print": "^3.2.0"
   },
