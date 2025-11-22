@@ -59,7 +59,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 px-4 selection:bg-indigo-500 selection:text-white">
       <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700 transition-all">
         {/* Icon */}
         <div className="flex justify-center mb-6">
@@ -80,9 +80,14 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-center mb-2 text-white">
-          Welcome Back
+        {/* TITLE & TAGLINE */}
+        <h2 className="text-xl md:text-2xl font-bold text-center mb-1 text-white leading-tight">
+          Welcome to Chedkudla mock train reservation system
         </h2>
+        <p className="text-center text-indigo-400 text-xs font-medium mb-6">
+          - your mock seat is pakka
+        </p>
+
         <p className="text-center text-gray-400 text-sm mb-8">
           {step === "form"
             ? "Please sign in to access your dashboard"
@@ -237,6 +242,16 @@ const LoginPage = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* DISCLAIMER FOOTER */}
+      <div className="mt-8 max-w-md text-center px-4 opacity-80">
+        <p className="text-xs text-gray-500 leading-relaxed border border-gray-700 p-3 rounded-lg bg-gray-800/50">
+          <span className="font-bold text-red-400 block mb-1">DISCLAIMER:</span>
+          This is the sample demo UI developed with provided APIs, this is
+          completely for testing & learning purposes only. The API request &
+          response can be viewed in devloper console (Ctrl+Shift+i).
+        </p>
       </div>
     </div>
   );
