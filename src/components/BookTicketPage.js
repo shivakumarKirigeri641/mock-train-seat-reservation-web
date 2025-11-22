@@ -2,6 +2,24 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 
+// SVG for the swap icon
+const SwapIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+    />
+  </svg>
+);
+
 const logoUrl =
   "/mnt/data/A_logo_design_in_navy_blue_is_displayed_on_a_trans.png";
 
@@ -41,7 +59,7 @@ const BookTicketPage = () => {
   const [source, setSource] = useState("");
   const [dest, setDest] = useState("");
   const [date, setDate] = useState(todayISO());
-  const [coachOptions, setCoachOptions] = useState(["SL", "3A", "2A", "1A"]); // sample; you said these are arrays of strings
+  const [coachOptions, setCoachOptions] = useState(["SL", "3A", "2A", "1A"]);
   const [reservationOptions, setReservationOptions] = useState([
     "General",
     "Tatkal",
@@ -57,8 +75,8 @@ const BookTicketPage = () => {
 
   // autosuggest state
   const [stationQuery, setStationQuery] = useState({ src: "", dst: "" });
-  const [suggestions, setSuggestions] = useState([]); // current suggestions list
-  const [activeInput, setActiveInput] = useState("src"); // "src" or "dst"
+  const [suggestions, setSuggestions] = useState([]);
+  const [activeInput, setActiveInput] = useState("src");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const dropdownRef = useRef(null);
   const srcRef = useRef(null);
@@ -67,17 +85,11 @@ const BookTicketPage = () => {
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
 
-  // small UI polish: background not fully white
-  const containerBg = "bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50";
-
   // fetch station suggestions (placeholder — replace with your API)
   const fetchStations = async (q) => {
     if (!q || q.length < 2) return [];
     try {
-      // placeholder: replace with your station API
-      // const res = await axios.get(`/api/stations?q=${encodeURIComponent(q)}`);
-      // return res.data;
-      // For demo return static sample matches
+      // Placeholder static matches
       const samples = [
         "SBC - Bangalore",
         "SBCN - Bengaluru Cantt",
@@ -115,7 +127,6 @@ const BookTicketPage = () => {
   }, [stationQuery.src, stationQuery.dst, activeInput]);
 
   useEffect(() => {
-    // ensure the default selected coach / reservation reflect arrays
     if (
       Array.isArray(coachOptions) &&
       coachOptions.length &&
@@ -145,7 +156,6 @@ const BookTicketPage = () => {
       e.preventDefault();
       selectSuggestion(selectedIndex);
     } else if (e.key === "Tab") {
-      // allow normal tab navigation; if suggestions shown, accept selected and move focus
       if (suggestions.length) {
         e.preventDefault();
         selectSuggestion(selectedIndex, true); // focus next
@@ -170,7 +180,6 @@ const BookTicketPage = () => {
       setSuggestions([]);
       if (focusNext) {
         // focus date or next element
-        // do nothing special
       }
     }
   };
@@ -196,22 +205,17 @@ const BookTicketPage = () => {
   };
 
   const searchTrains = async () => {
-    // basic validation
     if (!source || !dest) {
-      alert("Please enter Source and Destination (select from suggestions).");
+      console.error("Please enter Source and Destination.");
       return;
     }
     if (new Date(date) < new Date(todayISO())) {
-      alert("Date of journey must be today or later.");
+      console.error("Date of journey must be today or later.");
       return;
     }
 
     setLoadingTrains(true);
     try {
-      // Replace with your POST API. Example:
-      // const res = await axios.post("/api/trains/search", { source, dest, date, coach:selectedCoach, reservation:selectedReservation });
-      // setTrains(res.data);
-      // For demo, use sampleTrains (you asked to use the given sample)
       await new Promise((r) => setTimeout(r, 700));
       setTrains(sampleTrains);
     } catch (err) {
@@ -223,7 +227,6 @@ const BookTicketPage = () => {
   };
 
   const proceedToConfirm = (train) => {
-    // navigate to ConfirmTicketPage with state
     navigate("/confirm-ticket", {
       state: {
         train,
@@ -232,7 +235,7 @@ const BookTicketPage = () => {
     });
   };
 
-  // handle click outside suggestions to close
+  // handle click outside suggestions
   useEffect(() => {
     const onDoc = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -244,35 +247,51 @@ const BookTicketPage = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen ${containerBg} p-4 md:p-8`}>
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-900 p-4 md:p-8 text-gray-100 selection:bg-indigo-500 selection:text-white">
+      <div className="max-w-6xl mx-auto">
         {/* header */}
-        <header className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <img
-              src={logoUrl}
-              alt="ServerPe"
-              className="w-12 h-12 object-contain rounded-md bg-white p-1"
-            />
+        <header className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h1 className="text-2xl font-bold text-white tracking-tight">
                 Mock Train Seat Booking
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-400 mt-0.5">
                 Enterprise edition — API-first booking flows for UI testing
               </p>
             </div>
           </div>
+          <button
+            onClick={() => navigate("/user-home")}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            Back to Dashboard
+          </button>
         </header>
 
         {/* Hero + form card */}
-        <section className="bg-white/90 rounded-2xl p-6 shadow-md">
-          <div className="flex flex-col md:flex-row md:items-center md:gap-6">
+        <section className="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700">
+          <div className="flex flex-col md:flex-row md:items-center md:gap-6 border-b border-gray-700 pb-6 mb-6">
             <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
-                Welcome — try a mock booking
+              <h2 className="text-2xl font-semibold text-white">
+                Welcome — Try a Mock Booking
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 Enter journey details to list trains. Mock SMS will be sent to
                 the provided mobile during confirmation.
               </p>
@@ -283,7 +302,7 @@ const BookTicketPage = () => {
                 onClick={() =>
                   window.scrollTo({ top: 600, behavior: "smooth" })
                 }
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
+                className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-xl shadow-md transition-colors font-medium border border-gray-600"
               >
                 Start Mock Booking
               </button>
@@ -291,31 +310,35 @@ const BookTicketPage = () => {
           </div>
 
           {/* form */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end">
             {/* Source */}
-            <div className="relative" ref={dropdownRef}>
-              <label className="text-sm text-gray-700">Source</label>
+            <div className="relative md:col-span-2" ref={dropdownRef}>
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider block mb-1">
+                Source Station
+              </label>
               <input
                 ref={srcRef}
                 value={source}
                 onChange={(e) => onInputChange("src", e.target.value)}
                 onFocus={() => setActiveInput("src")}
                 onKeyDown={onKeyDownSuggestions}
-                placeholder="Type station (min 2 chars)"
-                className="w-full mt-1 p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="Type station code or name"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
               />
               {suggestions.length > 0 && activeInput === "src" && (
                 <ul
-                  className="absolute z-30 left-0 right-0 bg-white border rounded-lg mt-1 max-h-48 overflow-auto shadow"
+                  className="absolute z-30 left-0 right-0 bg-gray-700 border border-gray-600 rounded-xl mt-1 max-h-48 overflow-auto shadow-2xl"
                   role="listbox"
                 >
                   {suggestions.map((s, i) => (
                     <li
                       key={s}
                       onMouseDown={() => selectSuggestion(i)}
-                      className={`px-3 py-2 cursor-pointer ${
-                        i === selectedIndex ? "bg-blue-50" : ""
+                      className={`px-4 py-3 cursor-pointer text-gray-200 hover:bg-indigo-600 hover:text-white transition-colors ${
+                        i === selectedIndex ? "bg-indigo-700 text-white" : ""
                       }`}
+                      role="option"
+                      aria-selected={i === selectedIndex}
                     >
                       {s}
                     </li>
@@ -324,188 +347,282 @@ const BookTicketPage = () => {
               )}
             </div>
 
-            {/* swap + dest */}
-            <div className="flex items-center gap-3 md:flex-col md:items-stretch">
-              <div>
-                <button
-                  title="Swap Source & Destination"
-                  onClick={swapSrcDest}
-                  className="p-3 bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200"
-                >
-                  ↔
-                </button>
-              </div>
-              <div className="flex-1 relative">
-                <label className="text-sm text-gray-700">Destination</label>
-                <input
-                  ref={dstRef}
-                  value={dest}
-                  onChange={(e) => onInputChange("dst", e.target.value)}
-                  onFocus={() => setActiveInput("dst")}
-                  onKeyDown={onKeyDownSuggestions}
-                  placeholder="Type station (min 2 chars)"
-                  className="w-full mt-1 p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                />
-                {suggestions.length > 0 && activeInput === "dst" && (
-                  <ul
-                    className="absolute z-30 left-0 right-0 bg-white border rounded-lg mt-1 max-h-48 overflow-auto shadow"
-                    role="listbox"
-                  >
-                    {suggestions.map((s, i) => (
-                      <li
-                        key={s}
-                        onMouseDown={() => selectSuggestion(i)}
-                        className={`px-3 py-2 cursor-pointer ${
-                          i === selectedIndex ? "bg-blue-50" : ""
-                        }`}
-                      >
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            {/* swap button */}
+            <div className="hidden md:flex justify-center items-center h-full pb-1">
+              <button
+                title="Swap Source & Destination"
+                onClick={swapSrcDest}
+                className="p-3 bg-gray-700 text-gray-300 rounded-full hover:bg-indigo-600 hover:text-white transition-colors border border-gray-600 hover:border-indigo-500 shadow-lg"
+              >
+                <SwapIcon />
+              </button>
             </div>
 
-            {/* date & selects stacked on md */}
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <label className="text-sm text-gray-700">Date of Journey</label>
-                <input
-                  type="date"
-                  value={date}
-                  min={todayISO()}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full mt-1 p-3 rounded-lg border border-gray-200"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <select
-                  value={selectedCoach}
-                  onChange={(e) => setSelectedCoach(e.target.value)}
-                  className="flex-1 p-3 rounded-lg border border-gray-200"
+            {/* Destination */}
+            <div className="relative md:col-span-2">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider block mb-1">
+                Destination Station
+              </label>
+              <input
+                ref={dstRef}
+                value={dest}
+                onChange={(e) => onInputChange("dst", e.target.value)}
+                onFocus={() => setActiveInput("dst")}
+                onKeyDown={onKeyDownSuggestions}
+                placeholder="Type station code or name"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+              />
+              {suggestions.length > 0 && activeInput === "dst" && (
+                <ul
+                  className="absolute z-30 left-0 right-0 bg-gray-700 border border-gray-600 rounded-xl mt-1 max-h-48 overflow-auto shadow-2xl"
+                  role="listbox"
                 >
-                  {Array.isArray(coachOptions)
-                    ? coachOptions.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))
-                    : null}
-                </select>
-                <select
-                  value={selectedReservation}
-                  onChange={(e) => setSelectedReservation(e.target.value)}
-                  className="flex-1 p-3 rounded-lg border border-gray-200"
-                >
-                  {Array.isArray(reservationOptions)
-                    ? reservationOptions.map((r) => (
-                        <option key={r} value={r}>
-                          {r}
-                        </option>
-                      ))
-                    : null}
-                </select>
-              </div>
+                  {suggestions.map((s, i) => (
+                    <li
+                      key={s}
+                      onMouseDown={() => selectSuggestion(i)}
+                      className={`px-4 py-3 cursor-pointer text-gray-200 hover:bg-indigo-600 hover:text-white transition-colors ${
+                        i === selectedIndex ? "bg-indigo-700 text-white" : ""
+                      }`}
+                      role="option"
+                      aria-selected={i === selectedIndex}
+                    >
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              onClick={searchTrains}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg shadow"
-            >
-              {loadingTrains ? "Searching..." : "Search"}
-            </button>
-            <p className="text-sm text-gray-500">
-              Results appear below. Click{" "}
-              <span className="font-medium">Proceed</span> to continue.
-            </p>
+          {/* Date and Selects block */}
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end">
+            <div className="col-span-2">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider block mb-1">
+                Date of Journey
+              </label>
+              <input
+                type="date"
+                value={date}
+                min={todayISO()}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all [color-scheme:dark]"
+              />
+            </div>
+
+            <div className="col-span-1">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider block mb-1">
+                Coach Class
+              </label>
+              <select
+                value={selectedCoach}
+                onChange={(e) => setSelectedCoach(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none"
+              >
+                {Array.isArray(coachOptions)
+                  ? coachOptions.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))
+                  : null}
+              </select>
+            </div>
+
+            <div className="col-span-1">
+              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider block mb-1">
+                Reservation Type
+              </label>
+              <select
+                value={selectedReservation}
+                onChange={(e) => setSelectedReservation(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none"
+              >
+                {Array.isArray(reservationOptions)
+                  ? reservationOptions.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))
+                  : null}
+              </select>
+            </div>
+
+            {/* Search Button */}
+            <div className="col-span-2 md:col-span-4 lg:col-span-1 flex justify-end">
+              <button
+                onClick={searchTrains}
+                className="w-full lg:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl shadow-lg shadow-indigo-500/30 transition-all font-semibold text-lg transform hover:-translate-y-0.5"
+                disabled={loadingTrains}
+              >
+                {loadingTrains ? "Searching..." : "Search"}
+              </button>
+            </div>
           </div>
         </section>
 
         {/* Trains list */}
-        <section className="mt-6">
-          {trains.length === 0 ? (
-            <div className="text-center text-gray-500 py-14">
-              No trains found. Try another route or date.
+        <section className="mt-10">
+          <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            Available Trains
+            {trains.length > 0 && (
+              <span className="text-sm font-normal text-gray-500 bg-gray-800 px-2 py-1 rounded-md border border-gray-700">
+                {trains.length} Found
+              </span>
+            )}
+          </h3>
+
+          {loadingTrains ? (
+            <div className="text-center text-gray-400 py-20 bg-gray-800 rounded-2xl shadow-lg border border-gray-700">
+              <div className="animate-spin inline-block w-10 h-10 border-4 border-t-4 border-indigo-500 border-t-transparent rounded-full mb-4"></div>
+              <p className="text-lg font-medium text-gray-300">
+                Searching best routes...
+              </p>
+            </div>
+          ) : trains.length === 0 ? (
+            <div className="text-center text-gray-400 py-20 bg-gray-800 rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center">
+              <svg
+                className="w-16 h-16 text-gray-600 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <p className="text-lg text-gray-300">
+                No trains found for this route.
+              </p>
+              <p className="text-sm mt-2">Try adjusting your search filters.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {trains.map((t) => (
                 <div
                   key={t.train_number}
-                  className="bg-white/95 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-start md:justify-between"
+                  className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-700 hover:border-indigo-500/30 group"
                 >
-                  <div className="md:flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-lg font-semibold">
-                          {t.train_number} — {t.train_name}
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                    {/* Left Info */}
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h4 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">
+                              {t.train_name}
+                            </h4>
+                            <span className="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs font-mono rounded border border-gray-600">
+                              #{t.train_number}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1 flex items-center gap-2">
+                            <span className="text-indigo-400 font-medium">
+                              Runs Daily
+                            </span>
+                            <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                            <span>Superfast</span>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {t.from} → {t.to} • {t.duration}
+
+                        <div className="mt-3 sm:mt-0 text-right">
+                          <div className="text-lg font-bold text-white">
+                            {t.departure}{" "}
+                            <span className="text-gray-500 text-sm font-normal mx-1">
+                              →
+                            </span>{" "}
+                            {t.arrival}
+                          </div>
+                          <div className="text-sm text-gray-400 font-mono">
+                            {t.from} to {t.to}{" "}
+                            <span className="text-gray-600 mx-1">|</span>{" "}
+                            {t.duration}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="hidden md:block text-right">
-                        <div className="text-sm text-gray-700">
-                          Dep: {t.departure}
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          Arr: {t.arrival}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* classes + seat availability table */}
-                    <div className="mt-3 overflow-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-left text-gray-600">
-                            <th className="pr-4">Class</th>
-                            <th className="pr-4">Availability</th>
-                            <th className="pr-4">Fare (est.)</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {t.classes.map((c) => (
-                            <tr key={c} className="border-t">
-                              <td className="py-2">{c}</td>
-                              <td className="py-2">
-                                {"Available (" +
-                                  (Math.floor(Math.random() * 50) + 1) +
-                                  ")"}
-                              </td>
-                              <td className="py-2">
-                                ₹{Math.floor(Math.random() * 1500) + 200}
-                              </td>
-                              <td className="py-2 text-right">
-                                <button
-                                  className="text-sm bg-green-600 text-white px-3 py-1 rounded"
-                                  onClick={() =>
-                                    proceedToConfirm({ ...t, chosenClass: c })
-                                  }
-                                >
-                                  Proceed
-                                </button>
-                              </td>
+                      {/* classes + seat availability table */}
+                      <div className="overflow-hidden rounded-xl border border-gray-700">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-gray-900/50 text-xs uppercase font-semibold text-gray-400">
+                            <tr>
+                              <th className="px-4 py-3">Class</th>
+                              <th className="px-4 py-3">Availability</th>
+                              <th className="px-4 py-3">Fare</th>
+                              <th className="px-4 py-3 text-right">Action</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-gray-700">
+                            {t.classes.map((c) => (
+                              <tr
+                                key={c}
+                                className="hover:bg-gray-700/50 transition-colors"
+                              >
+                                <td className="px-4 py-3 font-bold text-white">
+                                  {c}
+                                </td>
+                                <td className="px-4 py-3 text-emerald-400 font-medium flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                  AVL {Math.floor(Math.random() * 50) + 1}
+                                </td>
+                                <td className="px-4 py-3 text-gray-300 font-mono">
+                                  ₹{Math.floor(Math.random() * 1500) + 200}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <button
+                                    className="text-xs font-semibold bg-indigo-600/10 text-indigo-400 hover:bg-indigo-600 hover:text-white border border-indigo-500/30 px-4 py-2 rounded-lg transition-all"
+                                    onClick={() =>
+                                      proceedToConfirm({ ...t, chosenClass: c })
+                                    }
+                                  >
+                                    Book Now
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-3 md:mt-0 md:ml-4 flex-shrink-0">
-                    <button
-                      onClick={() => setModalTrain(t)}
-                      className="px-3 py-2 border rounded"
-                    >
-                      Schedules
-                    </button>
+                    {/* Right Actions */}
+                    <div className="lg:w-48 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-gray-700 pt-4 lg:pt-0 lg:pl-6">
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                          Route Info
+                        </p>
+                        <div className="flex items-center justify-between text-sm text-gray-300 mb-1">
+                          <span>Distance</span>
+                          <span className="font-mono">480km</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm text-gray-300">
+                          <span>Avg Delay</span>
+                          <span className="text-green-400">None</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setModalTrain(t)}
+                        className="w-full px-4 py-2.5 bg-gray-700 text-gray-300 rounded-xl hover:bg-gray-600 hover:text-white transition-colors text-sm font-medium border border-gray-600 flex items-center justify-center gap-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        View Schedule
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -515,42 +632,100 @@ const BookTicketPage = () => {
 
         {/* Schedules modal */}
         {modalTrain && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">
-                  Schedules — {modalTrain.train_number} {modalTrain.train_name}
-                </h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-all">
+            <div className="bg-gray-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-gray-700 transform transition-all">
+              <div className="flex items-center justify-between border-b border-gray-700 pb-4 mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-white">
+                    {modalTrain.train_name}
+                  </h3>
+                  <p className="text-sm text-gray-400 font-mono mt-0.5">
+                    {modalTrain.train_number} • Daily Service
+                  </p>
+                </div>
                 <button
                   onClick={() => setModalTrain(null)}
-                  className="px-3 py-1 rounded bg-gray-100"
+                  className="p-2 rounded-lg bg-gray-700 text-gray-400 hover:text-white hover:bg-gray-600 transition-colors"
                 >
-                  Close
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
 
-              <div className="mt-4 max-h-72 overflow-auto">
-                {/* Placeholder stops list - replace with your API */}
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
                 <table className="w-full text-sm">
-                  <thead className="text-left text-gray-600">
-                    <tr>
-                      <th>Station</th>
-                      <th>Arr</th>
-                      <th>Dep</th>
-                      <th>Day</th>
+                  <thead className="sticky top-0 bg-gray-800 z-10 shadow-sm">
+                    <tr className="text-left text-xs uppercase font-semibold text-gray-500 border-b border-gray-700">
+                      <th className="py-3 pl-2">Station</th>
+                      <th className="py-3 text-center">Arrives</th>
+                      <th className="py-3 text-center">Departs</th>
+                      <th className="py-3 text-center">Halt</th>
+                      <th className="py-3 text-right pr-2">Day</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {["SBC", "YNK", "BPL", "JBP", "NDLS"].map((s, i) => (
-                      <tr key={s} className="border-t">
-                        <td className="py-2">{s}</td>
-                        <td className="py-2">--:--</td>
-                        <td className="py-2">--:--</td>
-                        <td className="py-2">{i + 1}</td>
+                  <tbody className="divide-y divide-gray-700/50">
+                    {[
+                      "SBC - KSR Bengaluru",
+                      "YNK - Yelahanka",
+                      "HUP - Hindupur",
+                      "DMM - Dharmavaram",
+                      "GTL - Guntakal",
+                      "RC - Raichur",
+                      "SC - Secunderabad",
+                      "BPQ - Balharshah",
+                      "NGP - Nagpur",
+                      "BPL - Bhopal",
+                      "VGLJ - VGL Jhansi",
+                      "GWL - Gwalior",
+                      "AGC - Agra Cantt",
+                      "NDLS - New Delhi",
+                    ].map((s, i, arr) => (
+                      <tr
+                        key={s}
+                        className="hover:bg-gray-700/30 transition-colors"
+                      >
+                        <td className="py-3 pl-2 font-medium text-gray-300">
+                          {s.split(" - ")[0]}{" "}
+                          <span className="text-gray-500 font-normal hidden sm:inline">
+                            - {s.split(" - ")[1]}
+                          </span>
+                        </td>
+                        <td className="py-3 text-center text-gray-400 font-mono">
+                          {i === 0 ? "Source" : `1${i}:30`}
+                        </td>
+                        <td className="py-3 text-center text-gray-400 font-mono">
+                          {i === arr.length - 1 ? "Dest" : `1${i}:35`}
+                        </td>
+                        <td className="py-3 text-center text-gray-500 text-xs">
+                          {i === 0 || i === arr.length - 1 ? "-" : "5m"}
+                        </td>
+                        <td className="py-3 text-right pr-2 text-gray-500">
+                          {Math.floor(i / 5) + 1}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-700 text-center">
+                <button
+                  onClick={() => setModalTrain(null)}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-semibold transition-colors"
+                >
+                  Close Schedule
+                </button>
               </div>
             </div>
           </div>
