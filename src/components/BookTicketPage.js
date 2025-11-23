@@ -164,6 +164,15 @@ const BookTicketPage = () => {
 
   const dispatch = useDispatch();
   const mockstations_master = useSelector((store) => store?.stationslist);
+  const selected_source = useSelector(
+    (store) => store?.stationslistslicsourcedestinationdoj.selected_source
+  );
+  const selected_destination = useSelector(
+    (store) => store?.stationslistslicsourcedestinationdoj.selected_destination
+  );
+  const selected_date_of_journey = useSelector(
+    (store) => store?.stationslistslicsourcedestinationdoj.date_of_journey
+  );
 
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
@@ -304,13 +313,23 @@ const BookTicketPage = () => {
   };
 
   const searchTrains = async () => {
+    console.log("test");
     if (!source || !dest) {
       console.error("Please enter Source and Destination.");
       return;
     }
     setLoadingTrains(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
+      const result = await axios.post(
+        "http://localhost:8888/search-trains",
+        {
+          source_code: selected_source?.code.toUpperCase(),
+          destination_code: selected_destination?.code.toUpperCase(),
+          doj: selected_date_of_journey,
+        },
+        { withCredentials: true }
+      );
+      console.log(result?.data?.data);
       setTrains(sampleTrains);
       // Default expand the first train
       setExpandedTrainId(sampleTrains[0]?.train_number);
