@@ -3,6 +3,7 @@ import { addstations } from "../store/slices/stationslistslice";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
+import { update_trainslist } from "../store/slices/trainsListSlice";
 import {
   update_date_of_journey,
   update_destination,
@@ -98,29 +99,6 @@ const todayISO = () => {
   });
 };
 
-const sampleTrains = [
-  {
-    train_number: "12627",
-    train_name: "Karnataka Express",
-    departure: "10:30",
-    arrival: "18:45",
-    from: "SBC",
-    to: "NDLS",
-    duration: "32h 15m",
-    classes: ["SL", "3A", "2A", "1A"],
-  },
-  {
-    train_number: "16592",
-    train_name: "Hampi Express",
-    departure: "06:15",
-    arrival: "14:20",
-    from: "SBC",
-    to: "HPT",
-    duration: "8h 05m",
-    classes: ["SL", "3A", "2S", "CC"],
-  },
-];
-
 // Configuration for Matrix Table
 const QUOTA_COLUMNS = ["GEN", "TATKAL", "PREMIUM_TATKAL", "LADIES", "SENIOR"];
 // Order of rows to display if the train supports them
@@ -173,6 +151,8 @@ const BookTicketPage = () => {
   const selected_date_of_journey = useSelector(
     (store) => store?.stationslistslicsourcedestinationdoj.date_of_journey
   );
+  const sampleTrains = useSelector((store) => store?.trainsList);
+  console.log("sample trains:", sampleTrains);
 
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
@@ -329,7 +309,7 @@ const BookTicketPage = () => {
         },
         { withCredentials: true }
       );
-      console.log(result?.data?.data);
+      dispatch(update_trainslist(result?.data?.data?.trains_list));
       setTrains(sampleTrains);
       // Default expand the first train
       setExpandedTrainId(sampleTrains[0]?.train_number);
@@ -587,7 +567,7 @@ const BookTicketPage = () => {
                 Searching best routes...
               </p>
             </div>
-          ) : trains.length === 0 ? (
+          ) : trains?.length === 0 ? (
             <div className="text-center text-gray-400 py-20 bg-gray-800/50 rounded-2xl shadow-lg border border-gray-700 flex flex-col items-center animate-fade-in">
               <svg
                 className="w-16 h-16 text-gray-600 mb-4"
@@ -608,11 +588,11 @@ const BookTicketPage = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {trains.map((t, index) => {
-                const isExpanded = expandedTrainId === t.train_number;
+              {trains?.map((t, index) => {
+                const isExpanded = expandedTrainId === t?.train_number;
                 return (
                   <div
-                    key={t.train_number}
+                    key={t?.train_number}
                     style={{ animationDelay: `${index * 100}ms` }}
                     className={`bg-gray-800/90 backdrop-blur rounded-2xl shadow-lg transition-all border border-gray-700 hover:border-indigo-500/30 animate-slide-up overflow-hidden ${
                       isExpanded ? "ring-1 ring-indigo-500/50" : ""
@@ -620,7 +600,7 @@ const BookTicketPage = () => {
                   >
                     {/* ACCORDION HEADER */}
                     <div
-                      onClick={() => toggleAccordion(t.train_number)}
+                      onClick={() => toggleAccordion(t?.train_number)}
                       className="p-4 md:p-6 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group bg-gradient-to-r from-gray-800 to-gray-800 hover:from-gray-800 hover:to-gray-750 transition-all"
                     >
                       <div className="flex-1">
@@ -638,27 +618,27 @@ const BookTicketPage = () => {
                             <div className="gap-3">
                               <div>
                                 <h4 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">
-                                  {t.train_name}
+                                  {t?.train_name}
                                 </h4>
                                 <span className="px-2 py-0.5 bg-gray-700 text-gray-300 font-mono rounded border border-gray-600">
-                                  #{t.train_number}
+                                  #{t?.train_number}
                                 </span>
                               </div>
                             </div>
-                            <div className="text-center">
-                              <div>🚄 runs on:</div>
+                            <div className="text-start">
+                              <div>Runs on: {t?.running_days}</div>
                               <div>
                                 <span className="font-mono text-sm">
-                                  Journey duration: {t.duration}
+                                  {t.journey_duration}
                                 </span>
                               </div>
                             </div>
                             <div className="text-start">
                               <div className="font-bold text-white">
-                                📍Departure: {t.departure}
+                                📍Departure: {t?.scheduled_departure}
                               </div>
                               <div className="font-bold text-white">
-                                🪧Arrival: {t.arrival}
+                                🪧Arrival: {t?.estimated_arrival}
                               </div>
                             </div>
                           </div>
@@ -696,88 +676,7 @@ const BookTicketPage = () => {
                     {isExpanded && (
                       <div className="border-t border-gray-700 bg-gray-900/30 p-4 md:p-6 animate-fade-in">
                         <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-900/40">
-                          <table className="w-full text-center text-sm">
-                            <thead className="bg-gray-800 text-xs uppercase font-semibold text-gray-400">
-                              <tr>
-                                <th className="px-3 py-3 text-left sticky left-0 bg-gray-800 border-r border-gray-700 z-10">
-                                  Class
-                                </th>
-                                {QUOTA_COLUMNS.map((q) => (
-                                  <th
-                                    key={q}
-                                    className="px-3 py-3 min-w-[80px] border-r border-gray-700/50 last:border-0"
-                                  >
-                                    {q.replace("PREMIUM_", "PREM ")}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                              {CLASS_ROWS_ORDER.filter((c) =>
-                                t.classes.includes(c)
-                              ).map((cls) => (
-                                <tr
-                                  key={cls}
-                                  className="hover:bg-gray-800/50 transition-colors"
-                                >
-                                  <td className="px-3 py-3 text-left font-bold text-white sticky left-0 bg-gray-900/90 border-r border-gray-700 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
-                                    {cls}
-                                  </td>
-                                  {QUOTA_COLUMNS.map((quota) => {
-                                    // Simulate random availability logic
-                                    // 15% chance to be "Not Applicable"
-                                    const isNA = Math.random() < 0.15;
-
-                                    if (isNA) {
-                                      return (
-                                        <td
-                                          key={quota}
-                                          className="px-1 py-1 border-r border-gray-700/30 last:border-0 text-center align-middle"
-                                        >
-                                          <span className="text-gray-600 font-bold select-none">
-                                            -
-                                          </span>
-                                        </td>
-                                      );
-                                    }
-
-                                    const isAvail = Math.random() > 0.3;
-                                    const count =
-                                      Math.floor(Math.random() * 50) + 1;
-                                    const status = isAvail ? "AVL" : "WL";
-                                    const colorClass = isAvail
-                                      ? "text-emerald-400"
-                                      : "text-orange-400";
-
-                                    return (
-                                      <td
-                                        key={quota}
-                                        className="px-1 py-1 border-r border-gray-700/30 last:border-0"
-                                      >
-                                        <button
-                                          onClick={() =>
-                                            proceedToConfirm(t, cls, quota)
-                                          }
-                                          className={`w-full h-full py-2 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
-                                        >
-                                          <span
-                                            className={`font-bold text-xs ${colorClass} group-hover/cell:text-indigo-300`}
-                                          >
-                                            {status} {count}
-                                          </span>
-                                          <span className="text-[10px] text-gray-500 font-mono group-hover/cell:text-indigo-200">
-                                            ₹
-                                            {Math.floor(Math.random() * 2000) +
-                                              150}
-                                          </span>
-                                        </button>
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                          table
                         </div>
                       </div>
                     )}
