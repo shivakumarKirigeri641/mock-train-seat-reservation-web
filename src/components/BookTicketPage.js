@@ -152,7 +152,6 @@ const BookTicketPage = () => {
     (store) => store?.stationslistslicsourcedestinationdoj.date_of_journey
   );
   const sampleTrains = useSelector((store) => store?.trainsList);
-  console.log("sample trains:", sampleTrains);
 
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
@@ -293,11 +292,11 @@ const BookTicketPage = () => {
   };
 
   const searchTrains = async () => {
-    console.log("test");
     if (!source || !dest) {
       console.error("Please enter Source and Destination.");
       return;
     }
+    dispatch(update_trainslist([]));
     setLoadingTrains(true);
     try {
       const result = await axios.post(
@@ -309,10 +308,21 @@ const BookTicketPage = () => {
         },
         { withCredentials: true }
       );
-      dispatch(update_trainslist(result?.data?.data?.trains_list));
-      setTrains(sampleTrains);
-      // Default expand the first train
-      setExpandedTrainId(sampleTrains[0]?.train_number);
+      if (!result?.data?.data) {
+        console.log("inside trains NOT found");
+        setTrains([]);
+      } else {
+        console.log("inside trains found");
+        // FIX: Capture the data directly from response
+        const fetchedTrains = result?.data?.data?.trains_list || [];
+
+        // Update Redux
+        dispatch(update_trainslist(fetchedTrains));
+
+        // Update Local State immediately (don't wait for Redux selector)
+        setTrains(fetchedTrains);
+        setExpandedTrainId(fetchedTrains[0]?.train_number);
+      }
     } catch (err) {
       console.error(err);
       setTrains([]);
@@ -537,7 +547,9 @@ const BookTicketPage = () => {
             <div className="lg:col-span-2 relative z-10">
               <button
                 ref={searchRef}
-                onClick={searchTrains}
+                onClick={async () => {
+                  await searchTrains();
+                }}
                 className={`w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl shadow-lg shadow-indigo-500/30 transition-all font-semibold transform hover:-translate-y-0.5 active:translate-y-0 relative overflow-hidden ${
                   loadingTrains ? "cursor-not-allowed opacity-90" : ""
                 }`}
@@ -675,9 +687,7 @@ const BookTicketPage = () => {
                     {/* ACCORDION BODY (SEAT MATRIX) */}
                     {isExpanded && (
                       <div className="border-t border-gray-700 bg-gray-900/30 p-4 md:p-6 animate-fade-in">
-                        <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-900/40">
-                          table
-                        </div>
+                        <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-900/40"></div>
                       </div>
                     )}
                   </div>
