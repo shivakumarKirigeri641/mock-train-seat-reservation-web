@@ -1,0 +1,38 @@
+{
+  "name": "mock-train-seat-reservation-web",
+  "version": "1.0.0",
+  "description": "Sample UI for developers how apis are used to call and book mock seats. Realistic booking environment enabled.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel public/index.html",
+    "build": "parcel build public/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shivakumarKirigeri641/mock-train-seat-reservation-web.git"
+  },
+  "author": "Shivakumar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shivakumarKirigeri641/mock-train-seat-reservation-web/issues"
+  },
+  "homepage": "https://github.com/shivakumarKirigeri641/mock-train-seat-reservation-web#readme",
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.10.1",
+    "axios": "^1.13.2",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
+    "parcel": "^2.13.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-redux": "^9.2.0",
+    "react-router": "^7.9.6",
+    "react-to-print": "^3.2.0"
+  },
+  "devDependencies": {
+    "buffer": "^6.0.3",
+    "postcss": "^8.5.6",
+    "process": "^0.11.10",
+    "tailwindcss": "^3.4.18"
+  }
+}
