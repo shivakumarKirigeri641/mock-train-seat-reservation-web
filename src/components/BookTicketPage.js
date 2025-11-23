@@ -96,10 +96,11 @@ const BookTicketPage = () => {
   const selected_destination = useSelector(
     (store) => store?.stationslistslicsourcedestinationdoj.selected_destination
   );
-  const selected_date = useSelector(
+  const selected_doj = useSelector(
     (store) =>
-      store?.stationslistslicsourcedestinationdoj.selected_date_of_journey
+      store?.stationslistslicsourcedestinationdoj?.selected_date_of_journey
   );
+  console.log("selected doj:", selected_doj);
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
 
@@ -162,6 +163,13 @@ const BookTicketPage = () => {
         withCredentials: true,
       });
       dispatch(addstations(result?.data?.data?.rows));
+      dispatch(
+        update_date_of_journey(
+          new Date().toLocaleDateString("en-CA", {
+            timeZone: "Asia/Kolkata",
+          })
+        )
+      );
     };
     loadStations();
     console.log("stations:", mockstations_master);
@@ -435,7 +443,6 @@ const BookTicketPage = () => {
                 onChange={(e) => {
                   setDate(e.target.value);
                   dispatch(update_date_of_journey(e.target.value));
-                  console.log(selected_date);
                 }}
                 className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all [color-scheme:dark]"
               />
