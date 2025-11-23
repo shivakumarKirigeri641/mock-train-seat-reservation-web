@@ -100,7 +100,13 @@ const todayISO = () => {
 };
 
 // Configuration for Matrix Table
-const QUOTA_COLUMNS = ["GEN", "TATKAL", "PREMIUM_TATKAL", "LADIES", "SENIOR"];
+const QUOTA_COLUMNS = [
+  "GENERAL",
+  "TATKAL",
+  "PREMIUM_TATKAL",
+  "LADIES",
+  "SENIOR",
+];
 // Order of rows to display if the train supports them
 const CLASS_ROWS_ORDER = [
   "SL",
@@ -152,6 +158,7 @@ const BookTicketPage = () => {
     (store) => store?.stationslistslicsourcedestinationdoj.date_of_journey
   );
   const sampleTrains = useSelector((store) => store?.trainsList);
+  console.log(sampleTrains);
 
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
@@ -566,7 +573,7 @@ const BookTicketPage = () => {
           <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2 animate-fade-in delay-100">
             Available Trains
             {trains.length > 0 && (
-              <span className="text-sm font-normal text-gray-500 bg-gray-800 px-2 py-1 rounded-md border border-gray-700 animate-pulse">
+              <span className="text-sm font-normal text-gray-100 bg-gray-800 px-2 py-1 rounded-md border border-gray-700 animate-pulse">
                 {trains.length} Found
               </span>
             )}
@@ -687,7 +694,151 @@ const BookTicketPage = () => {
                     {/* ACCORDION BODY (SEAT MATRIX) */}
                     {isExpanded && (
                       <div className="border-t border-gray-700 bg-gray-900/30 p-4 md:p-6 animate-fade-in">
-                        <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-900/40"></div>
+                        <div className="overflow-x-auto rounded-xl border border-gray-700 bg-gray-900/40">
+                          <table className="w-full text-center text-sm">
+                            <thead className="bg-gray-800 text-xs uppercase font-semibold text-gray-400">
+                              <tr>
+                                <th className="px-3 py-3 text-left sticky left-0 bg-gray-800 border-r border-gray-700 z-10">
+                                  Class
+                                </th>
+                                {QUOTA_COLUMNS.map((q) => (
+                                  <th
+                                    key={q}
+                                    className="px-3 py-3 min-w-[80px] border-r border-gray-500 last:border-1"
+                                  >
+                                    {q}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-700">
+                              {/**SLEEPER COACH RESERVATIONS */}
+                              <tr>
+                                {/** SLEEPER CLASS general*/}
+                                <td>SL</td>
+                                <td>
+                                  {!t?.seat_count_gen_sl ||
+                                  t?.seat_count_gen_sl === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_sl}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_sl}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** SLEEPER CLASS general*/}
+
+                                {/** SLEEPER CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_sl ||
+                                  t?.seat_count_ttl_sl === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_sl}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_sl}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** SLEEPER CLASS TATKAL*/}
+
+                                {/** SLEEPER CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_sl ||
+                                  t?.seat_count_ptl_sl === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_sl}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_sl}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** SLEEPER CLASS PREMIUMTATKAL*/}
+
+                                {/** SLEEPER CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_sl ||
+                                  t?.seat_count_ladies_sl === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_sl}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_sl}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** SLEEPER CLASS ladies*/}
+
+                                {/** SLEEPER CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_sl ||
+                                  t?.seat_count_senior_sl === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_sl}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_sl}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** SLEEPER CLASS senior*/}
+                              </tr>
+                              {/**SLEEPER COACH RESERVATIONS */}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
                   </div>
