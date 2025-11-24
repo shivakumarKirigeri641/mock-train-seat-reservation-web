@@ -9,6 +9,7 @@ import {
   update_destination,
   update_source,
 } from "../store/slices/sourcedestinationdojSlice";
+import { update_trainSchedule } from "../store/slices/trainScheduleSlice";
 
 // --- ICONS ---
 
@@ -157,11 +158,17 @@ const BookTicketPage = () => {
   const selected_date_of_journey = useSelector(
     (store) => store?.stationslistslicsourcedestinationdoj.date_of_journey
   );
+  const train_schedules = useSelector((store) => store?.trainSchedule);
   const sampleTrains = useSelector((store) => store?.trainsList);
-  console.log(sampleTrains);
 
   // modal (schedules) state
   const [modalTrain, setModalTrain] = useState(null);
+  // mount animation
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(t);
+  }, []);
 
   // fetch station suggestions
   const fetchStations = async (q) => {
@@ -205,8 +212,9 @@ const BookTicketPage = () => {
         const result = await axios.get("http://localhost:8888/stations", {
           withCredentials: true,
         });
-        if (result?.data?.data?.rows) {
-          dispatch(addstations(result.data.data.rows));
+        console.log(result?.data?.data);
+        if (result?.data?.data) {
+          dispatch(addstations(result.data.data));
         }
       } catch (e) {
         console.log("Mock mode or API error");
@@ -298,6 +306,20 @@ const BookTicketPage = () => {
     setStationQuery({ src: dest, dst: source });
   };
 
+  const fetchTrainSchedule = async (t) => {
+    try {
+      const result = await axios.post(
+        "http://localhost:8888/train-schedule",
+        {
+          train_number: t?.train_number,
+        },
+        { withCredentials: true }
+      );
+      dispatch(update_trainSchedule(result?.data?.data));
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const searchTrains = async () => {
     if (!source || !dest) {
       console.error("Please enter Source and Destination.");
@@ -316,10 +338,8 @@ const BookTicketPage = () => {
         { withCredentials: true }
       );
       if (!result?.data?.data) {
-        console.log("inside trains NOT found");
         setTrains([]);
       } else {
-        console.log("inside trains found");
         // FIX: Capture the data directly from response
         const fetchedTrains = result?.data?.data?.trains_list || [];
 
@@ -368,6 +388,7 @@ const BookTicketPage = () => {
   }, []);
 
   return (
+    // FIX 1: Removed transform/transition from here
     <div className="min-h-screen bg-gray-900 p-4 md:p-8 text-gray-100 selection:bg-indigo-500 selection:text-white relative overflow-hidden">
       <style>{`
         @keyframes float-slow {
@@ -399,7 +420,12 @@ const BookTicketPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      {/* FIX 2: Moved transform/transition/animation classes to this inner wrapper */}
+      <div
+        className={`max-w-7xl mx-auto relative z-10 transform transition-all duration-700 ease-out ${
+          mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+        }`}
+      >
         {/* header */}
         <header className="flex items-center justify-between mb-8 animate-fade-in">
           <div className="flex items-center gap-4">
@@ -419,7 +445,7 @@ const BookTicketPage = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-300 via-white to-indigo-300 bg-clip-text text-transparent">
                 Mock Train Seat Booking
               </h1>
               <p className="text-sm text-gray-400 mt-0.5">
@@ -562,7 +588,33 @@ const BookTicketPage = () => {
                 }`}
                 disabled={loadingTrains}
               >
-                {loadingTrains ? "..." : "Search"}
+                {loadingTrains ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg
+                      className="w-5 h-5 animate-spin text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      ></path>
+                    </svg>
+                    <span>Searching</span>
+                  </span>
+                ) : (
+                  "Search"
+                )}
               </button>
             </div>
           </div>
@@ -609,10 +661,16 @@ const BookTicketPage = () => {
             <div className="space-y-4">
               {trains?.map((t, index) => {
                 const isExpanded = expandedTrainId === t?.train_number;
+                // slightly longer stagger so entrance feels smooth
+                const delayMs = index * 120;
                 return (
                   <div
                     key={t?.train_number}
-                    style={{ animationDelay: `${index * 100}ms` }}
+                    style={{
+                      animationDelay: `${delayMs}ms`,
+                      WebkitAnimationDelay: `${delayMs}ms`,
+                      willChange: "transform, opacity",
+                    }}
                     className={`bg-gray-800/90 backdrop-blur rounded-2xl shadow-lg transition-all border border-gray-700 hover:border-indigo-500/30 animate-slide-up overflow-hidden ${
                       isExpanded ? "ring-1 ring-indigo-500/50" : ""
                     }`}
@@ -629,6 +687,10 @@ const BookTicketPage = () => {
                             className={`text-indigo-400 transition-transform duration-300 ${
                               isExpanded ? "rotate-180" : ""
                             }`}
+                            style={{
+                              animationDelay: `${delayMs + 60}ms`,
+                              WebkitAnimationDelay: `${delayMs + 60}ms`,
+                            }}
                           >
                             <ChevronIcon className="w-6 h-6" />
                           </div>
@@ -636,7 +698,13 @@ const BookTicketPage = () => {
                           <div className="flex justify-between items-center w-full">
                             <div className="gap-3">
                               <div>
-                                <h4 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">
+                                <h4
+                                  className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors"
+                                  style={{
+                                    animationDelay: `${delayMs + 90}ms`,
+                                    WebkitAnimationDelay: `${delayMs + 90}ms`,
+                                  }}
+                                >
                                   {t?.train_name}
                                 </h4>
                                 <span className="px-2 py-0.5 bg-gray-700 text-gray-300 font-mono rounded border border-gray-600">
@@ -669,6 +737,7 @@ const BookTicketPage = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            fetchTrainSchedule(t);
                             setModalTrain(t);
                           }}
                           className="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors border border-gray-600 hover:text-white flex items-center gap-1 z-10 relative"
@@ -836,6 +905,1122 @@ const BookTicketPage = () => {
                                 {/** SLEEPER CLASS senior*/}
                               </tr>
                               {/**SLEEPER COACH RESERVATIONS */}
+                              {/**1A COACH RESERVATIONS */}
+                              <tr>
+                                {/** 1A CLASS general*/}
+                                <td>1A</td>
+                                <td>
+                                  {!t?.seat_count_gen_1a ||
+                                  t?.seat_count_gen_1a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_1a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_1a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 1A CLASS general*/}
+
+                                {/** 1A CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_1a ||
+                                  t?.seat_count_ttl_1a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_1a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_1a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 1A CLASS TATKAL*/}
+
+                                {/** 1A CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_1a ||
+                                  t?.seat_count_ptl_1a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_1a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_1a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 1A CLASS PREMIUMTATKAL*/}
+
+                                {/** 1A CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_1a ||
+                                  t?.seat_count_ladies_1a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_1a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_1a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 1A CLASS ladies*/}
+
+                                {/** 1A CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_1a ||
+                                  t?.seat_count_senior_1a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_1a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_1a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 1A CLASS senior*/}
+                              </tr>
+                              {/**1A COACH RESERVATIONS */}
+                              {/**2A COACH RESERVATIONS */}
+                              <tr>
+                                {/** 2A CLASS general*/}
+                                <td>2A</td>
+                                <td>
+                                  {!t?.seat_count_gen_2a ||
+                                  t?.seat_count_gen_2a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_2a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_2a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2A CLASS general*/}
+
+                                {/** 2A CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_2a ||
+                                  t?.seat_count_ttl_2a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_2a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_2a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2A CLASS TATKAL*/}
+
+                                {/** 2A CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_2a ||
+                                  t?.seat_count_ptl_2a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_2a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_2a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2A CLASS PREMIUMTATKAL*/}
+
+                                {/** 2A CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_2a ||
+                                  t?.seat_count_ladies_2a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_2a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_2a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2A CLASS ladies*/}
+
+                                {/** 2A CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_2a ||
+                                  t?.seat_count_senior_2a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_2a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_2a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2A CLASS senior*/}
+                              </tr>
+                              {/**2A COACH RESERVATIONS */}
+                              {/**3A COACH RESERVATIONS */}
+                              <tr>
+                                {/** 3A CLASS general*/}
+                                <td>3A</td>
+                                <td>
+                                  {!t?.seat_count_gen_3a ||
+                                  t?.seat_count_gen_3a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_3a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_3a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 3A CLASS general*/}
+
+                                {/** 3A CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_3a ||
+                                  t?.seat_count_ttl_3a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_3a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_3a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 3A CLASS TATKAL*/}
+
+                                {/** 3A CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_3a ||
+                                  t?.seat_count_ptl_3a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_3a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_3a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 3A CLASS PREMIUMTATKAL*/}
+
+                                {/** 3A CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_3a ||
+                                  t?.seat_count_ladies_3a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_3a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_3a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 3A CLASS ladies*/}
+
+                                {/** 3A CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_3a ||
+                                  t?.seat_count_senior_3a === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_3a}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_3a}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 3A CLASS senior*/}
+                              </tr>
+                              {/**3A COACH RESERVATIONS */}
+                              {/**2S COACH RESERVATIONS */}
+                              <tr>
+                                {/** 2S CLASS general*/}
+                                <td>2S</td>
+                                <td>
+                                  {!t?.seat_count_gen_2s ||
+                                  t?.seat_count_gen_2s === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_2s}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_2s}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2S CLASS general*/}
+
+                                {/** 2S CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_2s ||
+                                  t?.seat_count_ttl_2s === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_2s}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_2s}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2S CLASS TATKAL*/}
+
+                                {/** 2S CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_2s ||
+                                  t?.seat_count_ptl_2s === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_2s}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_2s}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2S CLASS PREMIUMTATKAL*/}
+
+                                {/** 2S CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_2s ||
+                                  t?.seat_count_ladies_2s === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_2s}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_2s}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2S CLASS ladies*/}
+
+                                {/** 2S CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_2s ||
+                                  t?.seat_count_senior_2s === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_2s}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_2s}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** 2S CLASS senior*/}
+                              </tr>
+                              {/**2S COACH RESERVATIONS */}
+                              {/**CC COACH RESERVATIONS */}
+                              <tr>
+                                {/** CC CLASS general*/}
+                                <td>CC</td>
+                                <td>
+                                  {!t?.seat_count_gen_cc ||
+                                  t?.seat_count_gen_cc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_cc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_cc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** CC CLASS general*/}
+
+                                {/** CC CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_cc ||
+                                  t?.seat_count_ttl_cc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_cc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_cc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** CC CLASS TATKAL*/}
+
+                                {/** CC CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_cc ||
+                                  t?.seat_count_ptl_cc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_cc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_cc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** CC CLASS PREMIUMTATKAL*/}
+
+                                {/** CC CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_cc ||
+                                  t?.seat_count_ladies_cc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_cc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_cc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** CC CLASS ladies*/}
+
+                                {/** CC CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_cc ||
+                                  t?.seat_count_senior_cc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_cc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_cc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** CC CLASS senior*/}
+                              </tr>
+                              {/**CC COACH RESERVATIONS */}
+                              {/**EC COACH RESERVATIONS */}
+                              <tr>
+                                {/** EC CLASS general*/}
+                                <td>EC</td>
+                                <td>
+                                  {!t?.seat_count_gen_ec ||
+                                  t?.seat_count_gen_ec === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_ec}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_ec}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EC CLASS general*/}
+
+                                {/** EC CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_ec ||
+                                  t?.seat_count_ttl_ec === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_ec}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_ec}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EC CLASS TATKAL*/}
+
+                                {/** EC CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_ec ||
+                                  t?.seat_count_ptl_ec === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_ec}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_ec}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EC CLASS PREMIUMTATKAL*/}
+
+                                {/** EC CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_ec ||
+                                  t?.seat_count_ladies_ec === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_ec}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_ec}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EC CLASS ladies*/}
+
+                                {/** EC CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_ec ||
+                                  t?.seat_count_senior_ec === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_ec}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_ec}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EC CLASS senior*/}
+                              </tr>
+                              {/**EC COACH RESERVATIONS */}
+                              {/**EA COACH RESERVATIONS */}
+                              <tr>
+                                {/** EA CLASS general*/}
+                                <td>EA</td>
+                                <td>
+                                  {!t?.seat_count_gen_ea ||
+                                  t?.seat_count_gen_ea === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_ea}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_ea}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EA CLASS general*/}
+
+                                {/** EA CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_ea ||
+                                  t?.seat_count_ttl_ea === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_ea}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_ea}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EA CLASS TATKAL*/}
+
+                                {/** EA CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_ea ||
+                                  t?.seat_count_ptl_ea === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_ea}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_ea}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EA CLASS PREMIUMTATKAL*/}
+
+                                {/** EA CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_ea ||
+                                  t?.seat_count_ladies_ea === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_ea}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_ea}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EA CLASS ladies*/}
+
+                                {/** EA CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_ea ||
+                                  t?.seat_count_senior_ea === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_ea}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_ea}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** EA CLASS senior*/}
+                              </tr>
+                              {/**EA COACH RESERVATIONS */}
+                              {/**E3 COACH RESERVATIONS */}
+                              <tr>
+                                {/** E3 CLASS general*/}
+                                <td>E3</td>
+                                <td>
+                                  {!t?.seat_count_gen_e3 ||
+                                  t?.seat_count_gen_e3 === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_gen_e3}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_e3}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** E3 CLASS general*/}
+
+                                {/** E3 CLASS TATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ttl_e3 ||
+                                  t?.seat_count_ttl_e3 === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ttl_e3}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_e3}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** E3 CLASS TATKAL*/}
+
+                                {/** E3 CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.seat_count_ptl_e3 ||
+                                  t?.seat_count_ptl_e3 === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ptl_e3}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_e3}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** E3 CLASS PREMIUMTATKAL*/}
+
+                                {/** E3 CLASS ladies*/}
+                                <td>
+                                  {!t?.seat_count_ladies_e3 ||
+                                  t?.seat_count_ladies_e3 === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_ladies_e3}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_e3}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** E3 CLASS ladies*/}
+
+                                {/** E3 CLASS senior*/}
+                                <td>
+                                  {!t?.seat_count_senior_e3 ||
+                                  t?.seat_count_senior_e3 === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.seat_count_senior_e3}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_e3}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** E3 CLASS senior*/}
+                              </tr>
+                              {/**E3 COACH RESERVATIONS */}
+                              {/**FC COACH RESERVATIONS */}
+                              <tr>
+                                {/** FC CLASS general*/}
+                                <td>FC</td>
+                                <td>
+                                  {!t?.sfct_count_gen_fc ||
+                                  t?.sfct_count_gen_fc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.sfct_count_gen_fc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_fc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** FC CLASS general*/}
+
+                                {/** FC CLASS TATKAL*/}
+                                <td>
+                                  {!t?.sfct_count_ttl_fc ||
+                                  t?.sfct_count_ttl_fc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.sfct_count_ttl_fc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ttl_fc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** FC CLASS TATKAL*/}
+
+                                {/** FC CLASS PREMIUMTATKAL*/}
+                                <td>
+                                  {!t?.sfct_count_ptl_fc ||
+                                  t?.sfct_count_ptl_fc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.sfct_count_ptl_fc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_ptl_fc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** FC CLASS PREMIUMTATKAL*/}
+
+                                {/** FC CLASS ladies*/}
+                                <td>
+                                  {!t?.sfct_count_ladies_fc ||
+                                  t?.sfct_count_ladies_fc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.sfct_count_ladies_fc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_gen_fc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** FC CLASS ladies*/}
+
+                                {/** FC CLASS senior*/}
+                                <td>
+                                  {!t?.sfct_count_senior_fc ||
+                                  t?.sfct_count_senior_fc === "-" ? (
+                                    "-"
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        proceedToConfirm(t, cls, quota)
+                                      }
+                                      className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
+                                    >
+                                      <div className="p-1 text-green-400 font-bold">
+                                        {t?.sfct_count_senior_fc}
+                                        <p className="underline">AVAILABLE</p>
+                                        <p className="text-blue-500">
+                                          ₹ {t?.fare_senior_fc}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  )}
+                                </td>
+                                {/** FC CLASS senior*/}
+                              </tr>
+                              {/**FC COACH RESERVATIONS */}
                             </tbody>
                           </table>
                         </div>
@@ -847,91 +2032,146 @@ const BookTicketPage = () => {
             </div>
           )}
         </section>
+      </div>
 
-        {/* SCHEDULE MODAL */}
-        {modalTrain && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-all animate-fade-in">
-            <div className="bg-gray-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-gray-700 transform transition-all animate-slide-up">
-              <div className="flex items-center justify-between border-b border-gray-700 pb-4 mb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {modalTrain.train_name}
-                  </h3>
-                  <p className="text-sm text-gray-400 font-mono mt-0.5">
-                    {modalTrain.train_number} • Daily Service
-                  </p>
+      {/* FIX 3: Modal is now here, outside the transformed wrapper */}
+      {modalTrain && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-all animate-fade-in">
+          <div className="bg-gray-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-gray-700 transform transition-all animate-slide-up">
+            <div className="flex items-center justify-between border-b border-gray-700 pb-4 mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-white">
+                  {train_schedules?.train_details?.train_name}
+                </h3>
+                <p className="text-sm text-gray-400 font-mono mt-0.5">
+                  {train_schedules?.train_details?.train_number}
+                </p>
+                <div className="text-sm text-gray-400 font-mono mt-0.5 flex">
+                  Runs on:{" "}
+                  <div className="text-center text-yellow-300 mx-1 border-gray-600 border flex justify-between p-1">
+                    <div>
+                      <p>Sun</p>
+                      {train_schedules?.train_details?.train_runs_on_sun === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_sun +
+                          " "
+                        : "- "}
+                    </div>
+                    <div className="mx-2">
+                      <p>Mon</p>
+                      {train_schedules?.train_details?.train_runs_on_mon === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_mon +
+                          " "
+                        : "- "}
+                    </div>
+                    <div className="mx-2">
+                      <p>Tue</p>
+                      {train_schedules?.train_details?.train_runs_on_tue === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_tue +
+                          " "
+                        : "- "}
+                    </div>
+                    <div className="mx-2">
+                      <p>Wed</p>
+                      {train_schedules?.train_details?.train_runs_on_wed === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_wed +
+                          " "
+                        : "- "}
+                    </div>
+                    <div className="mx-2">
+                      <p>Thu</p>
+                      {train_schedules?.train_details?.train_runs_on_thu === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_thu +
+                          " "
+                        : "- "}
+                    </div>
+                    <div className="mx-2">
+                      <p>Fri</p>
+                      {train_schedules?.train_details?.train_runs_on_fri === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_fri +
+                          " "
+                        : "- "}
+                    </div>
+                    <div className="mx-2">
+                      <p>Sat</p>
+                      {train_schedules?.train_details?.train_runs_on_sat === "Y"
+                        ? train_schedules?.train_details?.train_runs_on_sat +
+                          " "
+                        : "- "}
+                    </div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setModalTrain(null)}
-                  className="p-2 rounded-lg bg-gray-700 text-gray-400 hover:text-white hover:bg-gray-600 transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
               </div>
-              <div className="max-h-[60vh] overflow-y-auto pr-2">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-gray-800 z-10 shadow-sm">
-                    <tr className="text-left text-xs uppercase font-semibold text-gray-500 border-b border-gray-700">
-                      <th className="py-3 pl-2">Station</th>
-                      <th className="py-3 text-center">Arrives</th>
-                      <th className="py-3 text-center">Departs</th>
-                      <th className="py-3 text-center">Halt</th>
+              <button
+                onClick={() => setModalTrain(null)}
+                className="p-2 rounded-lg bg-gray-700 text-gray-400 hover:text-white hover:bg-gray-600 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto pr-2">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-gray-800 z-10 shadow-sm">
+                  <tr className="text-left text-xs uppercase font-semibold text-gray-500 border-b border-gray-700">
+                    <th className="py-3 pl-2">Sequence</th>
+                    <th className="py-3 text-center">code</th>
+                    <th className="py-3 text-center">Station name</th>
+                    <th className="py-3 text-center">Arrival</th>
+                    <th className="py-3 text-center">Departure</th>
+                    <th className="py-3 text-center">Halt</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700/50">
+                  {train_schedules?.train_schedule_details?.map((s, i) => (
+                    <tr
+                      key={s?.station_sequence}
+                      className="hover:bg-gray-700/30 transition-colors"
+                    >
+                      <td className="py-3 pl-2 font-medium text-gray-300">
+                        {s?.station_sequence}
+                      </td>
+                      <td className="py-3 text-start text-gray-400 font-mono">
+                        {s?.station_code}
+                      </td>
+                      <td className="py-3 text-gray-400 font-mono text-start w-60">
+                        {s?.station_name}
+                      </td>
+                      <td className="py-3 text-center text-gray-500 text-xs">
+                        {s?.arrival_time}
+                      </td>
+                      <td className="py-3 text-center text-gray-500 text-xs">
+                        {s?.departure_time}
+                      </td>
+                      <td className="py-3 text-center text-gray-500 text-xs">
+                        5m
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700/50">
-                    {[
-                      "SBC - KSR Bengaluru",
-                      "YNK - Yelahanka",
-                      "HUP - Hindupur",
-                      "DMM - Dharmavaram",
-                      "GTL - Guntakal",
-                      "NDLS - New Delhi",
-                    ].map((s, i, arr) => (
-                      <tr
-                        key={s}
-                        className="hover:bg-gray-700/30 transition-colors"
-                      >
-                        <td className="py-3 pl-2 font-medium text-gray-300">
-                          {s.split(" - ")[0]}
-                        </td>
-                        <td className="py-3 text-center text-gray-400 font-mono">
-                          {i === 0 ? "Source" : `1${i}:30`}
-                        </td>
-                        <td className="py-3 text-center text-gray-400 font-mono">
-                          {i === arr.length - 1 ? "Dest" : `1${i}:35`}
-                        </td>
-                        <td className="py-3 text-center text-gray-500 text-xs">
-                          {i === 0 || i === arr.length - 1 ? "-" : "5m"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-6 pt-4 border-t border-gray-700 text-center">
-                <button
-                  onClick={() => setModalTrain(null)}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-semibold transition-colors"
-                >
-                  Close
-                </button>
-              </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-6 pt-4 border-t border-gray-700 text-center">
+              <button
+                onClick={() => setModalTrain(null)}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-semibold transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
