@@ -14,7 +14,7 @@ import GenericHeader from "./components/GenericHeader";
 import Footer from "./components/Footer";
 import TermsAndConditions from "./components/TermsAndConditions";
 import PrivacyPolicy from "./components/PrivacyPolicy";
-import ConfirmTicketPage from "./components/ConfirmTicketPage";
+import PassengerDetailsPage from "./components/PassengerDetailsPage";
 import { Provider } from "react-redux";
 import appStore from "./store/appStore";
 const App = () => {
@@ -57,7 +57,11 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "/confirm-ticket",
-        element: <ConfirmTicketPage />,
+        element: <PassengerDetailsPage />,
+      },
+      {
+        path: "/passenger-details",
+        element: <PassengerDetailsPage />,
       },
       {
         path: "/cancel-ticket",

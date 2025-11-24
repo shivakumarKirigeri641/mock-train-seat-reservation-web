@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router";
 
-const ConfirmTicketPage = () => {
+const PassengerDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const selected_date_of_journey = useSelector(
+    (store) => store?.stationslistslicsourcedestinationdoj.date_of_journey
+  );
   // Retrieve data passed from BookTicketPage
-  const { train: selectedTrain, search } = location.state || {};
+  const { selectedTrain, coachtype, reservationtype } = location.state || {};
 
   // Adult passengers
   const [adults, setAdults] = useState([
@@ -145,11 +148,11 @@ const ConfirmTicketPage = () => {
               </span>
             </h1>
             <p className="text-gray-400 mt-1 flex items-center gap-2 text-sm">
-              <span>{search?.date}</span>
+              <span>{selected_date_of_journey}</span>
               <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
-              <span>{search?.selectedCoach} Class</span>
+              <span>{coachtype} Class</span>
               <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
-              <span>{search?.selectedReservation} Quota</span>
+              <span>{reservationtype} Quota</span>
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-right">
@@ -527,4 +530,4 @@ const ConfirmTicketPage = () => {
   );
 };
 
-export default ConfirmTicketPage;
+export default PassengerDetailsPage;

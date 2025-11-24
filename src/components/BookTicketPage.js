@@ -358,24 +358,14 @@ const BookTicketPage = () => {
     }
   };
 
-  const proceedToConfirm = (coachtype, reservationtype) => {
-    /*navigate("/confirm-ticket", {
+  const proceedToConfirm = (selectedTrain, coachtype, reservationtype) => {
+    navigate("/passenger-details", {
       state: {
-        train,
-        search: {
-          source,
-          dest,
-          date,
-          selectedCoach: cls,
-          selectedReservation: quota,
-        },
+        selectedTrain,
+        coachtype,
+        reservationtype,
       },
-    });*/
-    console.log(
-      selected_source?.code,
-      selected_destination?.code,
-      selected_date_of_journey
-    );
+    });
   };
 
   const toggleAccordion = (id) => {
@@ -796,7 +786,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "SL", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -818,7 +810,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "SL", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -840,7 +834,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "SL", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -862,7 +858,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "SL", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -884,7 +882,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "SL", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -910,7 +910,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "1A", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -932,7 +934,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "1A", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -954,7 +958,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "1A", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -976,7 +982,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "1A", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -998,7 +1006,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "1A", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1024,7 +1034,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2A", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1046,7 +1058,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2A", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1068,7 +1082,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2A", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1090,7 +1106,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2A", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1112,7 +1130,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2A", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1138,7 +1158,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "3A", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1160,7 +1182,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "3A", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1182,7 +1206,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "3A", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1204,7 +1230,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "3A", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1226,7 +1254,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "3A", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1252,7 +1282,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2S", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1274,7 +1306,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2S", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1296,7 +1330,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2S", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1318,7 +1354,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2S", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1340,7 +1378,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "2S", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1366,7 +1406,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "CC", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1388,7 +1430,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "CC", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1410,7 +1454,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "CC", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1432,7 +1478,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "CC", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1454,7 +1502,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "CC", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1480,7 +1530,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EC", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1502,7 +1554,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EC", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1524,7 +1578,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EC", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1546,7 +1602,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EC", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1568,7 +1626,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EC", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1594,7 +1654,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EA", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1616,7 +1678,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EA", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1638,7 +1702,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EA", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1660,7 +1726,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EA", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1682,7 +1750,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "EA", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1708,7 +1778,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "E3", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1730,7 +1802,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "E3", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1752,7 +1826,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "E3", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1774,7 +1850,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "E3", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1796,7 +1874,9 @@ const BookTicketPage = () => {
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "E3", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
@@ -1817,16 +1897,18 @@ const BookTicketPage = () => {
                                 {/** FC CLASS general*/}
                                 <td>FC</td>
                                 <td>
-                                  {!t?.sfct_count_gen_fc ||
-                                  t?.sfct_count_gen_fc === "-" ? (
+                                  {!t?.seat_count_gen_fc ||
+                                  t?.seat_count_gen_fc === "-" ? (
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "FC", "GEN")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
-                                        {t?.sfct_count_gen_fc}
+                                        {t?.seat_count_gen_fc}
                                         <p className="underline">AVAILABLE</p>
                                         <p className="text-blue-500">
                                           ₹ {t?.fare_gen_fc}
@@ -1839,16 +1921,18 @@ const BookTicketPage = () => {
 
                                 {/** FC CLASS TATKAL*/}
                                 <td>
-                                  {!t?.sfct_count_ttl_fc ||
-                                  t?.sfct_count_ttl_fc === "-" ? (
+                                  {!t?.seat_count_ttl_fc ||
+                                  t?.seat_count_ttl_fc === "-" ? (
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "FC", "TTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
-                                        {t?.sfct_count_ttl_fc}
+                                        {t?.seat_count_ttl_fc}
                                         <p className="underline">AVAILABLE</p>
                                         <p className="text-blue-500">
                                           ₹ {t?.fare_ttl_fc}
@@ -1861,16 +1945,18 @@ const BookTicketPage = () => {
 
                                 {/** FC CLASS PREMIUMTATKAL*/}
                                 <td>
-                                  {!t?.sfct_count_ptl_fc ||
-                                  t?.sfct_count_ptl_fc === "-" ? (
+                                  {!t?.seat_count_ptl_fc ||
+                                  t?.seat_count_ptl_fc === "-" ? (
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "FC", "PTL")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
-                                        {t?.sfct_count_ptl_fc}
+                                        {t?.seat_count_ptl_fc}
                                         <p className="underline">AVAILABLE</p>
                                         <p className="text-blue-500">
                                           ₹ {t?.fare_ptl_fc}
@@ -1883,16 +1969,18 @@ const BookTicketPage = () => {
 
                                 {/** FC CLASS ladies*/}
                                 <td>
-                                  {!t?.sfct_count_ladies_fc ||
-                                  t?.sfct_count_ladies_fc === "-" ? (
+                                  {!t?.seat_count_ladies_fc ||
+                                  t?.seat_count_ladies_fc === "-" ? (
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "FC", "LADIES")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
-                                        {t?.sfct_count_ladies_fc}
+                                        {t?.seat_count_ladies_fc}
                                         <p className="underline">AVAILABLE</p>
                                         <p className="text-blue-500">
                                           ₹ {t?.fare_gen_fc}
@@ -1905,16 +1993,18 @@ const BookTicketPage = () => {
 
                                 {/** FC CLASS senior*/}
                                 <td>
-                                  {!t?.sfct_count_senior_fc ||
-                                  t?.sfct_count_senior_fc === "-" ? (
+                                  {!t?.seat_count_senior_fc ||
+                                  t?.seat_count_senior_fc === "-" ? (
                                     "-"
                                   ) : (
                                     <button
-                                      onClick={() => proceedToConfirm(t)}
+                                      onClick={() =>
+                                        proceedToConfirm(t, "FC", "SENIOR")
+                                      }
                                       className={`w-full h-full py-1 rounded hover:bg-indigo-600/20 hover:scale-105 active:scale-95 transition-all group/cell flex flex-col items-center justify-center`}
                                     >
                                       <div className="p-1 text-green-400 font-bold">
-                                        {t?.sfct_count_senior_fc}
+                                        {t?.seat_count_senior_fc}
                                         <p className="underline">AVAILABLE</p>
                                         <p className="text-blue-500">
                                           ₹ {t?.fare_senior_fc}
@@ -2080,5 +2170,4 @@ const BookTicketPage = () => {
     </div>
   );
 };
-
 export default BookTicketPage;

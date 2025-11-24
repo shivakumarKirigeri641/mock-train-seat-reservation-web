@@ -6,7 +6,7 @@ const TicketConfirmationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Retrieve state passed from ConfirmTicketPage
+  // Retrieve state passed from PassengerDetailsPage
   const { train, adults, children, mobile, pnr } = location.state || {};
 
   // Merge logic: If state exists, use it; otherwise fallback to placeholder
