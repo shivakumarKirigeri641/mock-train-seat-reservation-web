@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import calculateHalt from "../utils/calculateHalt";
 import { addstations } from "../store/slices/stationslistslice";
 import axios from "axios";
 import { useNavigate } from "react-router";
@@ -302,6 +303,7 @@ const BookTicketPage = () => {
         setTrains([]);
       } else {
         const fetchedTrains = result?.data?.data?.trains_list || [];
+        console.log(fetchedTrains);
         dispatch(update_trainslist(fetchedTrains));
         setTrains(fetchedTrains);
         setExpandedTrainId(fetchedTrains[0]?.train_number);
@@ -598,7 +600,7 @@ const BookTicketPage = () => {
                           </div>
                         </div>
                         <div className="flex flex-col items-center w-24">
-                          <span className="text-[10px] text-slate-300 mb-0.5 font-semibold">
+                          <span className="text-[12px] text-slate-300 mb-0.5 font-semibold">
                             {t?.journey_duration}
                           </span>
                           <div className="w-full h-0.5 bg-slate-700 relative">
@@ -813,6 +815,12 @@ const BookTicketPage = () => {
                     <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">
                       Halt
                     </th>
+                    <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">
+                      KM
+                    </th>
+                    <th className="py-3 px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Day
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-sm text-slate-300 divide-y divide-slate-800">
@@ -824,20 +832,33 @@ const BookTicketPage = () => {
                       <td className="py-2.5 px-4 text-slate-500 font-mono text-xs">
                         {s?.station_sequence}
                       </td>
-                      <td className="py-2.5 px-4 font-mono text-indigo-400">
+                      <td
+                        className={
+                          selected_source === s?.station_code ||
+                          selected_destination === s?.station_code
+                            ? "py-2.5 px-4 text-xl italic font-bold text-blue-400"
+                            : "py-2.5 px-4 font-mono text-indigo-400"
+                        }
+                      >
                         {s?.station_code}
                       </td>
                       <td className="py-2.5 px-4 font-medium text-white">
                         {s?.station_name}
                       </td>
                       <td className="py-2.5 px-4 text-right font-mono text-emerald-400">
-                        {s?.arrival_time}
+                        {s?.arrival}
                       </td>
                       <td className="py-2.5 px-4 text-right font-mono text-amber-400">
-                        {s?.departure_time}
+                        {s?.departure}
                       </td>
-                      <td className="py-2.5 px-4 text-right text-slate-500 text-xs">
-                        5m
+                      <td className="py-2.5 px-4 text-right text-slate-200 text-xs">
+                        {calculateHalt(s?.arrival, s?.departure)}
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-amber-400">
+                        {s?.kilometer}
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-amber-400">
+                        {s?.running_day}
                       </td>
                     </tr>
                   ))}
