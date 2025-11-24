@@ -181,7 +181,7 @@ const BookTicketPage = () => {
           withCredentials: true,
         });
         if (result?.data?.data) {
-          dispatch(addstations(result?.data?.data));
+          dispatch(addstations(result.data.data));
         }
       } catch (e) {
         console.log("Mock mode or API error");
@@ -663,11 +663,15 @@ const BookTicketPage = () => {
                             <tbody>
                               {CLASS_ROWS_ORDER.filter((c) => {
                                 const suffix = c.toLowerCase();
-                                // Filter logic updated: checking property existence instead of t.classes
-                                return (
-                                  t[`seat_count_gen_${suffix}`] !== undefined ||
-                                  t[`sfct_count_gen_${suffix}`] !== undefined
-                                );
+                                // CHECK: Only show this class row if at least one quota has a value other than '-'
+                                return QUOTA_KEYS.some((quotaKey) => {
+                                  const prefix = quotaKey.toLowerCase();
+                                  // Try both seat_count and seat_count prefixes just in case
+                                  const val =
+                                    t[`seat_count_${prefix}_${suffix}`] ||
+                                    t[`seat_count_${prefix}_${suffix}`];
+                                  return val && val !== "-";
+                                });
                               }).map((cls) => (
                                 <tr
                                   key={cls}
@@ -681,18 +685,21 @@ const BookTicketPage = () => {
                                     const suffix = cls.toLowerCase();
 
                                     const seatKey = `seat_count_${prefix}_${suffix}`;
-                                    const fareKey = `fare_${prefix}_${suffix}`;
+                                    const fareKey =
+                                      prefix === `ladies`
+                                        ? `fare_gen_${suffix}`
+                                        : `fare_${prefix}_${suffix}`;
 
                                     const seatData =
                                       t[seatKey] ||
-                                      t[`sfct_count_${prefix}_${suffix}`];
+                                      t[`seat_count_${prefix}_${suffix}`];
                                     const fareData = t[fareKey];
 
                                     const isAvail =
                                       seatData && seatData !== "-";
                                     const isWaitlist =
                                       seatData &&
-                                      seatData.toString().includes("WL");
+                                      seatData.toString().includes("WLT");
 
                                     return (
                                       <td
@@ -715,7 +722,7 @@ const BookTicketPage = () => {
                                             >
                                               {seatData}
                                             </span>
-                                            <span className="text-[10px] text-slate-500 font-mono group-hover:text-indigo-300">
+                                            <span className="text-[14px] text-blue-300 font-bold font-mono group-hover:text-indigo-300">
                                               ₹{fareData}
                                             </span>
                                           </button>
