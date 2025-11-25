@@ -192,6 +192,7 @@ const SummariseDetailsPage = () => {
           state: {
             booking: apiData.data.result_updated_bookingdetails,
             passengers: apiData.data.result_udpated_passengerdetails,
+            fare_details: apiData.data.fare_details,
           },
         });
 

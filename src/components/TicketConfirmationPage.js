@@ -50,11 +50,13 @@ const UserIcon = ({ className }) => (
 
 const TicketConfirmationPage = () => {
   const { state } = useLocation();
+  console.log(state);
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
 
   const booking = state?.booking;
   const passengers = state?.passengers || [];
+  const fare_details = state?.fare_details || {};
 
   // Page fade-in animation
   useEffect(() => {
@@ -99,53 +101,85 @@ const TicketConfirmationPage = () => {
             </span>
           </div>
 
-          {/* Main Details */}
-          <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-slate-300">
-            <div>
-              <p className="text-[11px] uppercase text-slate-500 font-bold">
-                PNR Number
-              </p>
-              <p className="text-xl font-mono text-emerald-400">
-                {booking.pnr}
-              </p>
-              <p className="text-sm text-slate-400 mt-1">
-                Status:{" "}
-                <span className="text-emerald-300 font-medium">
-                  {booking.pnr_status}
-                </span>
-              </p>
-            </div>
+          {/**train section */}
+          <div className="p-6">
+            <p className="text-[11px] uppercase text-slate-500 font-bold mb-3 flex items-center gap-2 ">
+              <TrainIcon className="w-4 h-4 text-slate-400" />
+              Mock train details
+            </p>
 
-            <div>
-              <p className="text-[11px] uppercase text-slate-500 font-bold">
-                Train No.
-              </p>
-              <p className="text-xl font-semibold">{booking.fktrain_number}</p>
-            </div>
-
-            <div>
-              <p className="text-[11px] uppercase text-slate-500 font-bold">
-                Journey Date
-              </p>
-              <p className="text-xl font-semibold">{booking.date_of_journey}</p>
+            <div className="border border-slate-700 rounded-lg overflow-hidden">
+              <div className="flex justify-around items-center p-2 bg-gradient-to-r from-violet-700 to-green-800">
+                <p>
+                  <span className="text-sm">PNR: </span>
+                  {booking?.pnr}
+                </p>
+                <p>PNR status:{booking?.pnr_status}</p>
+              </div>
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-800 text-slate-400 uppercase text-xs">
+                  <tr>
+                    <th className="px-4 py-3">Train number</th>
+                    <th className="px-4 py-3">Train name</th>
+                    <th className="px-4 py-3">Date of Journey</th>
+                    <th className="px-4 py-3">Source</th>
+                    <th className="px-4 py-3">Destination</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  <tr className="hover:bg-slate-800/40">
+                    <td className="px-4 py-3 text-white">
+                      {booking?.train_number}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {booking?.train_name}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {booking?.date_of_journey}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {booking?.source_name}({booking?.source_code})
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {booking?.destination_name}({booking?.destination_code})
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
+          {/**schedule section */}
+          <div className="p-6">
+            <p className="text-[11px] uppercase text-slate-500 font-bold mb-3 flex items-center gap-2">
+              <CheckIcon className="w-4 h-4 text-slate-400" />
+              Schedules & coach
+            </p>
 
-          {/* Route */}
-          <div className="px-6 pb-6">
-            <div className="bg-slate-900/40 rounded-lg p-4 border border-slate-700">
-              <p className="text-[10px] text-slate-500 uppercase font-bold mb-2">
-                Route
-              </p>
-              <p className="text-lg">
-                <span className="text-indigo-300 font-semibold">
-                  {booking.source_name}
-                </span>{" "}
-                ➜{" "}
-                <span className="text-indigo-300 font-semibold">
-                  {booking.destination_name}
-                </span>
-              </p>
+            <div className="border border-slate-700 rounded-lg overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-800 text-slate-400 capitalize text-xs">
+                  <tr>
+                    <th className="px-4 py-3">Scheduled departure</th>
+                    <th className="px-4 py-3">Plat form</th>
+                    <th className="px-4 py-3">Boarding at</th>
+                    <th className="px-4 py-3">Reservation type</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  <tr className="hover:bg-slate-800/40">
+                    <td className="px-4 py-3 text-white">
+                      {booking?.scheduled_departure}
+                    </td>
+                    <td className="px-4 py-3 text-white">-</td>
+                    <td className="px-4 py-3 text-white">
+                      {booking?.boarding_point}({booking?.boarding_point_name})
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {booking?.type_code}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -163,8 +197,9 @@ const TicketConfirmationPage = () => {
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Age</th>
                     <th className="px-4 py-3">Gender</th>
-                    <th className="px-4 py-3">Berth/Seat</th>
+                    <th className="px-4 py-3">Coach/Seat/Berth</th>
                     <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Seat status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
@@ -193,11 +228,71 @@ const TicketConfirmationPage = () => {
                           </span>
                         )}
                       </td>
+                      <td
+                        className={
+                          p.seat_status === "CNF"
+                            ? "px-4 py-3 text-green-500 font-bold"
+                            : "px-4 py-3 text-red-500 font-bold"
+                        }
+                      >
+                        {p.seat_status}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          </div>
+          {/* Fare Section */}
+          <div className="px-6 pb-6">
+            <p className="text-[11px] uppercase text-slate-500 font-bold mb-3 flex items-center gap-2">
+              <CheckIcon className="w-4 h-4 text-slate-400" />
+              Fare details
+            </p>
+
+            <div className="border border-slate-700 rounded-lg overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-800 text-slate-400 uppercase text-xs">
+                  <tr>
+                    <th className="px-4 py-3">Base fare</th>
+                    <th className="px-4 py-3">Total base fare</th>
+                    <th className="px-4 py-3">GST</th>
+                    <th className="px-4 py-3">Conveince fee</th>
+                    <th className="px-4 py-3">Gross fare</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  <tr className="hover:bg-slate-800/40">
+                    <td className="px-4 py-3 text-white">
+                      ₹
+                      {(fare_details?.base_fare / passengers?.length).toFixed(
+                        2
+                      )}{" "}
+                      X {passengers?.length}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      ₹{(fare_details?.base_fare).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {fare_details?.GST}%
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      {fare_details?.convience}%
+                    </td>
+                    <td className="px-4 py-3 text-white">
+                      ₹{fare_details?.gross_fare}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[11px] uppercase text-slate-300 font-bold m-2 flex items-center gap-3 text-center">
+              <CheckIcon className="w-4 h-4 text-slate-400" />
+              Mock ticket SMS sent to{" "}
+              <span className="text-blue-300 text-[16px] underline">
+                +91{booking.mobile_number}
+              </span>
+            </p>
           </div>
 
           {/* Footer */}
