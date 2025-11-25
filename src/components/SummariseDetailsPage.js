@@ -159,28 +159,52 @@ const SummariseDetailsPage = () => {
 
   // --- 4. Handle Payment ---
   const handleConfirmPayment = async () => {
-    setIsPaying(true);
+    setIsPaying(true); // Show fake payment animation
 
-    // PLACEHOLDER: Payment Gateway / Confirm Booking API
     try {
-      console.log("💸 Initiating Payment API...");
-      // const response = await axios.post("http://localhost:8888/confirm-payment", {
-      //    booking_id: booked_details.id,
-      //    amount: fare_details.gross_fare
-      // });
+      console.log("💸 Calling Confirm Payment API...");
 
-      // Simulate API delay
-      setTimeout(() => {
-        // Mark payment as successful so cleanup doesn't fire cancel logic
-        isPaymentSuccessRef.current = true;
+      // --- Your actual API call here ---
+      const response = await axios.post(
+        "http://localhost:8888/confirm-booking",
+        {
+          booking_id: booked_details.id,
+        }
+      );
 
+      // EXPECTED RESPONSE (from you):
+      // {
+      //   "result_updated_bookingdetails": { ... },
+      //   "result_udpated_passengerdetails": [ ... ],
+      //   "success-status": true/false,
+      //   "message": "something..."
+      // }
+
+      const apiData = response.data;
+      console.log("api:", apiData);
+      // --- CASE 1: Payment success ---
+      if (apiData.success === true) {
+        isPaymentSuccessRef.current = true; // prevents auto-cancel
         setIsPaying(false);
-        alert("Payment Successful! Booking Confirmed.");
-        navigate("/user-home");
-      }, 2000);
-    } catch (error) {
-      console.error("Payment failed", error);
+
+        // ⬇ Navigate to Confirmation Page with API data
+        navigate("/ticket-confirmation", {
+          state: {
+            booking: apiData.data.result_updated_bookingdetails,
+            passengers: apiData.data.result_udpated_passengerdetails,
+          },
+        });
+
+        return;
+      }
+
+      // --- CASE 2: Payment failed ---
       setIsPaying(false);
+      alert(apiData.message || "Payment failed. Try again.");
+    } catch (error) {
+      console.error("❌ Payment API error:", error);
+      setIsPaying(false);
+      alert("Server error. Try again after some time.");
     }
   };
 
@@ -366,21 +390,32 @@ const SummariseDetailsPage = () => {
 
               <div className="p-6 space-y-4">
                 <div className="flex justify-between text-sm text-slate-400">
-                  <span>Base Fare</span>
+                  <span>
+                    Total Fare X {passenger_details?.length} ₹(
+                    {fare_details.base_fare / passenger_details?.length})
+                  </span>
                   <span className="font-mono text-slate-200">
                     ₹{fare_details.base_fare}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-slate-400">
-                  <span>GST ({fare_details.GST})%</span>
+                  <span>GST ({fare_details.GST}%)</span>
                   <span className="font-mono text-slate-200">
-                    + ₹{(100 * fare_details.GST) / fare_details.base_fare}
+                    + ₹
+                    {(
+                      (fare_details.base_fare * fare_details.GST) /
+                      100
+                    ).toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-slate-400">
-                  <span>Convenience Fee ({fare_details.convience})%</span>
+                  <span>Convenience Fee ({fare_details.convience}%)</span>
                   <span className="font-mono text-slate-200">
-                    + ₹{(100 * fare_details.convience) / fare_details.base_fare}
+                    + ₹
+                    {(
+                      (fare_details.base_fare * fare_details.convience) /
+                      100
+                    ).toFixed(2)}
                   </span>
                 </div>
 
@@ -390,7 +425,7 @@ const SummariseDetailsPage = () => {
                       Gross Total
                     </span>
                     <span className="text-3xl font-bold text-emerald-400">
-                      ₹{fare_details.gross_fare}
+                      ₹{fare_details.gross_fare.toFixed(2)}
                     </span>
                   </div>
                 </div>
