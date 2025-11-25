@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import generateTicketPdf from "../utils/generateTicketPdf";
 
 // --- Icons ---
 const CheckIcon = ({ className }) => (
@@ -310,7 +311,9 @@ const TicketConfirmationPage = () => {
               Book another ticket
             </button>
             <button
-              onClick={() => alert("PDF generation will be implemented")}
+              onClick={() =>
+                generateTicketPdf(booking, passengers, fare_details)
+              }
               className="px-5 py-2 bg-green-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold shadow-lg"
             >
               Download Ticket (PDF)
