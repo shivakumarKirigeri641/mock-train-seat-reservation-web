@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import TicketConfirmationPage from "./components/TicketConfirmationPage";
+import SummarisePassengerDetailsPage from "./components/SummariseDetailsPage";
 import BookingHistoryPage from "./components/BookingHistoryPage";
 import PnrStatusPage from "./components/PnrStatusPage";
 import CancelTicketPage from "./components/CancelTicketPage";
@@ -46,6 +47,11 @@ const appRouter = createBrowserRouter([
       {
         path: "/book-ticket",
         element: <BookTicketPage />,
+      },
+      //
+      {
+        path: "/summarise-passenger-details",
+        element: <SummarisePassengerDetailsPage />,
       },
       {
         path: "/booking-history",

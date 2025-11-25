@@ -5,7 +5,6 @@ const trainScheduleSlice = createSlice({
   initialState: [],
   reducers: {
     update_trainSchedule: (state, action) => {
-      console.log("schedule:", action.payload);
       return action.payload;
     },
     remove_trainSchedule: (state, action) => {

@@ -2,7 +2,6 @@ import jsPDF from "jspdf";
 import { autoTable } from "jspdf-autotable";
 
 const generateTicketPdf = (ticketData) => {
-  console.log(ticketData);
   const doc = new jsPDF();
 
   // Title

@@ -11,6 +11,7 @@ import {
   update_source,
 } from "../store/slices/sourcedestinationdojSlice";
 import { update_trainSchedule } from "../store/slices/trainScheduleSlice";
+import PassengerDetailsPage from "./PassengerDetailsPage"; // Import the new modal
 
 // --- ICONS ---
 
@@ -77,10 +78,7 @@ const QUOTA_COLUMNS = [
   "LADIES",
   "SENIOR",
 ];
-// Keys used to build the dynamic property names (e.g., "TTL" -> "seat_count_ttl_sl")
 const QUOTA_KEYS = ["GEN", "TTL", "PTL", "LADIES", "SENIOR"];
-
-// Order of rows to display
 const CLASS_ROWS_ORDER = [
   "SL",
   "1A",
@@ -132,8 +130,9 @@ const BookTicketPage = () => {
   );
   const train_schedules = useSelector((store) => store?.trainSchedule);
 
-  // modal (schedules) state
-  const [modalTrain, setModalTrain] = useState(null);
+  // Modal States
+  const [modalTrain, setModalTrain] = useState(null); // For Route Schedule
+  const [bookingModalData, setBookingModalData] = useState(null); // For Passenger Details
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -141,7 +140,7 @@ const BookTicketPage = () => {
     return () => clearTimeout(t);
   }, []);
 
-  // fetch station suggestions
+  // ... (Keep existing fetchStations, useEffects for suggestions/loading stations) ...
   const fetchStations = async (q) => {
     if (!q || q?.length < 2) return [];
     try {
@@ -182,7 +181,7 @@ const BookTicketPage = () => {
           withCredentials: true,
         });
         if (result?.data?.data) {
-          dispatch(addstations(result.data.data));
+          dispatch(addstations(result?.data?.data));
         }
       } catch (e) {
         console.log("Mock mode or API error");
@@ -196,7 +195,6 @@ const BookTicketPage = () => {
     loadStations();
   }, []);
 
-  // keyboard navigation
   const onKeyDownSuggestions = (e) => {
     if (!suggestions.length) return;
     if (e.key === "ArrowDown") {
@@ -303,7 +301,6 @@ const BookTicketPage = () => {
         setTrains([]);
       } else {
         const fetchedTrains = result?.data?.data?.trains_list || [];
-        console.log(fetchedTrains);
         dispatch(update_trainslist(fetchedTrains));
         setTrains(fetchedTrains);
         setExpandedTrainId(fetchedTrains[0]?.train_number);
@@ -316,9 +313,41 @@ const BookTicketPage = () => {
     }
   };
 
-  const proceedToConfirm = (selectedTrain, coachtype, reservationtype) => {
-    navigate("/passenger-details", {
-      state: { selectedTrain, coachtype, reservationtype },
+  const proceedToConfirm = (
+    selectedTrain,
+    coachtype,
+    reservationtype,
+    basefare
+  ) => {
+    setBookingModalData({
+      selectedTrain,
+      coachtype,
+      reservationtype,
+      basefare,
+    });
+  };
+
+  const handleProceedToPay = async (finalBookingData) => {
+    setBookingModalData(null);
+    console.log(finalBookingData);
+    // Navigate to Confirmation Page here if needed
+    const result = await axios.post(
+      "http://localhost:8888/proceed-booking",
+      {
+        train_number: finalBookingData?.train?.train_number,
+        doj: finalBookingData?.date,
+        coach_type: finalBookingData?.coachtype,
+        source_code: finalBookingData?.train?.source_code,
+        destination_code: finalBookingData?.train?.destination_code,
+        mobile_number: finalBookingData?.contact,
+        reservation_type: finalBookingData?.reservationtype,
+        passenger_details: finalBookingData?.passenger_details,
+      },
+      { withCredentials: true }
+    );
+    //call api, whatever reponse you get, you pass that as in summarize details
+    navigate("/summarise-passenger-details", {
+      state: result?.data?.data,
     });
   };
 
@@ -338,7 +367,6 @@ const BookTicketPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-indigo-500 selection:text-white relative">
-      {/* Background Elements */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-indigo-900/20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-blue-900/20 rounded-full blur-3xl"></div>
@@ -349,7 +377,6 @@ const BookTicketPage = () => {
           mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         }`}
       >
-        {/* Compact Header */}
         <header className="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -372,10 +399,8 @@ const BookTicketPage = () => {
           </button>
         </header>
 
-        {/* Professional Search Bar */}
         <section className="bg-[#1e293b] rounded-lg shadow-xl border border-slate-700 p-1 mb-8 relative z-20">
           <div className="flex flex-col md:flex-row gap-0.5">
-            {/* Source Input */}
             <div className="flex-1 relative group" ref={dropdownRef}>
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors">
                 <span className="text-[10px] uppercase font-bold block leading-none mb-0.5">
@@ -414,7 +439,6 @@ const BookTicketPage = () => {
               )}
             </div>
 
-            {/* Swap Button (Embedded) */}
             <div className="relative md:w-0">
               <button
                 onClick={swapSrcDest}
@@ -424,7 +448,6 @@ const BookTicketPage = () => {
               </button>
             </div>
 
-            {/* Destination Input */}
             <div className="flex-1 relative group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors">
                 <span className="text-[10px] uppercase font-bold block leading-none mb-0.5">
@@ -463,7 +486,6 @@ const BookTicketPage = () => {
               )}
             </div>
 
-            {/* Date Input */}
             <div className="md:w-48 relative group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors pointer-events-none">
                 <span className="text-[10px] uppercase font-bold block leading-none mb-0.5">
@@ -484,7 +506,6 @@ const BookTicketPage = () => {
               />
             </div>
 
-            {/* Search Button */}
             <div className="md:w-40">
               <button
                 ref={searchRef}
@@ -504,7 +525,6 @@ const BookTicketPage = () => {
           </div>
         </section>
 
-        {/* RESULTS AREA */}
         <section className="relative z-10 min-h-[400px]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -547,12 +567,10 @@ const BookTicketPage = () => {
                         : "border-slate-700"
                     } rounded-lg overflow-hidden transition-all duration-200`}
                   >
-                    {/* TRAIN HEADER ROW */}
                     <div
                       onClick={() => toggleAccordion(t?.train_number)}
                       className="p-4 flex flex-col md:flex-row items-start md:items-center gap-4 cursor-pointer hover:bg-slate-800/50 transition-colors group"
                     >
-                      {/* 1. Train Info */}
                       <div className="flex-1 min-w-[200px]">
                         <div className="flex items-center gap-3 mb-1">
                           <h4 className="text-2x font-bold text-white group-hover:text-indigo-400 transition-colors">
@@ -589,7 +607,6 @@ const BookTicketPage = () => {
                         </div>
                       </div>
 
-                      {/* 2. Times & Duration */}
                       <div className="flex items-center gap-6 md:px-8 flex-1 justify-start md:justify-center border-l border-r border-slate-700/50 h-full">
                         <div className="text-center">
                           <div className="text-2x font-bold text-white">
@@ -600,7 +617,7 @@ const BookTicketPage = () => {
                           </div>
                         </div>
                         <div className="flex flex-col items-center w-24">
-                          <span className="text-[12px] text-slate-300 mb-0.5 font-semibold">
+                          <span className="text-[10px] text-slate-300 mb-0.5 font-semibold">
                             {t?.journey_duration}
                           </span>
                           <div className="w-full h-0.5 bg-slate-700 relative">
@@ -618,7 +635,6 @@ const BookTicketPage = () => {
                         </div>
                       </div>
 
-                      {/* 3. Actions */}
                       <div className="flex items-center gap-3 justify-end min-w-[140px]">
                         <button
                           onClick={(e) => {
@@ -642,7 +658,6 @@ const BookTicketPage = () => {
                       </div>
                     </div>
 
-                    {/* EXPANDED SEAT MATRIX */}
                     {isExpanded && (
                       <div className="border-t border-slate-700 bg-[#162032] p-4 animate-fade-in">
                         <div className="overflow-x-auto">
@@ -665,10 +680,8 @@ const BookTicketPage = () => {
                             <tbody>
                               {CLASS_ROWS_ORDER.filter((c) => {
                                 const suffix = c.toLowerCase();
-                                // CHECK: Only show this class row if at least one quota has a value other than '-'
                                 return QUOTA_KEYS.some((quotaKey) => {
                                   const prefix = quotaKey.toLowerCase();
-                                  // Try both seat_count and seat_count prefixes just in case
                                   const val =
                                     t[`seat_count_${prefix}_${suffix}`] ||
                                     t[`seat_count_${prefix}_${suffix}`];
@@ -711,7 +724,12 @@ const BookTicketPage = () => {
                                         {isAvail ? (
                                           <button
                                             onClick={() =>
-                                              proceedToConfirm(t, cls, quotaKey)
+                                              proceedToConfirm(
+                                                t,
+                                                cls,
+                                                quotaKey,
+                                                t[`fare_${prefix}_${suffix}`]
+                                              )
                                             }
                                             className="w-full py-1.5 rounded border border-transparent hover:border-indigo-500/50 hover:bg-indigo-500/10 group transition-all flex flex-col items-center justify-center gap-0.5"
                                           >
@@ -753,9 +771,14 @@ const BookTicketPage = () => {
 
       {/* SCHEDULE MODAL */}
       {modalTrain && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-[#1e293b] w-full max-w-2xl rounded-lg shadow-2xl border border-slate-700 flex flex-col max-h-[80vh] animate-slide-up">
-            {/* Modal Header */}
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in"
+          onClick={() => setModalTrain(null)}
+        >
+          <div
+            className="bg-[#1e293b] w-full max-w-2xl rounded-lg shadow-2xl border border-slate-700 flex flex-col max-h-[80vh] animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="px-6 py-4 border-b border-slate-700 flex justify-between items-start bg-slate-800/50 rounded-t-lg">
               <div>
                 <h3 className="text-xl font-bold text-white">
@@ -791,8 +814,6 @@ const BookTicketPage = () => {
                 </svg>
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-0">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-900 sticky top-0 z-10 shadow-sm">
@@ -834,15 +855,22 @@ const BookTicketPage = () => {
                       </td>
                       <td
                         className={
-                          selected_source === s?.station_code ||
-                          selected_destination === s?.station_code
-                            ? "py-2.5 px-4 text-xl italic font-bold text-blue-400"
+                          selected_source?.code === s?.station_code ||
+                          selected_destination?.code === s?.station_code
+                            ? "py-2.5 px-4 text-sm italic font-bold text-yellow-400"
                             : "py-2.5 px-4 font-mono text-indigo-400"
                         }
                       >
                         {s?.station_code}
                       </td>
-                      <td className="py-2.5 px-4 font-medium text-white">
+                      <td
+                        className={
+                          selected_source?.code === s?.station_code ||
+                          selected_destination?.code === s?.station_code
+                            ? "py-2.5 px-4 font-medium text-yellow-400 italic"
+                            : "py-2.5 px-4 font-medium text-white"
+                        }
+                      >
                         {s?.station_name}
                       </td>
                       <td className="py-2.5 px-4 text-right font-mono text-emerald-400">
@@ -878,6 +906,14 @@ const BookTicketPage = () => {
           </div>
         </div>
       )}
+
+      {/* PASSENGER DETAILS MODAL */}
+      <PassengerDetailsPage
+        isOpen={!!bookingModalData}
+        onClose={() => setBookingModalData(null)}
+        bookingDetails={bookingModalData}
+        onProceedToPay={handleProceedToPay}
+      />
     </div>
   );
 };
