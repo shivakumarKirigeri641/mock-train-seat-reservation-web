@@ -1,8 +1,10 @@
 import ReactDOM from "react-dom/client";
+import Layout from "./components/Layout";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import TicketConfirmationPage from "./components/TicketConfirmationPage";
 import SummarisePassengerDetailsPage from "./components/SummariseDetailsPage";
 import BookingHistoryPage from "./components/BookingHistoryPage";
+import Dashboard from "./components/Dashboard";
 import PnrStatusPage from "./components/PnrStatusPage";
 import CancelTicketPage from "./components/CancelTicketPage";
 import HomePage from "./components/HomePage";
@@ -32,64 +34,31 @@ const appRouter = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
+      { path: "/", element: <LoginPage /> },
+
+      // Wrap authenticated / main pages with Layout
       {
-        path: "/",
-        element: <HomePage />,
+        element: <Layout />,
+        children: [
+          { path: "/user-home", element: <Dashboard /> },
+          { path: "/book-ticket", element: <BookTicketPage /> },
+          { path: "/booking-history", element: <BookingHistoryPage /> },
+          { path: "/pnr-status", element: <PnrStatusPage /> },
+          { path: "/confirm-ticket", element: <PassengerDetailsPage /> },
+          { path: "/passenger-details", element: <PassengerDetailsPage /> },
+          { path: "/cancel-ticket", element: <CancelTicketPage /> },
+          { path: "/profile", element: <ProfilePage /> },
+          {
+            path: "/summarise-passenger-details",
+            element: <SummarisePassengerDetailsPage />,
+          },
+          { path: "/ticket-confirmation", element: <TicketConfirmationPage /> },
+        ],
       },
-      {
-        path: "/login",
-        element: <LoginPage />,
-      },
-      {
-        path: "/user-home",
-        element: <UserHomePage />,
-      },
-      {
-        path: "/book-ticket",
-        element: <BookTicketPage />,
-      },
-      //
-      {
-        path: "/summarise-passenger-details",
-        element: <SummarisePassengerDetailsPage />,
-      },
-      {
-        path: "/booking-history",
-        element: <BookingHistoryPage />,
-      },
-      {
-        path: "/pnr-status",
-        element: <PnrStatusPage />,
-      },
-      {
-        path: "/confirm-ticket",
-        element: <PassengerDetailsPage />,
-      },
-      {
-        path: "/passenger-details",
-        element: <PassengerDetailsPage />,
-      },
-      {
-        path: "/cancel-ticket",
-        element: <CancelTicketPage />,
-      },
-      {
-        path: "/profile",
-        element: <ProfilePage />,
-      },
-      {
-        path: "/privacy-policy",
-        element: <PrivacyPolicy />,
-      },
-      //ticket-confirmation
-      {
-        path: "/ticket-confirmation",
-        element: <TicketConfirmationPage />,
-      },
-      {
-        path: "/terms-and-conditions",
-        element: <TermsAndConditions />,
-      },
+
+      // keep public/legal pages accessible (they don't need header)
+      { path: "/privacy-policy", element: <PrivacyPolicy /> },
+      { path: "/terms-and-conditions", element: <TermsAndConditions /> },
     ],
     errorElement: <Error />,
   },
