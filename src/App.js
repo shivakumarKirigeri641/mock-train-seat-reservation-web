@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom/client";
+import LogoutPage from "./components/LogoutPage";
 import Layout from "./components/Layout";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import TicketConfirmationPage from "./components/TicketConfirmationPage";
@@ -7,19 +8,16 @@ import BookingHistoryPage from "./components/BookingHistoryPage";
 import Dashboard from "./components/Dashboard";
 import PnrStatusPage from "./components/PnrStatusPage";
 import CancelTicketPage from "./components/CancelTicketPage";
-import HomePage from "./components/HomePage";
 import BookTicketPage from "./components/BookTicketPage";
 import Error from "./components/Error";
 import ProfilePage from "./components/ProfilePage";
 import LoginPage from "./components/LoginPage";
-import UserHomePage from "./components/UserHomePage";
-import GenericHeader from "./components/GenericHeader";
-import Footer from "./components/Footer";
 import TermsAndConditions from "./components/TermsAndConditions";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import PassengerDetailsPage from "./components/PassengerDetailsPage";
 import { Provider } from "react-redux";
 import appStore from "./store/appStore";
+import APIDocumentationPage from "./components/APIDocumentationPage";
 const App = () => {
   return (
     <Provider store={appStore}>
@@ -35,6 +33,7 @@ const appRouter = createBrowserRouter([
     element: <App />,
     children: [
       { path: "/", element: <LoginPage /> },
+      { path: "/logout", element: <LogoutPage /> },
 
       // Wrap authenticated / main pages with Layout
       {
@@ -53,6 +52,7 @@ const appRouter = createBrowserRouter([
             element: <SummarisePassengerDetailsPage />,
           },
           { path: "/ticket-confirmation", element: <TicketConfirmationPage /> },
+          { path: "/api-documentation", element: <APIDocumentationPage /> },
         ],
       },
 

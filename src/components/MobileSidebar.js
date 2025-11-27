@@ -17,6 +17,11 @@ const menuItems = [
   { label: "Booking History", path: "/booking-history", icon: <FiClock /> },
   { label: "PNR Status", path: "/pnr-status", icon: <FiSearch /> },
   { label: "Cancel Ticket", path: "/cancel-ticket", icon: <FiMessageCircle /> },
+  {
+    label: "API documentation",
+    path: "/api-documentation",
+    icon: <FiBookOpen />,
+  },
   { label: "Profile", path: "/profile", icon: <FiUser /> },
 ];
 

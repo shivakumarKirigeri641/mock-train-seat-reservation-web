@@ -3,37 +3,47 @@ import React from "react";
 
 const Dashboard = () => {
   return (
-    <div className="text-gray-200">
+    <div className="text-gray-900 dark:text-gray-100">
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg">
-          <p className="text-xs text-gray-400 uppercase">Total Bookings</p>
-          <h3 className="text-2xl font-bold mt-1">0</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fadeIn">
+        {/* Total Bookings */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+            Total Bookings
+          </p>
+          <h3 className="text-3xl font-bold mt-2">0</h3>
         </div>
 
-        <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg">
-          <p className="text-xs text-gray-400 uppercase">Wallet Balance</p>
-          <h3 className="text-2xl font-bold mt-1">₹15,000</h3>
+        {/* Recent Bookings Count */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+            Recent Bookings
+          </p>
+          <h3 className="text-3xl font-bold mt-2">0</h3>
         </div>
 
-        <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg">
-          <p className="text-xs text-gray-400 uppercase">System Status</p>
-          <h3 className="text-green-400 font-bold mt-1">Operational</h3>
+        {/* Today Count */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
+            Booking Count (Today)
+          </p>
+          <h3 className="text-3xl font-bold mt-2">0</h3>
         </div>
       </div>
 
       {/* Recent Bookings */}
-      <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden mb-8">
-        <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md overflow-hidden animate-slideUp">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h3 className="text-lg font-semibold">Recent Bookings</h3>
-          <p className="text-sm text-gray-400">0 records</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">0 records</p>
         </div>
 
-        {/* No bookings placeholder */}
-        <div className="p-6 flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-24 h-24 bg-gray-700/50 rounded-full flex items-center justify-center mb-4">
+        {/* Empty State */}
+        <div className="p-8 flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4 animate-pop">
             <svg
-              className="w-12 h-12 text-gray-500"
+              className="w-10 h-10 text-gray-400 dark:text-gray-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -46,42 +56,11 @@ const Dashboard = () => {
               />
             </svg>
           </div>
+
           <h4 className="text-lg font-medium">No bookings found</h4>
-          <p className="text-gray-400 max-w-sm mt-2 mb-6">
-            You haven't made any mock bookings yet.
+          <p className="text-gray-500 dark:text-gray-400 max-w-sm mt-2">
+            You haven't made any bookings yet.
           </p>
-        </div>
-      </div>
-
-      {/* Right column info (same as your earlier page) */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-80 flex flex-col gap-6">
-          <div className="bg-indigo-900/20 border border-indigo-500/20 rounded-2xl p-5">
-            <h4 className="font-bold text-indigo-300 mb-3 flex items-center gap-2">
-              Dev Note
-            </h4>
-            <p className="text-sm text-indigo-200/80">
-              Mock PNRs expire automatically in 24 hours.
-            </p>
-          </div>
-
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-5">
-            <h4 className="font-bold text-white mb-4">Travel Advisory</h4>
-            <ul className="space-y-4">
-              <li className="flex gap-3">
-                <div className="mt-1 w-2 h-2 rounded-full bg-yellow-500"></div>
-                <div className="text-sm text-gray-400">
-                  Fog alert in North India, expect 2–3 hour delays.
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <div className="mt-1 w-2 h-2 rounded-full bg-blue-500"></div>
-                <div className="text-sm text-gray-400">
-                  Scheduled maintenance: 2AM–4AM tonight.
-                </div>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
