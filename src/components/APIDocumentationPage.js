@@ -10,15 +10,17 @@ import {
   Code,
   Box,
   Terminal,
+  Sun,
+  Moon,
 } from "lucide-react";
 
-// --- API Data Definitions ---
+// ---------------- API DATA DEFINITIONS (All endpoints included) ----------------
 const apiData = [
   {
     id: "stations",
     title: "Get Stations",
     method: "GET",
-    endpoint: "/<apikey>/stations",
+    endpoint: "/stations",
     description:
       "Retrieve a comprehensive list of all available train stations.",
     response: {
@@ -31,7 +33,7 @@ const apiData = [
           code: "ACND",
           station_name: "A N DEV NAGAR",
           zone: "NR",
-          address: "Amanigunj, Faizabad, Uttar Pradesh, In..",
+          address: "Amanigunj, Faizabad, Uttar Pradesh, India",
         },
         {
           id: 338,
@@ -47,7 +49,7 @@ const apiData = [
     id: "coach-type",
     title: "Get Coach Types",
     method: "GET",
-    endpoint: "/<apikey>/coach-type",
+    endpoint: "/coach-type",
     description:
       "Fetch all available coach class types (e.g., First AC, Second AC).",
     response: {
@@ -65,7 +67,7 @@ const apiData = [
     id: "reservation-type",
     title: "Get Reservation Types",
     method: "GET",
-    endpoint: "/<apikey>/reservation-type",
+    endpoint: "/reservation-type",
     description: "Fetch all reservation categories (e.g., General, Tatkal).",
     response: {
       status: 200,
@@ -82,7 +84,7 @@ const apiData = [
     id: "search-trains",
     title: "Search Trains",
     method: "POST",
-    endpoint: "/<apikey>/search-trains",
+    endpoint: "/search-trains",
     description:
       "Search for available trains between source and destination stations.",
     body: {
@@ -122,7 +124,7 @@ const apiData = [
     id: "proceed-booking",
     title: "Proceed Booking",
     method: "POST",
-    endpoint: "/<apikey>/proceed-booking",
+    endpoint: "/proceed-booking",
     description:
       "Summarize booking details and generate a booking ID before confirmation.",
     note: "This API is called after summarizing passenger details.",
@@ -158,7 +160,7 @@ const apiData = [
     id: "confirm-booking",
     title: "Confirm & Pay",
     method: "POST",
-    endpoint: "/<apikey>/confirm-booking",
+    endpoint: "/confirm-booking",
     description:
       "Confirm the booking and process payment using the Booking ID.",
     body: {
@@ -189,7 +191,7 @@ const apiData = [
     id: "pnr-status",
     title: "PNR Status",
     method: "POST",
-    endpoint: "/<apikey>/pnr-status",
+    endpoint: "/pnr-status",
     description: "Check the current status of a PNR.",
     body: {
       pnr: "PNR001527",
@@ -210,7 +212,7 @@ const apiData = [
     id: "cancel-ticket",
     title: "Cancel Ticket",
     method: "POST",
-    endpoint: "/<apikey>/cancel-ticket",
+    endpoint: "/cancel-ticket",
     description: "Cancel specific passengers from a booked ticket.",
     body: {
       pnr: "PNR001527",
@@ -264,7 +266,7 @@ const apiData = [
     id: "live-train-status",
     title: "Live Train Status",
     method: "POST",
-    endpoint: "/apikey/live-train-running-status",
+    endpoint: "/live-train-running-status",
     description:
       "Get the current running status and location of a specific train.",
     body: {
@@ -326,28 +328,26 @@ const apiData = [
   },
 ];
 
-// --- Utility Components ---
+// ---------------- UTILITY COMPONENTS ----------------
 
 const JsonViewer = ({ data, title }) => {
   const [copied, setCopied] = useState(false);
-
   const handleCopy = () => {
     const text = JSON.stringify(data, null, 2);
-    // Use modern clipboard API if available, fallback handled gracefully by UI state
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
   };
 
   return (
-    <div className="mt-4 rounded-lg overflow-hidden border border-slate-700 bg-[#0f172a] shadow-sm">
+    <div className="mt-4 rounded-lg overflow-hidden border border-slate-700 bg-[#0f172a] shadow-sm animate-in fade-in duration-700">
       <div className="flex items-center justify-between px-4 py-2 bg-slate-800/50 border-b border-slate-700">
         <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">
           {title}
         </span>
+
         <button
           onClick={handleCopy}
           className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
@@ -360,45 +360,33 @@ const JsonViewer = ({ data, title }) => {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
+
       <div className="p-4 overflow-x-auto">
         <pre className="text-sm font-mono leading-relaxed">
-          {JSON.stringify(data, null, 2)
-            .split("\n")
-            .map((line, i) => (
-              <div key={i} className="table-row">
-                <span className="table-cell text-slate-500 select-none pr-4 text-right w-8">
-                  {i + 1}
-                </span>
-                <span className="table-cell">
-                  <SyntaxHighlight line={line} />
-                </span>
-              </div>
-            ))}
+          {JSON.stringify(data, null, 2)}
         </pre>
       </div>
     </div>
   );
 };
 
-// Simple syntax highlighting component
 const SyntaxHighlight = ({ line }) => {
-  // Very basic regex to split keys and values for visual coloring
   const parts = line.split(/(".*?"|:|\d+|true|false|null)/g).filter(Boolean);
 
   return (
     <span>
       {parts.map((part, index) => {
-        let color = "text-slate-300"; // default punctuation
+        let color = "text-slate-300";
         if (part.startsWith('"')) {
           if (line.trim().startsWith(part) && line.includes(":")) {
-            color = "text-sky-400"; // keys
+            color = "text-sky-400";
           } else {
-            color = "text-emerald-400"; // string values
+            color = "text-emerald-400";
           }
         } else if (!isNaN(Number(part))) {
-          color = "text-orange-400"; // numbers
+          color = "text-orange-400";
         } else if (["true", "false", "null"].includes(part)) {
-          color = "text-rose-400"; // booleans
+          color = "text-rose-400";
         }
         return (
           <span key={index} className={color}>
@@ -428,13 +416,31 @@ const MethodBadge = ({ method }) => {
   );
 };
 
-// --- Main Layout Component ---
+// ---------------- MAIN COMPONENT ----------------
 
 const APIDocumentationPage = () => {
   const [activeId, setActiveId] = useState(apiData[0].id);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const activeApi = apiData.find((api) => api.id === activeId) || apiData[0];
+
+  // Enhancements state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [copiedKey, setCopiedKey] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+
+  const [tryBody, setTryBody] = useState(
+    activeApi.body ? JSON.stringify(activeApi.body, null, 2) : ""
+  );
+  const [tryResponse, setTryResponse] = useState(null);
+  const [tryLoading, setTryLoading] = useState(false);
+
+  const baseURL = "https://yourdomain.com";
+
+  useEffect(() => {
+    setTryBody(activeApi.body ? JSON.stringify(activeApi.body, null, 2) : "");
+    setTryResponse(null);
+  }, [activeId]); // reset try panel when switching endpoints
 
   const scrollToSection = (id) => {
     setActiveId(id);
@@ -442,50 +448,163 @@ const APIDocumentationPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const sendTryRequest = async () => {
+    setTryLoading(true);
+    setTryResponse(null);
+
+    try {
+      if (!apiKey) {
+        throw new Error("Please enter your API key in the top input.");
+      }
+
+      const url = `${baseURL}/${apiKey}/api${activeApi.endpoint}`;
+      const options = {
+        method: activeApi.method,
+        headers: { "Content-Type": "application/json" },
+        body: activeApi.body ? tryBody : null,
+      };
+
+      // If GET method, remove body
+      if (activeApi.method === "GET") delete options.body;
+
+      const res = await fetch(url, options);
+      const text = await res.text();
+      // try parsing JSON, fallback to raw text
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = { raw: text, status: res.status };
+      }
+      setTryResponse(parsed);
+    } catch (err) {
+      setTryResponse({ error: err.message });
+    } finally {
+      setTryLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 p-4 md:p-8 text-gray-100 selection:bg-indigo-500 selection:text-white font-sans">
-      {/* Navbar */}
+    <div
+      className={`${
+        darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+      } min-h-screen p-4 md:p-8 transition-colors duration-500`}
+    >
+      {/* API Key Input */}
+      <div className="max-w-xl mx-auto mb-10 p-4 rounded-xl bg-slate-800/50 border border-slate-700 backdrop-blur animate-in fade-in duration-700">
+        <label className="text-sm text-slate-300">Your API Key</label>
+        <div className="flex mt-2 gap-2">
+          <input
+            type="text"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter your API key…"
+            className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
+          <button
+            onClick={() => {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(apiKey);
+                setCopiedKey(true);
+                setTimeout(() => setCopiedKey(false), 1500);
+              }
+            }}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white"
+          >
+            {copiedKey ? "Copied" : "Copy"}
+          </button>
+        </div>
+      </div>
+
+      {/* HERO */}
+      <section className="w-full mb-10 animate-in fade-in duration-700">
+        <div className="max-w-5xl mx-auto text-center py-12 px-4 rounded-2xl bg-gradient-to-br from-indigo-700/30 via-purple-700/20 to-slate-900 border border-slate-700 shadow-xl backdrop-blur">
+          <h1 className="text-4xl md:text-5xl font-extrabold flex justify-center items-center gap-3 text-white">
+            <Server className="w-10 h-10 text-indigo-400 animate-pulse" />
+            Train Reservation API
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-slate-300">
+            Fast, secure and developer-friendly API to access stations, train
+            schedules, bookings, PNR status, cancellations, and live train
+            updates.
+          </p>
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <div className="p-5 rounded-xl bg-slate-800/40 border border-slate-700 hover:bg-slate-800/60 transition-all duration-300 group">
+              <div className="flex items-center gap-3 mb-2">
+                <Globe className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                <h3 className="text-white font-semibold">RESTful Design</h3>
+              </div>
+              <p className="text-slate-400 text-sm">
+                Clear endpoints, predictable structure, developer-first output.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-slate-800/40 border border-slate-700 hover:bg-slate-800/60 transition-all duration-300 group">
+              <div className="flex items-center gap-3 mb-2">
+                <Terminal className="text-purple-400 group-hover:scale-110 transition-transform" />
+                <h3 className="text-white font-semibold">JSON Responses</h3>
+              </div>
+              <p className="text-slate-400 text-sm">
+                Every endpoint returns clean, well-structured JSON.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-slate-800/40 border border-slate-700 hover:bg-slate-800/60 transition-all duration-300 group">
+              <div className="flex items-center gap-3 mb-2">
+                <Code className="text-emerald-400 group-hover:scale-110 transition-transform" />
+                <h3 className="text-white font-semibold">Easy Integration</h3>
+              </div>
+              <p className="text-slate-400 text-sm">
+                Perfect for apps, dashboards, chatbots, and automation flows.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* LAYOUT */}
       <div className="flex">
-        {/* Sidebar Navigation */}
+        {/* Sidebar */}
         <aside
-          className={`
-            fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-72 bg-[#0b1120] border-r border-slate-800 
-            overflow-y-auto transition-transform duration-300 z-40
-            ${
-              mobileMenuOpen
-                ? "translate-x-0"
-                : "-translate-x-full lg:translate-x-0"
-            }
-          `}
+          className={`fixed lg:sticky top-16 left-0 h-[calc(100vh-4rem)] w-72 bg-[#0b1120] border-r border-slate-800 overflow-y-auto transition-transform duration-300 z-40 ${
+            mobileMenuOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }`}
         >
           <div className="p-4 space-y-8">
-            <div>
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 px-2">
-                Endpoints
-              </h3>
-              <nav className="space-y-1">
-                {apiData.map((api) => (
+            <input
+              type="text"
+              placeholder="Search endpoints..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-lg bg-slate-900 border border-slate-700 text-slate-300"
+            />
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 px-2">
+              Endpoints
+            </h3>
+            <nav className="space-y-1">
+              {apiData
+                .filter((api) =>
+                  api.title.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((api) => (
                   <button
                     key={api.id}
                     onClick={() => scrollToSection(api.id)}
-                    className={`
-                      w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all
-                      ${
-                        activeId === api.id
-                          ? "bg-slate-800 text-indigo-400 font-medium"
-                          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-                      }
-                    `}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
+                      activeId === api.id
+                        ? "bg-slate-800 text-indigo-400 font-medium"
+                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                    }`}
                   >
                     <span
-                      className={`
-                      text-[10px] font-bold w-10 text-center py-0.5 rounded border
-                      ${
+                      className={`text-[10px] font-bold w-10 text-center py-0.5 rounded border ${
                         api.method === "GET"
                           ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
                           : "text-blue-400 border-blue-500/30 bg-blue-500/10"
-                      }
-                    `}
+                      }`}
                     >
                       {api.method}
                     </span>
@@ -498,16 +617,14 @@ const APIDocumentationPage = () => {
                     )}
                   </button>
                 ))}
-              </nav>
-            </div>
+            </nav>
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 w-full min-w-0 px-4 lg:px-12 py-8 lg:py-12">
+        {/* Main */}
+        <main className="flex-1 w-full min-w-0 px-4 lg:px-12 py-8">
           <div className="max-w-4xl mx-auto space-y-12">
-            {/* Header Section for Active API */}
-            <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="space-y-6 animate-in fade-in duration-700">
               <div className="flex flex-col gap-4 border-b border-slate-800 pb-8">
                 <div className="flex items-center gap-3">
                   <MethodBadge method={activeApi.method} />
@@ -515,18 +632,18 @@ const APIDocumentationPage = () => {
                     {activeApi.title}
                   </h2>
                 </div>
+
                 <p className="text-slate-400 text-lg leading-relaxed">
                   {activeApi.description}
                 </p>
+
                 <div className="flex items-center gap-2 p-3 bg-slate-900/50 rounded-lg border border-slate-800 font-mono text-sm text-slate-300 break-all">
                   <Server size={16} className="text-slate-500 shrink-0" />
-                  <span className="text-indigo-400 select-all">
-                    {activeApi.endpoint}
-                  </span>
+                  <span className="text-indigo-400 select-all">{`${baseURL}/${apiKey}/api${activeApi.endpoint}`}</span>
                 </div>
               </div>
 
-              {/* Request Parameters Section */}
+              {/* Request */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-slate-100 font-semibold">
                   <Box size={18} className="text-indigo-500" />
@@ -538,7 +655,30 @@ const APIDocumentationPage = () => {
                     <p className="text-sm text-slate-400">
                       The request body should be formatted as JSON.
                     </p>
-                    <JsonViewer data={activeApi.body} title="Payload Example" />
+                    <div className="mt-4 rounded-lg overflow-hidden border border-slate-700 bg-[#0f172a] shadow-sm">
+                      <div className="flex items-center justify-between px-4 py-2 bg-slate-800/50 border-b border-slate-700">
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">
+                          Payload Example
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(
+                                JSON.stringify(activeApi.body, null, 2)
+                              );
+                            }
+                          }}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
+                        >
+                          <Copy size={14} /> Copy
+                        </button>
+                      </div>
+                      <div className="p-4 overflow-x-auto">
+                        <pre className="text-sm font-mono leading-relaxed">
+                          {JSON.stringify(activeApi.body, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 rounded-lg bg-slate-800/30 border border-slate-800/50 text-sm text-slate-400 italic">
@@ -548,7 +688,7 @@ const APIDocumentationPage = () => {
                 )}
               </div>
 
-              {/* Response Section */}
+              {/* Response */}
               <div className="space-y-4 pt-4">
                 <div className="flex items-center gap-2 text-slate-100 font-semibold">
                   <Code size={18} className="text-emerald-500" />
@@ -558,21 +698,87 @@ const APIDocumentationPage = () => {
                 <div className="space-y-4">
                   <div className="flex gap-4 text-xs font-mono">
                     <span className="flex items-center gap-1.5 text-emerald-400">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                       200 OK
                     </span>
                     <span className="text-slate-500">application/json</span>
                   </div>
-                  <JsonViewer
-                    data={activeApi.response}
-                    title="Response Example"
-                  />
-                  {activeApi.note && (
-                    <div className="mt-4 p-4 border-l-4 border-amber-500/50 bg-amber-500/5 rounded-r-lg text-sm text-amber-200/80">
-                      <strong>Note:</strong> {activeApi.note}
+
+                  <div className="mt-4 rounded-lg overflow-hidden border border-slate-700 bg-[#0f172a] shadow-sm animate-in fade-in duration-700">
+                    <div className="flex items-center justify-between px-4 py-2 bg-slate-800/50 border-b border-slate-700">
+                      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">
+                        Response Example
+                      </span>
+                      <button
+                        onClick={() => {
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(
+                              JSON.stringify(activeApi.response, null, 2)
+                            );
+                          }
+                        }}
+                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
+                      >
+                        <Copy size={14} /> Copy
+                      </button>
                     </div>
-                  )}
+                    <div className="p-4 overflow-x-auto">
+                      <pre className="text-sm font-mono leading-relaxed">
+                        {JSON.stringify(activeApi.response, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Try It Panel */}
+              <div className="mt-10 p-6 rounded-xl bg-slate-800/50 border border-slate-700 space-y-4 animate-in fade-in duration-700">
+                <h3 className="text-xl font-bold text-indigo-400">
+                  Try This API
+                </h3>
+                <p className="text-slate-400 text-sm">
+                  Automatically tests the selected endpoint using your API key.
+                  Responses are shown below.
+                </p>
+
+                {activeApi.body && (
+                  <textarea
+                    rows={6}
+                    value={tryBody}
+                    onChange={(e) => setTryBody(e.target.value)}
+                    className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg font-mono text-sm"
+                  />
+                )}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={sendTryRequest}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-semibold"
+                  >
+                    {tryLoading ? "Loading…" : "Send Request"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      // quick-fill API key sample for demo
+                      setApiKey("DEMO_API_KEY");
+                      setCopiedKey(false);
+                    }}
+                    className="px-3 py-2 rounded-lg border border-slate-700 text-slate-300"
+                  >
+                    Fill Demo Key
+                  </button>
+
+                  <div className="text-sm text-slate-400 font-mono">
+                    {baseURL}/{"<apikey>"}/api{activeApi.endpoint}
+                  </div>
+                </div>
+
+                {tryResponse && (
+                  <div className="mt-4">
+                    <JsonViewer data={tryResponse} title="Live Response" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
