@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("Shiva");
   const navigate = useNavigate();
-  const [mobile, setMobile] = useState("");
-  const [state, setState] = useState("");
-  const [otp, setOtp] = useState("");
+  const [mobile, setMobile] = useState("9876543210");
+  const [state, setState] = useState("Karnataka");
+  const [otp, setOtp] = useState("1234");
   const [step, setStep] = useState("form"); // form → otp
   const [errors, setErrors] = useState({});
 
