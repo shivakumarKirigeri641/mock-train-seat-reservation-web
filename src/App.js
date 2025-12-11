@@ -6,6 +6,7 @@ import Error from "./components/Error";
 import LoginPage from "./components/LoginPage";
 import HomePage from "./components/HomePage";
 import ApiUsage from "./components/apiUsage";
+import RefundPolicyPage from "./components/RefundPolicyPage";
 import { Provider } from "react-redux";
 import appStore from "./store/appStore";
 import APIDocumentationPage from "./components/APIDocumentationPage";
@@ -17,6 +18,7 @@ import WalletAndRechargesPage from "./components/WalletAndRechargesPage";
 import ProfilePage from "./components/ProfilePage";
 import APIDocumentationGeneralPage from "./components/APIDocumentationGeneralPage";
 import ApiPricingGeneral from "./components/ApiPricingGeneral";
+import ApiTermsPage from "./components/ApiTermsPage";
 const App = () => {
   return (
     <Provider store={appStore}>
@@ -44,6 +46,7 @@ const appRouter = createBrowserRouter([
           { path: "/api-pricing", element: <ApiPricing /> },
           { path: "/general-api-pricing", element: <ApiPricingGeneral /> },
           { path: "/api-documentation", element: <APIDocumentationPage /> },
+          { path: "/api-terms", element: <ApiTermsPage /> },
           //
           {
             path: "/general-api-documentation",
@@ -51,6 +54,7 @@ const appRouter = createBrowserRouter([
           },
           { path: "/wallet-recharge", element: <WalletAndRechargesPage /> },
           { path: "/profile", element: <ProfilePage /> },
+          { path: "/refund-policy", element: <RefundPolicyPage /> },
         ],
       },
 

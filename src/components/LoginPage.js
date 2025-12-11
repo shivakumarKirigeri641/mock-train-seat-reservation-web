@@ -13,6 +13,7 @@ const LoginPage = () => {
   const [step, setStep] = useState("form"); // form | otp
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const indianStates = [
     "Karnataka",
@@ -40,12 +41,17 @@ const LoginPage = () => {
     if (otp) setErrors((prev) => ({ ...prev, otp: "" }));
   }, [otp]);
 
+  useEffect(() => {
+    if (agreedToTerms) setErrors((prev) => ({ ...prev, terms: "" }));
+  }, [agreedToTerms]);
+
   const validateForm = () => {
     let err = {};
     if (!username.trim()) err.username = "Username is required.";
     if (!mobile.match(/^[6-9]\d{9}$/))
       err.mobile = "Enter valid 10-digit mobile number.";
     if (!state) err.state = "Select your state.";
+    if (!agreedToTerms) err.terms = "You must agree to the Terms & Conditions.";
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -229,6 +235,36 @@ const LoginPage = () => {
                     </p>
                   )}
                 </div>
+
+                {/* Terms & Conditions Checkbox */}
+                <div className="flex items-start mt-2">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="terms"
+                      aria-describedby="terms"
+                      type="checkbox"
+                      className="w-4 h-4 bg-gray-900 border border-gray-600 rounded focus:ring-2 focus:ring-indigo-500 focus:ring-offset-gray-800 text-indigo-600"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="terms" className="text-gray-400">
+                      I agree to the{" "}
+                      <span
+                        className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+                        onClick={() => window.open("/api-terms", "_blank")}
+                      >
+                        API Terms & Conditions
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                {errors.terms && (
+                  <p className="text-red-400 text-xs mt-1 ml-1 animate-pulse">
+                    {errors.terms}
+                  </p>
+                )}
 
                 {/* Action Button */}
                 <button

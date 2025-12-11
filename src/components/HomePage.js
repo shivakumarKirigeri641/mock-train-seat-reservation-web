@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Footer from "./Footer";
 import { useNavigate } from "react-router";
 
 const HomePage = () => {
@@ -238,10 +239,7 @@ const HomePage = () => {
 
       {/* Footer / Bottom CTA */}
       <footer className="border-t border-gray-800 bg-gray-900 pt-12 pb-8 text-center">
-        <p className="text-gray-500 text-sm">
-          © {new Date().getFullYear()} ServerPe.in. All rights reserved. <br />
-          Designed for Developers, by Developers.
-        </p>
+        <Footer />
       </footer>
     </div>
   );

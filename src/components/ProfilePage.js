@@ -173,13 +173,13 @@ const ProfilePage = () => {
                 Home
               </Link>
               <Link
-                to="/usage"
+                to="/api-usage"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Usage
               </Link>
               <Link
-                to="/docs"
+                to="/api-documentation"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Documentation
