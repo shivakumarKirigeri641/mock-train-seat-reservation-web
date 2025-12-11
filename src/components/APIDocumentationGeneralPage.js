@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -415,7 +416,6 @@ const JsonViewer = ({ data, title }) => {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      {/* ADDED max-h-80 and overflow-y-auto to fix large JSON issues */}
       <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto custom-scrollbar">
         <pre className="text-sm font-mono leading-relaxed text-gray-300">
           {JSON.stringify(data, null, 2)}
@@ -472,7 +472,9 @@ const APIDocumentationGeneralPage = () => {
   // State for Try It Panel
   const [searchQuery, setSearchQuery] = useState("");
   const [apiKey, setApiKey] = useState("");
-  const [baseUrl, setBaseUrl] = useState("https://serverpe.in");
+  const [secretKey, setSecretKey] = useState("");
+  //const [baseUrl, setBaseUrl] = useState("https://serverpe.in");
+  const [baseUrl, setBaseUrl] = useState("http://localhost:8888");
   const [tryBody, setTryBody] = useState("");
   const [tryResponse, setTryResponse] = useState(null);
   const [tryLoading, setTryLoading] = useState(false);
@@ -493,7 +495,8 @@ const APIDocumentationGeneralPage = () => {
     setTryResponse(null);
 
     try {
-      if (!apiKey) throw new Error("Please enter an API Key.");
+      if (!apiKey || !secretKey)
+        throw new Error("Please enter both API Key and Secret Key.");
       const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint.endpoint}`;
 
       const options = {
@@ -501,15 +504,16 @@ const APIDocumentationGeneralPage = () => {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": apiKey,
+          "x-secret-key": secretKey,
         },
         body: activeEndpoint.body ? tryBody : null,
       };
 
       if (activeEndpoint.method === "GET") delete options.body;
 
-      const res = await fetch(url, options);
-      const text = await res.text();
-
+      const res = await axios.get(url, options);
+      const text = await res?.data?.data;
+      console.log(res?.data?.data.text);
       let parsed;
       try {
         parsed = JSON.parse(text);
@@ -526,7 +530,6 @@ const APIDocumentationGeneralPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
-      {/* --- SITE NAVIGATION --- */}
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
@@ -840,44 +843,35 @@ const APIDocumentationGeneralPage = () => {
                   Test Endpoint
                 </h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  Send a live request to the mock server using your API key.
+                  Send a live request to the mock server using your credentials.
                 </p>
 
                 <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
-                  {/* Header Inputs for Mobile (Desktop are in navbar) */}
-                  <div className="md:hidden space-y-3 mb-4">
+                  {/* Header Inputs */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="text"
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="API Key"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-3 py-2 text-white"
+                      placeholder="x-api-key"
+                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                     <input
                       type="text"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="Base URL"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-3 py-2 text-white"
+                      value={secretKey}
+                      onChange={(e) => setSecretKey(e.target.value)}
+                      placeholder="x-secret-key"
+                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
 
-                  <div className="hidden md:flex gap-4 mb-4">
-                    <input
-                      type="text"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="Paste API Key here..."
-                      className="flex-1 bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none text-white placeholder-gray-500"
-                    />
-                    <input
-                      type="text"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="Base URL"
-                      className="w-48 bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none text-white placeholder-gray-500"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={baseUrl}
+                    onChange={(e) => setBaseUrl(e.target.value)}
+                    placeholder="Base URL"
+                    className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
 
                   {activeEndpoint.body && (
                     <div>

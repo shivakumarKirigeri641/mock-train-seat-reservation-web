@@ -33,13 +33,13 @@ const AboutMe = () => {
                 API Pricing
               </button>
               <button
-                onClick={() => navigate("/docs")}
+                onClick={() => navigate("/general-api-documentation")}
                 className="hover:text-indigo-400 transition-colors"
               >
                 API Documentation
               </button>
               <button
-                onClick={() => navigate("/about")}
+                onClick={() => navigate("/about-me")}
                 className="text-indigo-400 font-semibold"
               >
                 About Me

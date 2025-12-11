@@ -52,13 +52,13 @@ const ContactMe = () => {
                 API Pricing
               </button>
               <button
-                onClick={() => navigate("/docs")}
+                onClick={() => navigate("/general-api-documentation")}
                 className="hover:text-indigo-400 transition-colors"
               >
                 API Documentation
               </button>
               <button
-                onClick={() => navigate("/about")}
+                onClick={() => navigate("/about-me")}
                 className="hover:text-indigo-400 transition-colors"
               >
                 About Me

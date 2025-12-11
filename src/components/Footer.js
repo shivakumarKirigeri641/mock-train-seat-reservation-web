@@ -143,7 +143,7 @@ const Footer = () => {
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600">
           <p>© {currentYear} ServerPe.in. All rights reserved.</p>
           <div className="flex items-center gap-1">
-            <span>Designed for Developers, by Developers.</span>
+            <span>Designed for Developers, by a Developer.</span>
             <span className="text-red-500 animate-pulse">❤</span>
           </div>
         </div>
