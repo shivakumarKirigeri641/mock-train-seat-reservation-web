@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -415,7 +416,6 @@ const JsonViewer = ({ data, title }) => {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      {/* ADDED max-h-80 and overflow-y-auto to fix large JSON issues */}
       <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto custom-scrollbar">
         <pre className="text-sm font-mono leading-relaxed text-gray-300">
           {JSON.stringify(data, null, 2)}
@@ -445,6 +445,7 @@ const MethodBadge = ({ method }) => {
 
 const APIDocumentationPage = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // State for Navigation
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
   const [isDocsSidebarOpen, setIsDocsSidebarOpen] = useState(false);
@@ -472,7 +473,9 @@ const APIDocumentationPage = () => {
   // State for Try It Panel
   const [searchQuery, setSearchQuery] = useState("");
   const [apiKey, setApiKey] = useState("");
-  const [baseUrl, setBaseUrl] = useState("https://serverpe.in");
+  const [secretKey, setSecretKey] = useState("");
+  //const [baseUrl, setBaseUrl] = useState("https://serverpe.in");
+  const [baseUrl, setBaseUrl] = useState("http://localhost:8888");
   const [tryBody, setTryBody] = useState("");
   const [tryResponse, setTryResponse] = useState(null);
   const [tryLoading, setTryLoading] = useState(false);
@@ -493,7 +496,8 @@ const APIDocumentationPage = () => {
     setTryResponse(null);
 
     try {
-      if (!apiKey) throw new Error("Please enter an API Key.");
+      if (!apiKey || !secretKey)
+        throw new Error("Please enter both API Key and Secret Key.");
       const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint.endpoint}`;
 
       const options = {
@@ -501,15 +505,16 @@ const APIDocumentationPage = () => {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": apiKey,
+          "x-secret-key": secretKey,
         },
         body: activeEndpoint.body ? tryBody : null,
       };
 
       if (activeEndpoint.method === "GET") delete options.body;
 
-      const res = await fetch(url, options);
-      const text = await res.text();
-
+      const res = await axios.get(url, options);
+      const text = await res?.data?.data;
+      console.log(res?.data?.data.text);
       let parsed;
       try {
         parsed = JSON.parse(text);
@@ -526,7 +531,7 @@ const APIDocumentationPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
-      {/* --- SITE NAVIGATION --- */}
+      {/* --- TOP NAVIGATION BAR --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
@@ -536,7 +541,7 @@ const APIDocumentationPage = () => {
               onClick={() => navigate("/user-home")}
             >
               <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
+                <span className="text-lg">⚡</span>
               </div>
               <div className="font-bold text-xl tracking-tighter text-white">
                 ServerPe<span className="text-indigo-500">.in</span>
@@ -557,7 +562,7 @@ const APIDocumentationPage = () => {
               <NavItem to="/profile" label="Profile" />
             </div>
 
-            {/* Logout */}
+            {/* Logout Button */}
             <div className="hidden lg:flex items-center">
               <button
                 onClick={() => navigate("/logout")}
@@ -583,7 +588,7 @@ const APIDocumentationPage = () => {
             {/* Mobile Toggle */}
             <div className="lg:hidden flex items-center">
               <button
-                onClick={() => setIsSiteMenuOpen(!isSiteMenuOpen)}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="text-gray-300 hover:text-white focus:outline-none"
               >
                 <svg
@@ -597,7 +602,7 @@ const APIDocumentationPage = () => {
                     strokeLinejoin="round"
                     strokeWidth="2"
                     d={
-                      isSiteMenuOpen
+                      isMobileMenuOpen
                         ? "M6 18L18 6M6 6l12 12"
                         : "M4 6h16M4 12h16M4 18h16"
                     }
@@ -608,13 +613,13 @@ const APIDocumentationPage = () => {
           </div>
         </div>
 
-        {/* Mobile Site Menu */}
-        {isSiteMenuOpen && (
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
           <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
             <div className="px-4 py-4 flex flex-col space-y-2">
               <Link
                 to="/user-home"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
               >
                 Home
               </Link>
@@ -626,7 +631,7 @@ const APIDocumentationPage = () => {
               </Link>
               <Link
                 to="/api-documentation"
-                className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Documentation
               </Link>
@@ -648,12 +653,14 @@ const APIDocumentationPage = () => {
               >
                 Profile
               </Link>
-              <Link
-                to="/logout"
-                className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
-              >
-                Logout
-              </Link>
+              <div className="border-t border-gray-700 my-2 pt-2">
+                <Link
+                  to="/logout"
+                  className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
+                >
+                  Logout
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -906,44 +913,35 @@ const APIDocumentationPage = () => {
                   Test Endpoint
                 </h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  Send a live request to the mock server using your API key.
+                  Send a live request to the mock server using your credentials.
                 </p>
 
                 <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
-                  {/* Header Inputs for Mobile (Desktop are in navbar) */}
-                  <div className="md:hidden space-y-3 mb-4">
+                  {/* Header Inputs */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="text"
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="API Key"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-3 py-2 text-white"
+                      placeholder="x-api-key"
+                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                     <input
                       type="text"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="Base URL"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-3 py-2 text-white"
+                      value={secretKey}
+                      onChange={(e) => setSecretKey(e.target.value)}
+                      placeholder="x-secret-key"
+                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
 
-                  <div className="hidden md:flex gap-4 mb-4">
-                    <input
-                      type="text"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="Paste API Key here..."
-                      className="flex-1 bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none text-white placeholder-gray-500"
-                    />
-                    <input
-                      type="text"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="Base URL"
-                      className="w-48 bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none text-white placeholder-gray-500"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={baseUrl}
+                    onChange={(e) => setBaseUrl(e.target.value)}
+                    placeholder="Base URL"
+                    className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
 
                   {activeEndpoint.body && (
                     <div>
