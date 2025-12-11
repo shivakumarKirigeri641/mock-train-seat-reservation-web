@@ -24,81 +24,19 @@ const HomePage = () => {
                 Home
               </a>
               <a
-                href="/api-pricing"
+                href="/general-api-pricing"
                 className="hover:text-indigo-400 transition-colors"
               >
                 API Pricing
               </a>
 
-              {/* APIs Dropdown */}
-              <div className="relative group h-20 flex items-center">
-                <button className="flex items-center hover:text-indigo-400 transition-colors focus:outline-none">
-                  APIs <span className="ml-1 text-xs">▼</span>
-                </button>
-                <div className="absolute top-16 left-0 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0">
-                  <div className="py-2 flex flex-col">
-                    <button
-                      onClick={() => navigate("/apis/cars")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Car Specs API
-                    </button>
-                    <button
-                      onClick={() => navigate("/apis/bikes")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Bike Specs API
-                    </button>
-                    <button
-                      onClick={() => navigate("/apis/pincodes")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Post Office PIN Codes
-                    </button>
-                    <button
-                      onClick={() => navigate("/apis/trains")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Train Reservation
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documentation Dropdown */}
-              <div className="relative group h-20 flex items-center">
-                <button className="flex items-center hover:text-indigo-400 transition-colors focus:outline-none">
-                  API Documentation <span className="ml-1 text-xs">▼</span>
-                </button>
-                <div className="absolute top-16 left-0 w-64 bg-gray-800 border border-gray-700 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0">
-                  <div className="py-2 flex flex-col">
-                    <button
-                      onClick={() => navigate("/docs/cars")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Car Specs Docs
-                    </button>
-                    <button
-                      onClick={() => navigate("/docs/bikes")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Bike Specs Docs
-                    </button>
-                    <button
-                      onClick={() => navigate("/docs/pincodes")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      PIN Code Docs
-                    </button>
-                    <button
-                      onClick={() => navigate("/docs/trains")}
-                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
-                    >
-                      Train Reservation Docs
-                    </button>
-                  </div>
-                </div>
-              </div>
+              {/* API Documentation Link */}
+              <button
+                onClick={() => navigate("/general-api-documentation")}
+                className="hover:text-indigo-400 transition-colors focus:outline-none"
+              >
+                API Documentation
+              </button>
 
               <a
                 href="/about"
@@ -202,7 +140,7 @@ const HomePage = () => {
             <div className="mt-6">
               <span
                 className="text-sm text-orange-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/docs/pincodes")}
+                onClick={() => navigate("/general-api-documentation")}
               >
                 View Documentation &rarr;
               </span>
@@ -230,7 +168,7 @@ const HomePage = () => {
             <div className="mt-6">
               <span
                 className="text-sm text-blue-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/docs/cars")}
+                onClick={() => navigate("/general-api-documentation")}
               >
                 View Documentation &rarr;
               </span>
@@ -258,7 +196,7 @@ const HomePage = () => {
             <div className="mt-6">
               <span
                 className="text-sm text-green-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/docs/bikes")}
+                onClick={() => navigate("/general-api-documentation")}
               >
                 View Documentation &rarr;
               </span>
@@ -289,7 +227,7 @@ const HomePage = () => {
             <div className="mt-6">
               <span
                 className="text-sm text-purple-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/docs/trains")}
+                onClick={() => navigate("/general-api-documentation")}
               >
                 View Documentation &rarr;
               </span>

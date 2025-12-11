@@ -443,7 +443,7 @@ const MethodBadge = ({ method }) => {
 
 // ---------------- MAIN COMPONENT ----------------
 
-const APIDocumentationPage = () => {
+const APIDocumentationGeneralPage = () => {
   const navigate = useNavigate();
   // State for Navigation
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
@@ -527,136 +527,70 @@ const APIDocumentationPage = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- SITE NAVIGATION --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
+      {/* --- Navigation Bar --- */}
+      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <div
-              className="flex items-center gap-3 cursor-pointer group"
-              onClick={() => navigate("/user-home")}
-            >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+            <div className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white">
+              ServerPe<span className="text-indigo-500">.in</span>
             </div>
 
-            {/* Desktop Static Menu */}
-            <div className="hidden lg:flex items-center space-x-2">
-              <NavItem to="/user-home" label="Home" />
-              <NavItem to="/api-usage" label="API Usage" />
-              <NavItem
-                to="/api-documentation"
-                label="API Documentation"
-                active={true}
-              />
-              <NavItem to="/api-pricing" label="API Pricing" />
-              <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
-              <NavItem to="/profile" label="Profile" />
-            </div>
-
-            {/* Logout */}
-            <div className="hidden lg:flex items-center">
-              <button
-                onClick={() => navigate("/logout")}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+              <a href="/" className="hover:text-indigo-400 transition-colors">
+                Home
+              </a>
+              <a
+                href="/general-api-pricing"
+                className="hover:text-indigo-400 transition-colors"
               >
-                <span>Logout</span>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
+                API Pricing
+              </a>
+
+              {/* API Documentation Link */}
+              <button
+                onClick={() => navigate("/general-api-documentation")}
+                className="hover:text-indigo-400 transition-colors focus:outline-none"
+              >
+                API Documentation
+              </button>
+
+              <a
+                href="/about"
+                className="hover:text-indigo-400 transition-colors"
+              >
+                About Me
+              </a>
+              <a
+                href="/contact"
+                className="hover:text-indigo-400 transition-colors"
+              >
+                Contact Me
+              </a>
+            </div>
+
+            {/* CTA Button */}
+            <div className="hidden md:block">
+              <button
+                onClick={() => navigate("/user-login")}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all"
+              >
+                Start using mock APIs
               </button>
             </div>
 
-            {/* Mobile Toggle */}
-            <div className="lg:hidden flex items-center">
+            {/* Mobile menu button (Hamburger) - simplified for this view */}
+            <div className="md:hidden flex items-center">
               <button
-                onClick={() => setIsSiteMenuOpen(!isSiteMenuOpen)}
-                className="text-gray-300 hover:text-white focus:outline-none"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white"
               >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d={
-                      isSiteMenuOpen
-                        ? "M6 18L18 6M6 6l12 12"
-                        : "M4 6h16M4 12h16M4 18h16"
-                    }
-                  />
-                </svg>
+                <span className="text-2xl">☰</span>
               </button>
             </div>
           </div>
         </div>
-
-        {/* Mobile Site Menu */}
-        {isSiteMenuOpen && (
-          <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
-            <div className="px-4 py-4 flex flex-col space-y-2">
-              <Link
-                to="/user-home"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Home
-              </Link>
-              <Link
-                to="/api-usage"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Usage
-              </Link>
-              <Link
-                to="/api-documentation"
-                className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
-              >
-                API Documentation
-              </Link>
-              <Link
-                to="/api-pricing"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Pricing
-              </Link>
-              <Link
-                to="/wallet-recharge"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Wallet & Recharge
-              </Link>
-              <Link
-                to="/profile"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Profile
-              </Link>
-              <Link
-                to="/logout"
-                className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
-              >
-                Logout
-              </Link>
-            </div>
-          </div>
-        )}
       </nav>
 
       {/* --- DOCS LAYOUT --- */}
@@ -990,4 +924,4 @@ const APIDocumentationPage = () => {
   );
 };
 
-export default APIDocumentationPage;
+export default APIDocumentationGeneralPage;

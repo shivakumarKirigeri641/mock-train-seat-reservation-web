@@ -15,6 +15,8 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsAndConditions from "./components/TermsAndConditions";
 import WalletAndRechargesPage from "./components/WalletAndRechargesPage";
 import ProfilePage from "./components/ProfilePage";
+import APIDocumentationGeneralPage from "./components/APIDocumentationGeneralPage";
+import ApiPricingGeneral from "./components/ApiPricingGeneral";
 const App = () => {
   return (
     <Provider store={appStore}>
@@ -40,7 +42,13 @@ const appRouter = createBrowserRouter([
           { path: "/user-login", element: <LoginPage /> },
           { path: "/api-usage", element: <ApiUsage /> },
           { path: "/api-pricing", element: <ApiPricing /> },
+          { path: "/general-api-pricing", element: <ApiPricingGeneral /> },
           { path: "/api-documentation", element: <APIDocumentationPage /> },
+          //
+          {
+            path: "/general-api-documentation",
+            element: <APIDocumentationGeneralPage />,
+          },
           { path: "/wallet-recharge", element: <WalletAndRechargesPage /> },
           { path: "/profile", element: <ProfilePage /> },
         ],
