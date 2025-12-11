@@ -1,151 +1,310 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 const HomePage = () => {
   const navigate = useNavigate();
+
+  // State for mobile menu toggling (optional, but good for responsiveness)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+      {/* --- Navigation Bar --- */}
+      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <div className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white">
+              ServerPe<span className="text-indigo-500">.in</span>
+            </div>
+
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+              <a href="/" className="hover:text-indigo-400 transition-colors">
+                Home
+              </a>
+              <a
+                href="/pricing"
+                className="hover:text-indigo-400 transition-colors"
+              >
+                API Pricing
+              </a>
+
+              {/* APIs Dropdown */}
+              <div className="relative group h-20 flex items-center">
+                <button className="flex items-center hover:text-indigo-400 transition-colors focus:outline-none">
+                  APIs <span className="ml-1 text-xs">▼</span>
+                </button>
+                <div className="absolute top-16 left-0 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0">
+                  <div className="py-2 flex flex-col">
+                    <button
+                      onClick={() => navigate("/apis/cars")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Car Specs API
+                    </button>
+                    <button
+                      onClick={() => navigate("/apis/bikes")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Bike Specs API
+                    </button>
+                    <button
+                      onClick={() => navigate("/apis/pincodes")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Post Office PIN Codes
+                    </button>
+                    <button
+                      onClick={() => navigate("/apis/trains")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Train Reservation
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Documentation Dropdown */}
+              <div className="relative group h-20 flex items-center">
+                <button className="flex items-center hover:text-indigo-400 transition-colors focus:outline-none">
+                  API Documentation <span className="ml-1 text-xs">▼</span>
+                </button>
+                <div className="absolute top-16 left-0 w-64 bg-gray-800 border border-gray-700 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform translate-y-2 group-hover:translate-y-0">
+                  <div className="py-2 flex flex-col">
+                    <button
+                      onClick={() => navigate("/docs/cars")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Car Specs Docs
+                    </button>
+                    <button
+                      onClick={() => navigate("/docs/bikes")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Bike Specs Docs
+                    </button>
+                    <button
+                      onClick={() => navigate("/docs/pincodes")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      PIN Code Docs
+                    </button>
+                    <button
+                      onClick={() => navigate("/docs/trains")}
+                      className="text-left px-4 py-3 hover:bg-gray-700 text-gray-300 hover:text-white"
+                    >
+                      Train Reservation Docs
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href="/about"
+                className="hover:text-indigo-400 transition-colors"
+              >
+                About Me
+              </a>
+              <a
+                href="/contact"
+                className="hover:text-indigo-400 transition-colors"
+              >
+                Contact Me
+              </a>
+            </div>
+
+            {/* CTA Button */}
+            <div className="hidden md:block">
+              <button
+                onClick={() => navigate("/user-login")}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all"
+              >
+                Start using mock APIs
+              </button>
+            </div>
+
+            {/* Mobile menu button (Hamburger) - simplified for this view */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white"
+              >
+                <span className="text-2xl">☰</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 pt-24 pb-16 text-center">
+      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
         <div className="inline-block mb-6 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-indigo-400 text-sm font-medium">
-          v2.0 Enterprise Edition
+          Comprehensive Mock Data Suite
         </div>
         <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight">
-          Mock Train Seat{" "}
-          <span className="text-indigo-500">Booking Platform</span>
-          <br className="hidden md:block" /> for Developers
+          Realistic Mock APIs for <br />
+          <span className="text-indigo-500">Modern UI Development</span>
         </h1>
 
         <p className="text-lg text-gray-400 mt-6 max-w-3xl mx-auto leading-relaxed">
-          A production-grade simulation environment offering realistic booking
-          flows, PNR operations, cancellations, and passenger data handling —
-          built specifically for UI development and QA teams.
+          Accelerate your frontend development and testing with our diverse
+          catalog of mock services. From automotive specifications to complex
+          train reservation flows with simulated SMS.
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
           <button
             className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-1"
             onClick={() => {
-              navigate("/login");
+              navigate("/user-login");
             }}
           >
-            Start Mock Booking
+            Start using mock APIs
           </button>
 
-          <div className="flex flex-col items-center text-sm">
-            <p className="text-red-400 font-medium bg-red-900/20 px-4 py-2 rounded-lg border border-red-900/30">
-              Disclaimer: Strictly for testing purposes. No real booking or live
-              data is used.
-            </p>
-            <p className="text-indigo-300 mt-2">
-              Mock-SMS confirmations are enabled for this session.
+          <div className="flex flex-col items-center text-sm max-w-2xl mt-4">
+            <p className="text-red-300 font-medium bg-red-900/10 px-6 py-3 rounded-lg border border-red-900/30">
+              <strong>Disclaimer:</strong> These mock APIs are strictly for
+              learning, practicing Web-UI, training, and testing purposes only.
+              No real-world scenarios, real bookings, or live databases are
+              connected here.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Feature Overview */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <h2 className="text-2xl font-bold text-white mb-8 text-center md:text-left">
-          Platform Capabilities
+      {/* API Categories / Highlights */}
+      <section className="max-w-7xl mx-auto px-6 pb-24">
+        <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
+          Available API Categories
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1 */}
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 hover:bg-gray-750 transition-all hover:border-gray-600 group">
-            <div className="mb-4">
-              <div className="w-12 h-12 bg-blue-900/30 text-blue-400 border border-blue-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
-                <span className="text-2xl">🎫</span>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Card 1: Post Office */}
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 hover:bg-gray-750 transition-all hover:border-gray-600 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <span className="text-9xl">📮</span>
+            </div>
+            <div className="mb-6">
+              <div className="w-14 h-14 bg-orange-900/30 text-orange-400 border border-orange-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+                <span className="text-3xl">📍</span>
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
-              Ticket Booking Flow
+            <h3 className="text-xl font-bold text-white group-hover:text-orange-400 transition-colors">
+              Post Office PIN Code APIs
             </h3>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              End-to-end mock booking with realistic quota logic, seat
-              selection, and passenger handling.
+            <p className="text-gray-400 mt-3 leading-relaxed">
+              Access a vast database of mock postal information. Query by
+              region, district, or PIN code to test address auto-completion
+              forms and location-based logic in your applications.
             </p>
+            <div className="mt-6">
+              <span
+                className="text-sm text-orange-400 font-medium cursor-pointer hover:underline"
+                onClick={() => navigate("/docs/pincodes")}
+              >
+                View Documentation &rarr;
+              </span>
+            </div>
           </div>
 
-          {/* Card 2 */}
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 hover:bg-gray-750 transition-all hover:border-gray-600 group">
-            <div className="mb-4">
-              <div className="w-12 h-12 bg-green-900/30 text-green-400 border border-green-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
-                <span className="text-2xl">📄</span>
+          {/* Card 2: Car Specs */}
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 hover:bg-gray-750 transition-all hover:border-gray-600 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <span className="text-9xl">🏎️</span>
+            </div>
+            <div className="mb-6">
+              <div className="w-14 h-14 bg-blue-900/30 text-blue-400 border border-blue-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+                <span className="text-3xl">🚗</span>
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-white group-hover:text-green-400 transition-colors">
-              Booking History
+            <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+              Car Technical Specs APIs
             </h3>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              Retrieve and manage all historical mock ticket data for UI
-              regression testing.
+            <p className="text-gray-400 mt-3 leading-relaxed">
+              Detailed technical data for various automobile manufacturers and
+              models. Fetch engine specs, dimensions, fuel types, and feature
+              lists to build automotive comparison tools or catalogs.
             </p>
+            <div className="mt-6">
+              <span
+                className="text-sm text-blue-400 font-medium cursor-pointer hover:underline"
+                onClick={() => navigate("/docs/cars")}
+              >
+                View Documentation &rarr;
+              </span>
+            </div>
           </div>
 
-          {/* Card 3 */}
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 hover:bg-gray-750 transition-all hover:border-gray-600 group">
-            <div className="mb-4">
-              <div className="w-12 h-12 bg-purple-900/30 text-purple-400 border border-purple-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
-                <span className="text-2xl">🔍</span>
+          {/* Card 3: Bike Specs */}
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 hover:bg-gray-750 transition-all hover:border-gray-600 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <span className="text-9xl">🏍️</span>
+            </div>
+            <div className="mb-6">
+              <div className="w-14 h-14 bg-green-900/30 text-green-400 border border-green-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+                <span className="text-3xl">🛵</span>
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-white group-hover:text-purple-400 transition-colors">
-              PNR Status
+            <h3 className="text-xl font-bold text-white group-hover:text-green-400 transition-colors">
+              Bike Technical Specs APIs
             </h3>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              Mock PNR lookup with statuses, passenger lists & coach allocation
-              simulation.
+            <p className="text-gray-400 mt-3 leading-relaxed">
+              Comprehensive specifications for two-wheelers. Includes mock data
+              for mileage, power, torque, and chassis details. Ideal for
+              e-commerce or review aggregator projects.
             </p>
+            <div className="mt-6">
+              <span
+                className="text-sm text-green-400 font-medium cursor-pointer hover:underline"
+                onClick={() => navigate("/docs/bikes")}
+              >
+                View Documentation &rarr;
+              </span>
+            </div>
           </div>
 
-          {/* Card 4 */}
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 hover:bg-gray-750 transition-all hover:border-gray-600 group">
-            <div className="mb-4">
-              <div className="w-12 h-12 bg-red-900/30 text-red-400 border border-red-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
-                <span className="text-2xl">❌</span>
+          {/* Card 4: Train Reservation */}
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 hover:bg-gray-750 transition-all hover:border-gray-600 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <span className="text-9xl">🚄</span>
+            </div>
+            <div className="mb-6">
+              <div className="w-14 h-14 bg-purple-900/30 text-purple-400 border border-purple-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+                <span className="text-3xl">🎫</span>
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-white group-hover:text-red-400 transition-colors">
-              Cancellation Portal
+            <h3 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
+              Mock Train Reservation APIs
             </h3>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              Cancel mock tickets with real-flow refund calculations and audit
-              tracking logs.
+            <p className="text-gray-400 mt-3 leading-relaxed">
+              End-to-end simulation of a booking engine. Includes seat
+              availability, PNR status, and cancellation logic.
+              <span className="block mt-2 text-indigo-300 font-medium text-sm">
+                ✨ Feature: Mock booking SMS will be triggered to your provided
+                mobile number upon successful API call.
+              </span>
             </p>
-          </div>
-
-          {/* Card 5 */}
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 hover:bg-gray-750 transition-all hover:border-gray-600 group">
-            <div className="mb-4">
-              <div className="w-12 h-12 bg-indigo-900/30 text-indigo-400 border border-indigo-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
-                <span className="text-2xl">👤</span>
-              </div>
+            <div className="mt-6">
+              <span
+                className="text-sm text-purple-400 font-medium cursor-pointer hover:underline"
+                onClick={() => navigate("/docs/trains")}
+              >
+                View Documentation &rarr;
+              </span>
             </div>
-            <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors">
-              User Profile
-            </h3>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              Store mock user preferences and retained test cases for consistent
-              UI flows.
-            </p>
-          </div>
-
-          {/* Card 6 */}
-          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 hover:bg-gray-750 transition-all hover:border-gray-600 group">
-            <div className="mb-4">
-              <div className="w-12 h-12 bg-teal-900/30 text-teal-400 border border-teal-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
-                <span className="text-2xl">💻</span>
-              </div>
-            </div>
-            <h3 className="text-lg font-semibold text-white group-hover:text-teal-400 transition-colors">
-              Developer APIs
-            </h3>
-            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              High-quality REST endpoints for rapid UI development and
-              integration testing.
-            </p>
           </div>
         </div>
       </section>
+
+      {/* Footer / Bottom CTA */}
+      <footer className="border-t border-gray-800 bg-gray-900 pt-12 pb-8 text-center">
+        <p className="text-gray-500 text-sm">
+          © {new Date().getFullYear()} ServerPe.in. All rights reserved. <br />
+          Designed for Developers, by Developers.
+        </p>
+      </footer>
     </div>
   );
 };

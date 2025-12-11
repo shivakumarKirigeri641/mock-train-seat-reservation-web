@@ -1,422 +1,277 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const UserHomePage = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Mock data state - currently empty to show the "No bookings" state as requested
-  // Add items to this array to test the populated table view
-  const [bookings, setBookings] = useState([]);
-  // const [bookings, setBookings] = useState([
-  //   { pnr: "82039482", train: "Karnataka Exp", date: "2025-03-10", status: "CNF", class: "3A" }
-  // ]);
+  // State for Credentials
+  const [showSecret, setShowSecret] = useState(false);
+  const [copiedField, setCopiedField] = useState(null); // 'api' or 'secret'
 
-  const SidebarItem = ({ to, icon, label, active }) => (
+  // Mock Credentials
+  const apiKey = "srv_live_89234789234_xk9s";
+  const secretKey = "sk_live_998877_secure_hash_x9s88d";
+
+  // Mock API History Data
+  const [apiHistory] = useState([
+    {
+      id: 1,
+      endpoint: "/api/v1/trains/search",
+      method: "GET",
+      status: 200,
+      latency: "120ms",
+      time: "2 mins ago",
+    },
+    {
+      id: 2,
+      endpoint: "/api/v1/booking/create",
+      method: "POST",
+      status: 201,
+      latency: "450ms",
+      time: "15 mins ago",
+    },
+    {
+      id: 3,
+      endpoint: "/api/v1/pincode/560001",
+      method: "GET",
+      status: 200,
+      latency: "90ms",
+      time: "1 hour ago",
+    },
+    {
+      id: 4,
+      endpoint: "/api/v1/cars/specs",
+      method: "GET",
+      status: 401,
+      latency: "45ms",
+      time: "3 hours ago",
+    },
+    {
+      id: 5,
+      endpoint: "/api/v1/bikes/info",
+      method: "GET",
+      status: 200,
+      latency: "110ms",
+      time: "5 hours ago",
+    },
+  ]);
+
+  const handleCopy = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const NavItem = ({ to, label, active = false }) => (
     <Link
       to={to}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
         active
-          ? "bg-indigo-600/10 text-indigo-400 shadow-sm border-l-2 border-indigo-500"
-          : "text-gray-400 hover:bg-gray-800 hover:text-gray-100"
+          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+          : "text-gray-300 hover:text-white hover:bg-gray-800"
       }`}
     >
-      <div
-        className={`${
-          active ? "text-indigo-400" : "text-gray-500 group-hover:text-gray-300"
-        }`}
-      >
-        {icon}
-      </div>
-      <span className="font-medium text-sm tracking-wide">{label}</span>
+      {label}
     </Link>
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 flex font-sans text-gray-100 selection:bg-indigo-500 selection:text-white">
-      {/* Mobile Header */}
-      <div className="md:hidden fixed w-full bg-gray-800 z-50 flex items-center justify-between px-4 py-3 border-b border-gray-700">
-        <div className="font-bold text-xl text-white tracking-tight">
-          DevRail
-        </div>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-gray-400 hover:text-white focus:outline-none"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d={
-                isMobileMenuOpen
-                  ? "M6 18L18 6M6 6l12 12"
-                  : "M4 6h16M4 12h16M4 18h16"
-              }
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Sidebar Navigation */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 border-r border-gray-700 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-auto ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="h-full flex flex-col">
-          {/* Logo Area */}
-          <div className="h-16 flex items-center px-6 border-b border-gray-700">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-indigo-500/20">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-            </div>
-            <span className="text-lg font-bold tracking-wide text-white">
-              DevRail
-            </span>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-2">
-              Menu
-            </div>
-
-            <SidebarItem
-              to="/user-home"
-              active={true} // This page is the Dashboard
-              label="Dashboard"
-              icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                  />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/book-ticket"
-              active={false}
-              label="Book Ticket"
-              icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
-                  />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/booking-history"
-              active={false}
-              label="Booking History"
-              icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/pnr-status"
-              active={false}
-              label="PNR Status"
-              icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              }
-            />
-            <SidebarItem
-              to="/cancel-ticket"
-              active={false}
-              label="Cancellations"
-              icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              }
-            />
-
-            <div className="mt-8 text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-2">
-              Settings
-            </div>
-
-            <SidebarItem
-              to="/profile"
-              active={false}
-              label="Profile"
-              icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              }
-            />
-          </nav>
-
-          {/* Logout Section */}
-          <div className="p-4 border-t border-gray-700">
-            <Link
-              to="/login"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+      {/* --- TOP NAVIGATION BAR --- */}
+      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <div
+              className="flex items-center gap-3 cursor-pointer group"
+              onClick={() => navigate("/user-home")}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <span className="text-lg">⚡</span>
+              </div>
+              <div className="font-bold text-xl tracking-tighter text-white">
+                ServerPe<span className="text-indigo-500">.in</span>
+              </div>
+            </div>
+
+            {/* Desktop Static Menu */}
+            <div className="hidden lg:flex items-center space-x-2">
+              <NavItem to="/user-home" label="Home" active={true} />
+              <NavItem to="/api-usage" label="API Usage" />
+              <NavItem to="/api-documentation" label="API Documentation" />
+              <NavItem to="/pricing" label="API Pricing" />
+              <NavItem to="/wallet" label="Wallet & Recharge" />
+              <NavItem to="/profile" label="Profile" />
+            </div>
+
+            {/* Logout Button */}
+            <div className="hidden lg:flex items-center">
+              <button
+                onClick={() => navigate("/logout")}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              <span className="font-medium text-sm">Sign Out</span>
-            </Link>
+                <span>Logout</span>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Mobile Toggle */}
+            <div className="lg:hidden flex items-center">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white focus:outline-none"
+              >
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d={
+                      isMobileMenuOpen
+                        ? "M6 18L18 6M6 6l12 12"
+                        : "M4 6h16M4 12h16M4 18h16"
+                    }
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col pt-16 md:pt-0 overflow-hidden">
-        {/* Top Header */}
-        <header className="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-8">
-          <h2 className="text-xl font-bold text-white">Dashboard Overview</h2>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <div className="text-sm font-medium text-white">
-                John Developer
-              </div>
-              <div className="text-xs text-gray-500">Enterprise Plan</div>
-            </div>
-            <div className="h-10 w-10 rounded-full bg-gray-700 border-2 border-gray-600"></div>
-          </div>
-        </header>
-
-        {/* Dashboard Content Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8">
-          {/* Quick Stats Row (Useful Information) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    Total Bookings
-                  </p>
-                  <h3 className="text-2xl font-bold text-white mt-1">
-                    {bookings.length}
-                  </h3>
-                </div>
-                <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    Wallet Balance
-                  </p>
-                  <h3 className="text-2xl font-bold text-white mt-1">
-                    ₹15,000
-                  </h3>
-                </div>
-                <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-xs font-medium text-gray-400 uppercase">
-                    System Status
-                  </p>
-                  <h3 className="text-xl font-bold text-green-400 mt-1 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    Operational
-                  </h3>
-                </div>
-                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Dashboard Area - Booked History */}
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column: History / Empty State */}
-            <div className="flex-1 bg-gray-800 rounded-2xl border border-gray-700 shadow-xl overflow-hidden">
-              <div className="p-6 border-b border-gray-700 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-white">
-                  Recent Bookings
-                </h3>
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
+            <div className="px-4 py-4 flex flex-col space-y-2">
+              <Link
+                to="/user-home"
+                className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
+              >
+                Home
+              </Link>
+              <Link
+                to="/api-usage"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                API Usage
+              </Link>
+              <Link
+                to="/api-documentation"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                API Documentation
+              </Link>
+              <Link
+                to="/pricing"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                API Pricing
+              </Link>
+              <Link
+                to="/wallet"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                Wallet & Recharge
+              </Link>
+              <Link
+                to="/profile"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                Profile
+              </Link>
+              <div className="border-t border-gray-700 my-2 pt-2">
                 <Link
-                  to="/history"
-                  className="text-sm text-indigo-400 hover:text-indigo-300"
+                  to="/login"
+                  className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
                 >
-                  View All
+                  Logout
                 </Link>
               </div>
+            </div>
+          </div>
+        )}
+      </nav>
 
-              <div className="p-6">
-                {bookings.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-gray-400">
-                      <thead className="text-xs text-gray-500 uppercase bg-gray-900/50">
-                        <tr>
-                          <th className="px-4 py-3 rounded-l-lg">PNR</th>
-                          <th className="px-4 py-3">Train</th>
-                          <th className="px-4 py-3">Date</th>
-                          <th className="px-4 py-3">Class</th>
-                          <th className="px-4 py-3 rounded-r-lg">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {bookings.map((b, idx) => (
-                          <tr
-                            key={idx}
-                            className="border-b border-gray-700 hover:bg-gray-750"
-                          >
-                            <td className="px-4 py-3 font-medium text-white">
-                              {b.pnr}
-                            </td>
-                            <td className="px-4 py-3">{b.train}</td>
-                            <td className="px-4 py-3">{b.date}</td>
-                            <td className="px-4 py-3">{b.class}</td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-bold ${
-                                  b.status === "CNF"
-                                    ? "bg-green-900/30 text-green-400"
-                                    : "bg-yellow-900/30 text-yellow-400"
-                                }`}
-                              >
-                                {b.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  /* No Bookings Found State */
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-24 h-24 bg-gray-700/50 rounded-full flex items-center justify-center mb-4">
+      {/* --- MAIN CONTENT --- */}
+      <main className="max-w-7xl mx-auto px-6 py-10">
+        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 animate-fade-in">
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              Developer Dashboard
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Manage your keys and monitor API activity.
+            </p>
+          </div>
+          <div className="bg-indigo-900/20 border border-indigo-500/30 px-5 py-2 rounded-full flex items-center gap-3">
+            <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
+              Plan
+            </span>
+            <span className="text-sm font-bold text-white">
+              Enterprise v2.0
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* LEFT COLUMN: Credentials & Wallet Status */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* API Credentials Card */}
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl hover:border-gray-600 transition-colors">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-yellow-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                  />
+                </svg>
+                API Credentials
+              </h3>
+
+              {/* Public Key */}
+              <div className="mb-5">
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
+                  Client ID / API Key
+                </label>
+                <div className="relative group">
+                  <input
+                    type="text"
+                    readOnly
+                    value={apiKey}
+                    className="w-full bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded-lg p-3 pr-10 focus:ring-1 focus:ring-indigo-500 focus:outline-none font-mono"
+                  />
+                  <button
+                    onClick={() => handleCopy(apiKey, "api")}
+                    className="absolute right-2 top-2 p-1 text-gray-500 hover:text-white transition-colors"
+                    title="Copy Key"
+                  >
+                    {copiedField === "api" ? (
                       <svg
-                        className="w-12 h-12 text-gray-500"
+                        className="w-5 h-5 text-green-400"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -424,35 +279,126 @@ const UserHomePage = () => {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
                         />
                       </svg>
-                    </div>
-                    <h4 className="text-lg font-medium text-white">
-                      No bookings found
-                    </h4>
-                    <p className="text-gray-400 max-w-sm mt-2 mb-6">
-                      You haven't made any mock bookings yet. Start a new
-                      session to test the booking flow.
-                    </p>
-                    <Link
-                      to="/book-ticket"
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg shadow-indigo-500/20 transition-all transform hover:-translate-y-0.5"
-                    >
-                      Book New Ticket
-                    </Link>
-                  </div>
-                )}
+                    ) : (
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Right Column: Useful Information / Updates */}
-            <div className="w-full lg:w-80 flex flex-col gap-6">
-              <div className="bg-indigo-900/20 border border-indigo-500/20 rounded-2xl p-5">
-                <h4 className="font-bold text-indigo-300 mb-3 flex items-center gap-2">
+              {/* Secret Key */}
+              <div>
+                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
+                  Client Secret
+                </label>
+                <div className="relative group">
+                  <input
+                    type={showSecret ? "text" : "password"}
+                    readOnly
+                    value={secretKey}
+                    className="w-full bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded-lg p-3 pr-20 focus:ring-1 focus:ring-indigo-500 focus:outline-none font-mono"
+                  />
+                  <div className="absolute right-2 top-2 flex items-center gap-1">
+                    <button
+                      onClick={() => setShowSecret(!showSecret)}
+                      className="p-1 text-gray-500 hover:text-white transition-colors"
+                      title={showSecret ? "Hide" : "Show"}
+                    >
+                      {showSecret ? (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleCopy(secretKey, "secret")}
+                      className="p-1 text-gray-500 hover:text-white transition-colors"
+                      title="Copy Secret"
+                    >
+                      {copiedField === "secret" ? (
+                        <svg
+                          className="w-5 h-5 text-green-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-700">
+                <p className="text-xs text-red-400 flex items-center gap-1">
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 h-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -461,39 +407,128 @@ const UserHomePage = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                     />
                   </svg>
-                  Dev Note
-                </h4>
-                <p className="text-sm text-indigo-200/80 leading-relaxed">
-                  Mock PNRs generated today will automatically expire in 24
-                  hours. Ensure all test cases are logged before expiry.
+                  Keep your Client Secret confidential.
                 </p>
               </div>
+            </div>
 
-              <div className="bg-gray-800 border border-gray-700 rounded-2xl p-5 shadow-lg">
-                <h4 className="font-bold text-white mb-4">Travel Advisory</h4>
-                <ul className="space-y-4">
-                  <li className="flex gap-3">
-                    <div className="mt-1 w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"></div>
-                    <div className="text-sm text-gray-400">
-                      <span className="text-gray-200 font-medium block">
-                        Fog Alert in North India
-                      </span>
-                      Expect delays of 2-3 hours for trains departing from NDLS.
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
-                    <div className="text-sm text-gray-400">
-                      <span className="text-gray-200 font-medium block">
-                        System Maintenance
-                      </span>
-                      Scheduled downtime for Mock API: 02:00 AM - 04:00 AM.
-                    </div>
-                  </li>
-                </ul>
+            {/* Mini Wallet Summary */}
+            <div className="bg-gradient-to-r from-gray-800 to-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl flex items-center justify-between hover:border-gray-500 transition-all cursor-pointer transform hover:-translate-y-1">
+              <div>
+                <p className="text-sm font-medium text-gray-400">
+                  Wallet Balance
+                </p>
+                <h3 className="text-2xl font-bold text-white mt-1">₹ 15,000</h3>
+              </div>
+              <button
+                onClick={() => navigate("/wallet")}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                Recharge
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Recent API History */}
+          <div className="lg:col-span-2">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden h-full flex flex-col">
+              <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5 text-indigo-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Recent API Access History
+                </h3>
+                <Link
+                  to="/api-usage"
+                  className="text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                >
+                  View All Logs
+                </Link>
+              </div>
+
+              <div className="overflow-x-auto flex-1">
+                <table className="w-full text-sm text-left text-gray-400">
+                  <thead className="text-xs text-gray-500 uppercase bg-gray-900/50">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">Endpoint</th>
+                      <th className="px-6 py-4 font-medium">Method</th>
+                      <th className="px-6 py-4 font-medium">Status</th>
+                      <th className="px-6 py-4 font-medium">Latency</th>
+                      <th className="px-6 py-4 font-medium text-right">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700/50">
+                    {apiHistory.map((log) => (
+                      <tr
+                        key={log.id}
+                        className="hover:bg-gray-750 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-mono text-gray-300">
+                          {log.endpoint}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-2 py-1 rounded text-[10px] font-bold tracking-wide border ${
+                              log.method === "GET"
+                                ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
+                                : log.method === "POST"
+                                ? "border-green-500/30 text-green-400 bg-green-500/10"
+                                : "border-gray-500 text-gray-400"
+                            }`}
+                          >
+                            {log.method}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                log.status >= 200 && log.status < 300
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              }`}
+                            ></span>
+                            <span
+                              className={
+                                log.status >= 200 && log.status < 300
+                                  ? "text-green-400"
+                                  : "text-red-400"
+                              }
+                            >
+                              {log.status}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-500 font-mono text-xs">
+                          {log.latency}
+                        </td>
+                        <td className="px-6 py-4 text-right text-gray-500 text-xs">
+                          {log.time}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-4 border-t border-gray-700 bg-gray-900/30 text-center">
+                <p className="text-xs text-gray-500">
+                  Showing last 5 requests. Logs are retained for 7 days.
+                </p>
               </div>
             </div>
           </div>
