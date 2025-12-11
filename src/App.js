@@ -12,6 +12,7 @@ import appStore from "./store/appStore";
 import APIDocumentationPage from "./components/APIDocumentationPage";
 import ApiPricing from "./components/ApiPricing";
 import UserHomePage from "./components/UserHomePage";
+import AboutMe from "./components/AboutMe";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsAndConditions from "./components/TermsAndConditions";
 import WalletAndRechargesPage from "./components/WalletAndRechargesPage";
@@ -19,6 +20,7 @@ import ProfilePage from "./components/ProfilePage";
 import APIDocumentationGeneralPage from "./components/APIDocumentationGeneralPage";
 import ApiPricingGeneral from "./components/ApiPricingGeneral";
 import ApiTermsPage from "./components/ApiTermsPage";
+import ContactMe from "./components/ContactMe";
 const App = () => {
   return (
     <Provider store={appStore}>
@@ -45,8 +47,10 @@ const appRouter = createBrowserRouter([
           { path: "/api-usage", element: <ApiUsage /> },
           { path: "/api-pricing", element: <ApiPricing /> },
           { path: "/general-api-pricing", element: <ApiPricingGeneral /> },
+          { path: "/about-me", element: <AboutMe /> },
           { path: "/api-documentation", element: <APIDocumentationPage /> },
           { path: "/api-terms", element: <ApiTermsPage /> },
+          { path: "/contact-me", element: <ContactMe /> },
           //
           {
             path: "/general-api-documentation",

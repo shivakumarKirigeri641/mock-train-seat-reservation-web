@@ -40,13 +40,13 @@ const HomePage = () => {
               </button>
 
               <a
-                href="/about"
+                href="/about-me"
                 className="hover:text-indigo-400 transition-colors"
               >
                 About Me
               </a>
               <a
-                href="/contact"
+                href="/contact-me"
                 className="hover:text-indigo-400 transition-colors"
               >
                 Contact Me

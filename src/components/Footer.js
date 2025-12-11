@@ -62,7 +62,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/docs"
+                  to="/general-api-documentation"
                   className="hover:text-indigo-400 transition-colors"
                 >
                   Documentation
