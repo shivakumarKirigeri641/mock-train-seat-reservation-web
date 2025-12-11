@@ -144,15 +144,15 @@ const ApiUsage = () => {
               <NavItem to="/user-home" label="Home" />
               <NavItem to="/api-usage" label="API Usage" active={true} />
               <NavItem to="/api-documentation" label="API Documentation" />
-              <NavItem to="/pricing" label="API Pricing" />
-              <NavItem to="/wallet" label="Wallet & Recharge" />
+              <NavItem to="/api-pricing" label="API Pricing" />
+              <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
               <NavItem to="/profile" label="Profile" />
             </div>
 
             {/* Logout */}
             <div className="hidden lg:flex items-center">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/logout")}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
               >
                 <span>Logout</span>
@@ -211,7 +211,7 @@ const ApiUsage = () => {
                 Home
               </Link>
               <Link
-                to="/usage"
+                to="/api-usage"
                 className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
               >
                 API Usage
@@ -223,13 +223,13 @@ const ApiUsage = () => {
                 API Documentation
               </Link>
               <Link
-                to="/pricing"
+                to="/api-pricing"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Pricing
               </Link>
               <Link
-                to="/wallet"
+                to="/wallet-recharge"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 Wallet & Recharge
@@ -241,7 +241,7 @@ const ApiUsage = () => {
                 Profile
               </Link>
               <Link
-                to="/login"
+                to="/logout"
                 className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
               >
                 Logout

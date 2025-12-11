@@ -415,7 +415,8 @@ const JsonViewer = ({ data, title }) => {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <div className="p-4 overflow-x-auto">
+      {/* ADDED max-h-80 and overflow-y-auto to fix large JSON issues */}
+      <div className="p-4 overflow-x-auto max-h-80 overflow-y-auto custom-scrollbar">
         <pre className="text-sm font-mono leading-relaxed text-gray-300">
           {JSON.stringify(data, null, 2)}
         </pre>
@@ -444,7 +445,7 @@ const MethodBadge = ({ method }) => {
 
 const APIDocumentationPage = () => {
   const navigate = useNavigate();
-  // State for Navigation (Site Menu vs Sidebar)
+  // State for Navigation
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
   const [isDocsSidebarOpen, setIsDocsSidebarOpen] = useState(false);
 
@@ -525,7 +526,7 @@ const APIDocumentationPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
-      {/* --- SITE NAVIGATION (From ApiUsage.js) --- */}
+      {/* --- SITE NAVIGATION --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
@@ -547,15 +548,15 @@ const APIDocumentationPage = () => {
               <NavItem to="/user-home" label="Home" />
               <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/docs" label="API Documentation" active={true} />
-              <NavItem to="/pricing" label="API Pricing" />
-              <NavItem to="/wallet" label="Wallet & Recharge" />
+              <NavItem to="/api-pricing" label="API Pricing" />
+              <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
               <NavItem to="/profile" label="Profile" />
             </div>
 
             {/* Logout */}
             <div className="hidden lg:flex items-center">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/logout")}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
               >
                 <span>Logout</span>
@@ -626,13 +627,13 @@ const APIDocumentationPage = () => {
                 API Documentation
               </Link>
               <Link
-                to="/pricing"
+                to="/api-pricing"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Pricing
               </Link>
               <Link
-                to="/wallet"
+                to="/wallet-recharge"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 Wallet & Recharge
@@ -644,7 +645,7 @@ const APIDocumentationPage = () => {
                 Profile
               </Link>
               <Link
-                to="/login"
+                to="/logout"
                 className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
               >
                 Logout
@@ -698,7 +699,6 @@ const APIDocumentationPage = () => {
                       className="w-full flex items-center justify-between px-2 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        {/* Simple Category Icon SVG */}
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -828,7 +828,7 @@ const APIDocumentationPage = () => {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                   <svg
-                    className="w-4.5 h-4.5 text-indigo-500"
+                    className="w-4 h-4 text-indigo-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -848,26 +848,11 @@ const APIDocumentationPage = () => {
                     <p className="text-sm text-gray-500">
                       Content-Type: application/json
                     </p>
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-                      <div className="px-4 py-2 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
-                        <span className="text-xs text-gray-400 font-mono">
-                          Example Body
-                        </span>
-                        <button
-                          onClick={() =>
-                            navigator.clipboard.writeText(
-                              JSON.stringify(activeEndpoint.body, null, 2)
-                            )
-                          }
-                          className="text-xs text-indigo-400 hover:text-indigo-300"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                      <pre className="p-4 text-sm text-gray-300 font-mono overflow-x-auto">
-                        {JSON.stringify(activeEndpoint.body, null, 2)}
-                      </pre>
-                    </div>
+                    {/* Replaced manual div with JsonViewer to enforce max-height */}
+                    <JsonViewer
+                      data={activeEndpoint.body}
+                      title="Example Body"
+                    />
                   </div>
                 ) : (
                   <div className="p-4 rounded-lg bg-gray-800/30 border border-gray-800 text-sm text-gray-500 italic">
@@ -880,7 +865,7 @@ const APIDocumentationPage = () => {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                   <svg
-                    className="w-4.5 h-4.5 text-emerald-500"
+                    className="w-4 h-4 text-emerald-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -894,16 +879,8 @@ const APIDocumentationPage = () => {
                   </svg>
                   Response Structure
                 </h3>
-                <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
-                  <div className="px-4 py-2 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
-                    <span className="text-xs text-gray-400 font-mono">
-                      200 OK
-                    </span>
-                  </div>
-                  <pre className="p-4 text-sm text-gray-300 font-mono overflow-x-auto">
-                    {JSON.stringify(activeEndpoint.response, null, 2)}
-                  </pre>
-                </div>
+                {/* Replaced manual div with JsonViewer to enforce max-height */}
+                <JsonViewer data={activeEndpoint.response} title="200 OK" />
               </div>
 
               {/* Try It Panel */}

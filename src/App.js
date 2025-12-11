@@ -9,9 +9,12 @@ import ApiUsage from "./components/apiUsage";
 import { Provider } from "react-redux";
 import appStore from "./store/appStore";
 import APIDocumentationPage from "./components/APIDocumentationPage";
+import ApiPricing from "./components/ApiPricing";
 import UserHomePage from "./components/UserHomePage";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsAndConditions from "./components/TermsAndConditions";
+import WalletAndRechargesPage from "./components/WalletAndRechargesPage";
+import ProfilePage from "./components/ProfilePage";
 const App = () => {
   return (
     <Provider store={appStore}>
@@ -36,7 +39,10 @@ const appRouter = createBrowserRouter([
           { path: "/user-home", element: <UserHomePage /> },
           { path: "/user-login", element: <LoginPage /> },
           { path: "/api-usage", element: <ApiUsage /> },
+          { path: "/api-pricing", element: <ApiPricing /> },
           { path: "/api-documentation", element: <APIDocumentationPage /> },
+          { path: "/wallet-recharge", element: <WalletAndRechargesPage /> },
+          { path: "/profile", element: <ProfilePage /> },
         ],
       },
 

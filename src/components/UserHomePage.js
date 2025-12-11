@@ -100,8 +100,8 @@ const UserHomePage = () => {
               <NavItem to="/user-home" label="Home" active={true} />
               <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/api-documentation" label="API Documentation" />
-              <NavItem to="/pricing" label="API Pricing" />
-              <NavItem to="/wallet" label="Wallet & Recharge" />
+              <NavItem to="/api-pricing" label="API Pricing" />
+              <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
               <NavItem to="/profile" label="Profile" />
             </div>
 
@@ -179,13 +179,13 @@ const UserHomePage = () => {
                 API Documentation
               </Link>
               <Link
-                to="/pricing"
+                to="/api-pricing"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Pricing
               </Link>
               <Link
-                to="/wallet"
+                to="/wallet-recharge"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 Wallet & Recharge
@@ -198,7 +198,7 @@ const UserHomePage = () => {
               </Link>
               <div className="border-t border-gray-700 my-2 pt-2">
                 <Link
-                  to="/login"
+                  to="/logout"
                   className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
                 >
                   Logout
@@ -424,7 +424,7 @@ const UserHomePage = () => {
                 <h3 className="text-2xl font-bold text-white mt-1">₹ 15,000</h3>
               </div>
               <button
-                onClick={() => navigate("/wallet")}
+                onClick={() => navigate("/wallet-recharge")}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm transition-colors shadow-lg shadow-indigo-500/20"
               >
                 Recharge

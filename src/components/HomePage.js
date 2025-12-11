@@ -24,7 +24,7 @@ const HomePage = () => {
                 Home
               </a>
               <a
-                href="/pricing"
+                href="/api-pricing"
                 className="hover:text-indigo-400 transition-colors"
               >
                 API Pricing
