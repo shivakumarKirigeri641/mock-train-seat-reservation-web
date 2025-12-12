@@ -90,7 +90,7 @@ const ApiPricing = () => {
               <NavItem to="/user-home" label="Home" />
               <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/api-documentation" label="API Documentation" />
-              <NavItem to="/api-pricing" label="API Pricing" />
+              <NavItem to="/api-pricing" label="API Pricing" active="true" />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
               <NavItem to="/give-feedback" label="Give feedback" />
               <NavItem to="/profile" label="Profile" />

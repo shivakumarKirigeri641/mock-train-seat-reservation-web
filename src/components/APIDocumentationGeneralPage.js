@@ -2,352 +2,6 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 
-// ---------------- API DATA ----------------
-const apiCategories = [
-  {
-    category: "Mock Train Reservation",
-    description:
-      "Simulate end-to-end train booking flows, PNR status, and live tracking.",
-    endpoints: [
-      {
-        id: "train-stations",
-        title: "Get Stations",
-        method: "GET",
-        endpoint: "/mockapis/serverpeuser/api/mocktrain/reserved/stations",
-        description: "Retrieve a list of available train stations with codes.",
-        response: {
-          success: true,
-          data: [
-            { id: 41, code: "SBC", station_name: "KSR BENGALURU", zone: "SWR" },
-          ],
-        },
-      },
-      {
-        id: "train-search",
-        title: "Search Trains",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/mocktrain/reserved/search-trains",
-        description:
-          "Search for trains running between two stations on a specific date.",
-        body: {
-          source_code: "SBC",
-          destination_code: "MYS",
-          doj: "2025-12-10",
-        },
-        response: {
-          success: true,
-          data: {
-            source: "KSR BENGALURU",
-            trains_list: [
-              { train_number: "12614", train_name: "WODEYAR EXPRESS" },
-            ],
-          },
-        },
-      },
-      {
-        id: "train-schedule",
-        title: "Train Schedule",
-        method: "POST",
-        endpoint:
-          "/mockapis/serverpeuser/api/mocktrain/reserved/train-schedule",
-        description: "Get the full route and time table for a specific train.",
-        body: { train_number: "12614" },
-        response: { success: true, data: { train_schedule_details: [] } },
-      },
-      {
-        id: "train-proceed",
-        title: "Proceed Booking",
-        method: "POST",
-        endpoint:
-          "/mockapis/serverpeuser/api/mocktrain/reserved/proceed-booking",
-        description:
-          "Initiate a booking request to generate a temporary Booking ID.",
-        body: {
-          train_number: "12614",
-          class_code: "3A",
-          quota: "GN",
-          doj: "2025-12-10",
-          passenger_list: [{ name: "John", age: 30, gender: "M" }],
-        },
-        response: {
-          success: true,
-          data: { booking_id: 101, fare_details: {} },
-        },
-      },
-      {
-        id: "train-confirm",
-        title: "Confirm Ticket",
-        method: "POST",
-        endpoint:
-          "/mockapis/serverpeuser/api/mocktrain/reserved/confirm-ticket",
-        description:
-          "Finalize booking using Booking ID. Triggers mock SMS if enabled.",
-        body: { booking_id: 101, can_send_mock_ticket_sms: true },
-        response: { success: true, data: { pnr: "8201293822", status: "CNF" } },
-      },
-      {
-        id: "train-pnr",
-        title: "PNR Status",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/mocktrain/reserved/pnr-status",
-        description: "Check the current status of a generated PNR.",
-        body: { pnr: "8201293822" },
-        response: {
-          success: true,
-          data: { pnr_status: "CNF", passengers: [] },
-        },
-      },
-      {
-        id: "train-cancel",
-        title: "Cancel Ticket",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/mocktrain/reserved/cancel-ticket",
-        description: "Cancel a ticket or specific passengers.",
-        body: { pnr: "8201293822", passenger_ids: [1, 2] },
-        response: {
-          success: true,
-          data: { refund_amount: 500, status: "CAN" },
-        },
-      },
-      {
-        id: "train-live",
-        title: "Live Running Status",
-        method: "POST",
-        endpoint:
-          "/mockapis/serverpeuser/api/mocktrain/reserved/train-live-running-status",
-        description: "Simulates live location of a train.",
-        body: { train_number: "12614" },
-        response: { success: true, data: { current_station: "KGI", delay: 5 } },
-      },
-      {
-        id: "train-live-station",
-        title: "Live Station",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/mocktrain/reserved/live-station",
-        description: "Get trains arriving/departing a station in next N hours.",
-        body: { station_code: "SBC", next_hours: 4 },
-        response: { success: true, data: { trains: [] } },
-      },
-    ],
-  },
-  {
-    category: "Car Specifications",
-    description:
-      "Automotive database for car makes, models, variants, and technical specs.",
-    endpoints: [
-      {
-        id: "car-makes",
-        title: "Get Car Makes",
-        method: "GET",
-        endpoint: "/mockapis/serverpeuser/api/carspecs/car-makes",
-        description: "Get a list of all car manufacturers (Brands).",
-        response: { success: true, data: ["Toyota", "Honda", "Hyundai"] },
-      },
-      {
-        id: "car-models",
-        title: "Get Car Models",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/carSpecs/car-models",
-        description: "Get models for a specific brand.",
-        body: { brand: "Toyota" },
-        response: { success: true, data: ["Camry", "Corolla", "Fortuner"] },
-      },
-      {
-        id: "car-series",
-        title: "Get Car Series",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/carSpecs/car-series",
-        description: "Get series/generations for a model.",
-        body: { brand: "Toyota", model: "Fortuner" },
-        response: { success: true, data: ["Sigma 4", "Legender"] },
-      },
-      {
-        id: "car-grades",
-        title: "Get Car Grades",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/carSpecs/car-grades",
-        description: "Get trim levels or grades.",
-        body: { brand: "Toyota", model: "Fortuner", series: "Legender" },
-        response: { success: true, data: ["4x4 AT", "4x2 AT"] },
-      },
-      {
-        id: "car-list",
-        title: "Get Car List",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/carSpecs/car-list",
-        description: "Get specific vehicle IDs based on selection.",
-        body: {
-          brand: "Toyota",
-          model: "Fortuner",
-          series: "Legender",
-          grade: "4x4 AT",
-        },
-        response: {
-          success: true,
-          data: [{ id: 101, name: "Toyota Fortuner Legender 4x4 AT" }],
-        },
-      },
-      {
-        id: "car-specs",
-        title: "Get Car Specs",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/carSpecs/car-specs",
-        description: "Fetch full technical specifications by ID.",
-        body: { id: 101 },
-        response: {
-          success: true,
-          data: { engine: "2.8L Diesel", power: "201 BHP", torque: "500 Nm" },
-        },
-      },
-      {
-        id: "car-search",
-        title: "Search Cars",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/carSpecs/search-cars",
-        description: "Search cars by name/keyword.",
-        body: { query: "Civic", limit: 10, skip: 0 },
-        response: { success: true, data: [] },
-      },
-    ],
-  },
-  {
-    category: "Bike Specifications",
-    description:
-      "Two-wheeler database for bikes, scooters, and their technical details.",
-    endpoints: [
-      {
-        id: "bike-makes",
-        title: "Get Bike Makes",
-        method: "GET",
-        endpoint: "/mockapis/serverpeuser/api/bikespecs/bike-makes",
-        description: "Get a list of all bike manufacturers.",
-        response: { success: true, data: ["Yamaha", "Royal Enfield", "Honda"] },
-      },
-      {
-        id: "bike-models",
-        title: "Get Bike Models",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/bikespecs/bike-models",
-        description: "Get models for a specific brand.",
-        body: { brand: "Yamaha" },
-        response: { success: true, data: ["R15", "MT-15", "FZs"] },
-      },
-      {
-        id: "bike-type",
-        title: "Get Bike Types",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/bikespecs/bike-type",
-        description: "Filter by type (e.g., Sports, Commuter).",
-        body: { brand: "Yamaha", model: "R15" },
-        response: { success: true, data: ["Sports"] },
-      },
-      {
-        id: "bike-category",
-        title: "Get Bike Category",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/bikespecs/bike-category",
-        description: "Get category variants.",
-        body: { brand: "Yamaha", model: "R15", bike_type: "Sports" },
-        response: { success: true, data: ["V4", "M"] },
-      },
-      {
-        id: "bike-list",
-        title: "Get Bike List",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/bikespecs/bike-list",
-        description: "Get specific bike IDs.",
-        body: {
-          brand: "Yamaha",
-          model: "R15",
-          bike_type: "Sports",
-          category: "V4",
-        },
-        response: {
-          success: true,
-          data: [{ id: 501, name: "Yamaha R15 V4 Racing Blue" }],
-        },
-      },
-      {
-        id: "bike-specs",
-        title: "Get Bike Specs",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/bikespecs/bike-specs",
-        description: "Fetch full technical specifications by ID.",
-        body: { id: 501 },
-        response: {
-          success: true,
-          data: { engine: "155cc", power: "18.4 PS", mileage: "45 kmpl" },
-        },
-      },
-    ],
-  },
-  {
-    category: "Indian Pincodes",
-    description:
-      "Postal data for India including States, Districts, and Blocks.",
-    endpoints: [
-      {
-        id: "pincode-details",
-        title: "Pincode Lookup",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/pincode-details",
-        description: "Get details for a specific 6-digit Pincode.",
-        body: { pincode: "560001" },
-        response: {
-          success: true,
-          data: { district: "Bangalore", state: "Karnataka", offices: [] },
-        },
-      },
-      {
-        id: "pincode-states",
-        title: "Get States",
-        method: "GET",
-        endpoint: "/mockapis/serverpeuser/api/pincodes/states",
-        description: "Get all States and Union Territories.",
-        response: {
-          success: true,
-          data: ["Karnataka", "Maharashtra", "Delhi"],
-        },
-      },
-      {
-        id: "pincode-districts",
-        title: "Get Districts",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/pincodes/districts",
-        description: "Get districts within a state.",
-        body: { selectedState: "Karnataka" },
-        response: { success: true, data: ["Bangalore", "Mysore", "Hubli"] },
-      },
-      {
-        id: "pincode-blocks",
-        title: "Get Blocks",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/pincodes/blocks",
-        description: "Get blocks within a district.",
-        body: { selectedState: "Karnataka", selectedDistrict: "Bangalore" },
-        response: {
-          success: true,
-          data: ["Bangalore North", "Bangalore South"],
-        },
-      },
-      {
-        id: "pincode-list",
-        title: "Get Pincode List",
-        method: "POST",
-        endpoint: "/mockapis/serverpeuser/api/pincodes/pincode-list",
-        description: "Drill down to specific branch/area details.",
-        body: {
-          selectedState: "Karnataka",
-          selectedDistrict: "Bangalore",
-          selectedBlock: "Bangalore North",
-          selectedBranchType: "Sub Post Office",
-        },
-        response: { success: true, data: [] },
-      },
-    ],
-  },
-];
-
 // ---------------- SUB-COMPONENTS ----------------
 
 const NavItem = ({ to, label, active = false }) => (
@@ -448,43 +102,80 @@ const APIDocumentationGeneralPage = () => {
   // State for Navigation
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
   const [isDocsSidebarOpen, setIsDocsSidebarOpen] = useState(false);
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // State for Documentation Data
+  const [apiData, setApiData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
-  const [activeEndpointId, setActiveEndpointId] = useState(
-    apiCategories[0].endpoints[0].id
-  );
+  const [activeEndpointId, setActiveEndpointId] = useState(null);
   const [openCategories, setOpenCategories] = useState({ 0: true });
 
-  const allEndpoints = apiCategories.flatMap((cat) =>
-    cat.endpoints.map((ep) => ({ ...ep, category: cat.category }))
+  // ---------------- FETCH LOGIC (Simulated) ----------------
+  useEffect(() => {
+    const fetchApiDocumentation = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(
+          process.env.REACT_APP_BACKEND_URL +
+            "/mockapis/serverpeuser/all-endpoints",
+          {},
+          { withCredentials: true }
+        );
+        setApiData(response?.data?.data);
+        console.log(response?.data?.data);
+        console.log(apiData);
+
+        // Set default active endpoint
+        if (
+          response?.data?.data?.length > 0 &&
+          response?.data?.data[0].endpoints?.length > 0
+        ) {
+          setActiveEndpointId(response[0].endpoints[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching API documentation:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchApiDocumentation();
+  }, [apiData]);
+
+  const allEndpoints = apiData?.flatMap((cat) =>
+    cat?.endpoints?.map((ep) => ({ ...ep, category: cat.category }))
   );
+
   const activeEndpoint =
-    allEndpoints.find((ep) => ep.id === activeEndpointId) || allEndpoints[0];
+    allEndpoints?.find((ep) => ep?.id === activeEndpointId) ||
+    (allEndpoints?.length > 0 ? allEndpoints[0] : null);
 
   useEffect(() => {
-    const catIndex = apiCategories.findIndex((c) =>
+    if (!activeEndpoint) return;
+    const catIndex = apiData.findIndex((c) =>
       c.endpoints.some((e) => e.id === activeEndpointId)
     );
     if (catIndex !== -1) setActiveCategoryIndex(catIndex);
-  }, [activeEndpointId]);
+  }, [activeEndpointId, apiData]);
 
   // State for Try It Panel
   const [searchQuery, setSearchQuery] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
-  //const [baseUrl, setBaseUrl] = useState("https://serverpe.in");
   const [baseUrl, setBaseUrl] = useState("http://localhost:8888");
   const [tryBody, setTryBody] = useState("");
   const [tryResponse, setTryResponse] = useState(null);
   const [tryLoading, setTryLoading] = useState(false);
 
   useEffect(() => {
-    setTryBody(
-      activeEndpoint.body ? JSON.stringify(activeEndpoint.body, null, 2) : ""
-    );
-    setTryResponse(null);
-  }, [activeEndpointId]);
+    if (activeEndpoint) {
+      setTryBody(
+        activeEndpoint?.body
+          ? JSON.stringify(activeEndpoint?.body, null, 2)
+          : ""
+      );
+      setTryResponse(null);
+    }
+  }, [activeEndpointId, activeEndpoint]);
 
   const toggleCategory = (index) => {
     setOpenCategories((prev) => ({ ...prev, [index]: !prev[index] }));
@@ -497,7 +188,7 @@ const APIDocumentationGeneralPage = () => {
     try {
       if (!apiKey || !secretKey)
         throw new Error("Please enter both API Key and Secret Key.");
-      const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint.endpoint}`;
+      const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint?.endpoint}`;
 
       const options = {
         method: activeEndpoint.method,
@@ -528,11 +219,42 @@ const APIDocumentationGeneralPage = () => {
     }
   };
 
+  // ---------------- LOADING SCREEN ----------------
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-6">
+          {/* Animated Spinner/Logo */}
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 bg-indigo-500 rounded-xl blur-xl opacity-50 animate-pulse"></div>
+            <div className="relative w-full h-full bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center shadow-2xl animate-bounce">
+              <span className="text-4xl">⚡</span>
+            </div>
+          </div>
+
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              Loading Documentation
+            </h3>
+            <p className="text-sm text-gray-400 font-mono">
+              Fetching endpoints...
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-500 animate-loading-bar"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white">
@@ -586,8 +308,8 @@ const APIDocumentationGeneralPage = () => {
             {/* Mobile menu button (Hamburger) */}
             <div className="md:hidden flex items-center">
               <button
-                onClick={() => setIsSiteMenuOpen(!isSiteMenuOpen)}
-                className="text-gray-300 hover:text-white"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white focus:outline-none"
               >
                 <span className="text-2xl">☰</span>
               </button>
@@ -596,7 +318,7 @@ const APIDocumentationGeneralPage = () => {
         </div>
 
         {/* --- ADDED: Mobile Menu Dropdown --- */}
-        {isSiteMenuOpen && (
+        {isMobileMenuOpen && (
           <div className="md:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300 absolute w-full left-0 z-50">
             <div className="px-4 py-4 flex flex-col space-y-3 shadow-2xl">
               <a
@@ -614,7 +336,7 @@ const APIDocumentationGeneralPage = () => {
               <button
                 onClick={() => {
                   navigate("/general-api-documentation");
-                  setIsSiteMenuOpen(false);
+                  setIsMobileMenuOpen(false);
                 }}
                 className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
               >
@@ -636,7 +358,7 @@ const APIDocumentationGeneralPage = () => {
                 <button
                   onClick={() => {
                     navigate("/user-login");
-                    setIsSiteMenuOpen(false);
+                    setIsMobileMenuOpen(false);
                   }}
                   className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg transition-colors"
                 >
@@ -679,11 +401,11 @@ const APIDocumentationGeneralPage = () => {
             />
 
             <nav className="space-y-1 pb-20 md:pb-0">
-              {apiCategories.map((cat, idx) => {
-                const filteredEndpoints = cat.endpoints.filter((ep) =>
-                  ep.title.toLowerCase().includes(searchQuery.toLowerCase())
+              {apiData?.map((cat, idx) => {
+                const filteredEndpoints = cat?.endpoints?.filter((ep) =>
+                  ep?.title?.toLowerCase().includes(searchQuery?.toLowerCase())
                 );
-                if (searchQuery && filteredEndpoints.length === 0) return null;
+                if (searchQuery && filteredEndpoints?.length === 0) return null;
 
                 return (
                   <div key={idx} className="mb-4">
@@ -714,34 +436,35 @@ const APIDocumentationGeneralPage = () => {
 
                     {(openCategories[idx] || searchQuery) && (
                       <div className="mt-1 space-y-0.5">
-                        {(searchQuery ? filteredEndpoints : cat.endpoints).map(
-                          (ep) => (
-                            <button
-                              key={ep.id}
-                              onClick={() => {
-                                setActiveEndpointId(ep.id);
-                                setIsDocsSidebarOpen(false);
-                                window.scrollTo(0, 0);
-                              }}
-                              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                                activeEndpointId === ep.id
-                                  ? "bg-indigo-600/10 text-indigo-400 border-l-2 border-indigo-500"
-                                  : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                        {(searchQuery
+                          ? filteredEndpoints
+                          : cat?.endpoints
+                        )?.map((ep) => (
+                          <button
+                            key={ep.id}
+                            onClick={() => {
+                              setActiveEndpointId(ep.id);
+                              setIsDocsSidebarOpen(false);
+                              window.scrollTo(0, 0);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                              activeEndpointId === ep?.id
+                                ? "bg-indigo-600/10 text-indigo-400 border-l-2 border-indigo-500"
+                                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                            }`}
+                          >
+                            <span
+                              className={`text-[10px] font-bold w-8 ${
+                                ep.method === "GET"
+                                  ? "text-emerald-400"
+                                  : "text-blue-400"
                               }`}
                             >
-                              <span
-                                className={`text-[10px] font-bold w-8 ${
-                                  ep.method === "GET"
-                                    ? "text-emerald-400"
-                                    : "text-blue-400"
-                                }`}
-                              >
-                                {ep.method}
-                              </span>
-                              <span className="truncate">{ep.title}</span>
-                            </button>
-                          )
-                        )}
+                              {ep.method}
+                            </span>
+                            <span className="truncate">{ep?.title}</span>
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -784,223 +507,232 @@ const APIDocumentationGeneralPage = () => {
             </div>
 
             {/* Endpoint Info */}
-            <div className="space-y-6">
-              <div className="border-b border-gray-800 pb-8">
-                <div className="flex items-center gap-3 mb-4 flex-wrap">
-                  <MethodBadge method={activeEndpoint.method} />
-                  <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight break-all">
-                    {activeEndpoint.title}
-                  </h1>
-                </div>
-
-                <p className="text-gray-400 text-base md:text-lg leading-relaxed">
-                  {activeEndpoint.description}
-                </p>
-
-                <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 break-all shadow-inner overflow-x-auto">
-                  <svg
-                    className="w-4 h-4 text-gray-600 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                    />
-                  </svg>
-                  <span className="text-indigo-400 whitespace-normal break-all">
-                    {activeEndpoint.endpoint}
-                  </span>
-                </div>
-              </div>
-
-              {/* Request Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-indigo-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
-                  Request Payload
-                </h3>
-
-                {activeEndpoint.body ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-500">
-                      Content-Type: application/json
-                    </p>
-                    {/* Replaced manual div with JsonViewer to enforce max-height */}
-                    <JsonViewer
-                      data={activeEndpoint.body}
-                      title="Example Body"
-                    />
+            {activeEndpoint && (
+              <div className="space-y-6">
+                <div className="border-b border-gray-800 pb-8">
+                  <div className="flex items-center gap-3 mb-4 flex-wrap">
+                    <MethodBadge method={activeEndpoint.method} />
+                    <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight break-all">
+                      {activeEndpoint.title}
+                    </h1>
                   </div>
-                ) : (
-                  <div className="p-4 rounded-lg bg-gray-800/30 border border-gray-800 text-sm text-gray-500 italic">
-                    No request body required (GET request).
-                  </div>
-                )}
-              </div>
 
-              {/* Response Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-emerald-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-                    />
-                  </svg>
-                  Response Structure
-                </h3>
-                {/* Replaced manual div with JsonViewer to enforce max-height */}
-                <JsonViewer data={activeEndpoint.response} title="200 OK" />
-              </div>
+                  <p className="text-gray-400 text-base md:text-lg leading-relaxed">
+                    {activeEndpoint.category_description}
+                  </p>
 
-              {/* Try It Panel */}
-              <div className="mt-10 pt-8 border-t border-gray-800">
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-purple-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Test Endpoint
-                </h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  Send a live request to the mock server using your credentials.
-                </p>
-
-                {/* --- NEW POSTMAN SUGGESTION BLOCK --- */}
-                <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center gap-4">
-                  <div className="p-3 bg-gray-800 rounded-full border border-gray-700 shrink-0">
+                  <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 break-all shadow-inner overflow-x-auto">
                     <svg
-                      className="w-6 h-6 text-orange-500"
-                      viewBox="0 0 24 24"
+                      className="w-4 h-4 text-gray-600 shrink-0"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
                     >
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                      />
                     </svg>
+                    <span className="text-indigo-400 whitespace-normal break-all">
+                      {activeEndpoint?.endpoint}
+                    </span>
                   </div>
-                  <div className="flex-1 text-center sm:text-left">
-                    <h4 className="text-sm font-bold text-white">
-                      Recommended: Test in Postman
-                    </h4>
-                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                      To avoid exposing your <strong>Secret Key</strong> in the
-                      browser, we recommend testing secure endpoints using
-                      Postman.
-                    </p>
-                  </div>
-                  <a
-                    href="https://www.postman.com/downloads/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg border border-gray-700 transition-colors whitespace-nowrap"
-                  >
-                    Download Postman ↗
-                  </a>
                 </div>
-                {/* ------------------------------------ */}
 
-                <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-6 space-y-4">
-                  {/* Header Inputs */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="x-api-key"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <input
-                      type="text"
-                      value={secretKey}
-                      onChange={(e) => setSecretKey(e.target.value)}
-                      placeholder="x-secret-key"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                  </div>
+                {/* Request Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-indigo-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                      />
+                    </svg>
+                    Request Payload
+                  </h3>
 
-                  <input
-                    type="text"
-                    value={baseUrl}
-                    onChange={(e) => setBaseUrl(e.target.value)}
-                    placeholder="Base URL"
-                    className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
-
-                  {activeEndpoint.body && (
-                    <div>
-                      <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
-                        Request Body
-                      </label>
-                      <textarea
-                        rows={6}
-                        value={tryBody}
-                        onChange={(e) => setTryBody(e.target.value)}
-                        className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg font-mono text-sm text-gray-200 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  {activeEndpoint.sample_request ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-500">
+                        Content-Type: application/json
+                      </p>
+                      {/* Replaced manual div with JsonViewer to enforce max-height */}
+                      <JsonViewer
+                        data={activeEndpoint.sample_request}
+                        title="Example Body"
                       />
                     </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <button
-                      onClick={sendTryRequest}
-                      disabled={tryLoading}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-wait text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20"
-                    >
-                      {tryLoading ? "Sending..." : "Send Request"}
-                    </button>
-                    <div className="text-xs text-gray-500 font-mono hidden sm:block">
-                      {activeEndpoint.method} {activeEndpoint.endpoint}
-                    </div>
-                  </div>
-
-                  {tryResponse && (
-                    <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                      <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
-                        Live Response
-                      </label>
-                      <JsonViewer data={tryResponse} title="Status: Received" />
+                  ) : (
+                    <div className="p-4 rounded-lg bg-gray-800/30 border border-gray-800 text-sm text-gray-500 italic">
+                      No request body required (GET request).
                     </div>
                   )}
                 </div>
+
+                {/* Response Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-emerald-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+                      />
+                    </svg>
+                    Response Structure
+                  </h3>
+                  {/* Replaced manual div with JsonViewer to enforce max-height */}
+                  <JsonViewer
+                    data={activeEndpoint.sample_response.data}
+                    title="200 OK"
+                  />
+                </div>
+
+                {/* Try It Panel */}
+                <div className="mt-10 pt-8 border-t border-gray-800">
+                  <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-purple-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Test Endpoint
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                    Send a live request to the mock server using your
+                    credentials.
+                  </p>
+
+                  {/* --- NEW POSTMAN SUGGESTION BLOCK --- */}
+                  <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center gap-4">
+                    <div className="p-3 bg-gray-800 rounded-full border border-gray-700 shrink-0">
+                      <svg
+                        className="w-6 h-6 text-orange-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-center sm:text-left">
+                      <h4 className="text-sm font-bold text-white">
+                        Recommended: Test in Postman
+                      </h4>
+                      <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                        To avoid exposing your <strong>Secret Key</strong> in
+                        the browser, we recommend testing secure endpoints using
+                        Postman.
+                      </p>
+                    </div>
+                    <a
+                      href="https://www.postman.com/downloads/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg border border-gray-700 transition-colors whitespace-nowrap"
+                    >
+                      Download Postman ↗
+                    </a>
+                  </div>
+                  {/* ------------------------------------ */}
+
+                  <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-6 space-y-4">
+                    {/* Header Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder="x-api-key"
+                        className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <input
+                        type="text"
+                        value={secretKey}
+                        onChange={(e) => setSecretKey(e.target.value)}
+                        placeholder="x-secret-key"
+                        className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <input
+                      type="text"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      placeholder="Base URL"
+                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+
+                    {activeEndpoint.body && (
+                      <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
+                          Request Body
+                        </label>
+                        <textarea
+                          rows={6}
+                          value={tryBody}
+                          onChange={(e) => setTryBody(e.target.value)}
+                          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg font-mono text-sm text-gray-200 focus:ring-1 focus:ring-indigo-500 outline-none"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                      <button
+                        onClick={sendTryRequest}
+                        disabled={tryLoading}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-wait text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20"
+                      >
+                        {tryLoading ? "Sending..." : "Send Request"}
+                      </button>
+                      <div className="text-xs text-gray-500 font-mono hidden sm:block">
+                        {activeEndpoint.method} {activeEndpoint.endpoint}
+                      </div>
+                    </div>
+
+                    {tryResponse && (
+                      <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
+                          Live Response
+                        </label>
+                        <JsonViewer
+                          data={tryResponse}
+                          title="Status: Received"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </main>
       </div>
