@@ -403,17 +403,28 @@ const LoginPage = () => {
             )}
           </AnimatePresence>
         </div>
+
+        {/* --- ADDED: Back to Home Link --- */}
+        <div className="text-center mt-6">
+          <button
+            onClick={() => navigate("/")}
+            className="text-gray-500 hover:text-indigo-400 text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto group"
+          >
+            <span className="group-hover:-translate-x-1 transition-transform">
+              &larr;
+            </span>
+            Back to Home
+          </button>
+        </div>
       </motion.div>
 
       {/* Disclaimer */}
       <motion.div className="mt-8 max-w-md text-center px-4">
-        <p className="text-[10px] text-gray-500 leading-relaxed border border-gray-700/50 p-3 rounded-lg bg-gray-800/30 backdrop-blur-sm">
-          <span className="font-bold text-red-400 block mb-1">
-            ⚠️ DISCLAIMER
-          </span>
-          This is a sample demo UI developed with provided APIs for testing &
-          learning purposes only. No real data is processed. Check the developer
-          console for API logs.
+        <p className="text-red-300 font-medium bg-red-900/10 px-6 py-3 rounded-lg border border-red-900/30">
+          <strong>Disclaimer:</strong> These mock APIs are strictly for
+          learning, practicing Web-UI, training, and testing purposes only. No
+          real-world scenarios, real bookings, or live databases are connected
+          here.
         </p>
       </motion.div>
     </div>
