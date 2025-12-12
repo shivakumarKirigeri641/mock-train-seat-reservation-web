@@ -3,6 +3,7 @@ import LogoutPage from "./components/LogoutPage";
 import Layout from "./components/Layout";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import Error from "./components/Error";
+import TestimonialsPage from "./components/TestimonialsPage";
 import LoginPage from "./components/LoginPage";
 import HomePage from "./components/HomePage";
 import ApiUsage from "./components/apiUsage";
@@ -11,6 +12,7 @@ import { Provider } from "react-redux";
 import appStore from "./store/appStore";
 import APIDocumentationPage from "./components/APIDocumentationPage";
 import ApiPricing from "./components/ApiPricing";
+import FeedbackForm from "./components/FeedbackForm";
 import UserHomePage from "./components/UserHomePage";
 import AboutMe from "./components/AboutMe";
 import PrivacyPolicy from "./components/PrivacyPolicy";
@@ -48,6 +50,7 @@ const appRouter = createBrowserRouter([
           { path: "/api-pricing", element: <ApiPricing /> },
           { path: "/general-api-pricing", element: <ApiPricingGeneral /> },
           { path: "/about-me", element: <AboutMe /> },
+          { path: "/testimonials", element: <TestimonialsPage /> },
           { path: "/api-documentation", element: <APIDocumentationPage /> },
           { path: "/api-terms", element: <ApiTermsPage /> },
           { path: "/contact-me", element: <ContactMe /> },
@@ -57,6 +60,7 @@ const appRouter = createBrowserRouter([
             element: <APIDocumentationGeneralPage />,
           },
           { path: "/wallet-recharge", element: <WalletAndRechargesPage /> },
+          { path: "/give-feedback", element: <FeedbackForm /> },
           { path: "/profile", element: <ProfilePage /> },
           { path: "/refund-policy", element: <RefundPolicyPage /> },
         ],

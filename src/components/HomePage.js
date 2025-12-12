@@ -8,8 +8,33 @@ const HomePage = () => {
   // State for mobile menu toggling (optional, but good for responsiveness)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Mock Testimonials Data (Preview)
+  const testimonialsPreview = [
+    {
+      id: 1,
+      name: "Rahul Sharma",
+      role: "Frontend Developer",
+      text: "ServerPe's mock APIs saved me weeks of backend dependency. The train reservation flow is incredibly detailed!",
+      avatar: "👨‍💻",
+    },
+    {
+      id: 2,
+      name: "Priya Singh",
+      role: "QA Engineer",
+      text: "Finally, a way to test edge cases like 'WL' and 'RAC' without needing a live PNR. The error simulation is spot on.",
+      avatar: "👩‍🔬",
+    },
+    {
+      id: 3,
+      name: "Amit Patel",
+      role: "Freelancer",
+      text: "The vehicle specs API is a goldmine. I built a car comparison tool in just 2 days using this data.",
+      avatar: "🚀",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
@@ -63,17 +88,69 @@ const HomePage = () => {
               </button>
             </div>
 
-            {/* Mobile menu button (Hamburger) - simplified for this view */}
+            {/* Mobile menu button (Hamburger) */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-300 hover:text-white"
+                className="text-gray-300 hover:text-white focus:outline-none"
               >
                 <span className="text-2xl">☰</span>
               </button>
             </div>
           </div>
         </div>
+
+        {/* --- Mobile Menu Dropdown --- */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300 absolute w-full left-0 z-50">
+            <div className="px-4 py-4 flex flex-col space-y-3 shadow-2xl">
+              <a
+                href="/"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Home
+              </a>
+              <a
+                href="/general-api-pricing"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Pricing
+              </a>
+              <button
+                onClick={() => {
+                  navigate("/general-api-documentation");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Documentation
+              </button>
+              <a
+                href="/about-me"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                About Me
+              </a>
+              <a
+                href="/contact-me"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Contact Me
+              </a>
+              <div className="pt-2 border-t border-gray-700">
+                <button
+                  onClick={() => {
+                    navigate("/user-login");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Start using mock APIs
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -237,8 +314,53 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* --- NEW: Testimonials Section --- */}
+      <section className="bg-gray-800/50 border-y border-gray-800 py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
+            Loved by Developers
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {testimonialsPreview.map((t) => (
+              <div
+                key={t.id}
+                className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-lg"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-2xl border border-gray-700">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold">{t.name}</h4>
+                    <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium">
+                      {t.role}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed italic">
+                  "{t.text}"
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={() => navigate("/testimonials")}
+              className="text-indigo-400 hover:text-indigo-300 font-medium text-sm flex items-center justify-center gap-1 mx-auto transition-colors group"
+            >
+              Load More Testimonials
+              <span className="group-hover:translate-x-1 transition-transform">
+                &rarr;
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Footer / Bottom CTA */}
-      <footer className="border-t border-gray-800 bg-gray-900 pt-12 pb-8 text-center">
+      <footer className="border-t border-gray-800 bg-gray-900 pt-12 pb-8 text-center mt-auto">
         <Footer />
       </footer>
     </div>

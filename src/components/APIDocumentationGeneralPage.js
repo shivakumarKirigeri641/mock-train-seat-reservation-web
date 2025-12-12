@@ -532,7 +532,7 @@ const APIDocumentationGeneralPage = () => {
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white">
@@ -583,10 +583,10 @@ const APIDocumentationGeneralPage = () => {
               </button>
             </div>
 
-            {/* Mobile menu button (Hamburger) - simplified for this view */}
+            {/* Mobile menu button (Hamburger) */}
             <div className="md:hidden flex items-center">
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => setIsSiteMenuOpen(!isSiteMenuOpen)}
                 className="text-gray-300 hover:text-white"
               >
                 <span className="text-2xl">☰</span>
@@ -594,12 +594,64 @@ const APIDocumentationGeneralPage = () => {
             </div>
           </div>
         </div>
+
+        {/* --- ADDED: Mobile Menu Dropdown --- */}
+        {isSiteMenuOpen && (
+          <div className="md:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300 absolute w-full left-0 z-50">
+            <div className="px-4 py-4 flex flex-col space-y-3 shadow-2xl">
+              <a
+                href="/"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Home
+              </a>
+              <a
+                href="/general-api-pricing"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Pricing
+              </a>
+              <button
+                onClick={() => {
+                  navigate("/general-api-documentation");
+                  setIsSiteMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Documentation
+              </button>
+              <a
+                href="/about-me"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                About Me
+              </a>
+              <a
+                href="/contact-me"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Contact Me
+              </a>
+              <div className="pt-2 border-t border-gray-700">
+                <button
+                  onClick={() => {
+                    navigate("/user-login");
+                    setIsSiteMenuOpen(false);
+                  }}
+                  className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Start using mock APIs
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* --- DOCS LAYOUT --- */}
-      <div className="flex flex-1 max-w-7xl mx-auto w-full relative">
+      <div className="flex flex-col md:flex-row flex-1 max-w-7xl mx-auto w-full relative">
         {/* Mobile Sidebar Toggle (for Docs) */}
-        <div className="md:hidden w-full bg-gray-800/50 p-4 border-b border-gray-800 flex justify-between items-center">
+        <div className="md:hidden w-full bg-gray-800/50 p-4 border-b border-gray-800 flex justify-between items-center sticky top-20 z-40">
           <span className="text-sm font-semibold text-gray-400">
             Select Endpoint
           </span>
@@ -613,7 +665,7 @@ const APIDocumentationGeneralPage = () => {
 
         {/* SIDEBAR */}
         <aside
-          className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 z-40 transform transition-transform duration-300 md:translate-x-0 md:static md:h-[calc(100vh-5rem)] md:overflow-y-auto ${
+          className={`fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 z-40 transform transition-transform duration-300 md:translate-x-0 md:static md:h-auto md:min-h-[calc(100vh-5rem)] md:overflow-y-auto ${
             isDocsSidebarOpen ? "translate-x-0 pt-20" : "-translate-x-full"
           }`}
         >
@@ -700,11 +752,11 @@ const APIDocumentationGeneralPage = () => {
         </aside>
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 w-full min-w-0 p-4 md:p-8 lg:p-12">
+        <main className="flex-1 w-full min-w-0 p-4 md:p-8 lg:p-12 overflow-hidden">
           <div className="max-w-4xl mx-auto space-y-10">
             {/* Disclaimer */}
             <div className="p-4 bg-orange-900/20 border border-orange-500/20 rounded-xl flex gap-3 items-start">
-              <div className="p-1 bg-orange-500/20 rounded-full mt-0.5">
+              <div className="p-1 bg-orange-500/20 rounded-full mt-0.5 shrink-0">
                 <svg
                   className="w-3.5 h-3.5 text-orange-400"
                   fill="none"
@@ -734,18 +786,18 @@ const APIDocumentationGeneralPage = () => {
             {/* Endpoint Info */}
             <div className="space-y-6">
               <div className="border-b border-gray-800 pb-8">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <MethodBadge method={activeEndpoint.method} />
-                  <h1 className="text-3xl font-bold text-white tracking-tight">
+                  <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight break-all">
                     {activeEndpoint.title}
                   </h1>
                 </div>
 
-                <p className="text-gray-400 text-lg leading-relaxed">
+                <p className="text-gray-400 text-base md:text-lg leading-relaxed">
                   {activeEndpoint.description}
                 </p>
 
-                <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-sm text-gray-300 break-all shadow-inner">
+                <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 break-all shadow-inner overflow-x-auto">
                   <svg
                     className="w-4 h-4 text-gray-600 shrink-0"
                     fill="none"
@@ -759,7 +811,7 @@ const APIDocumentationGeneralPage = () => {
                       d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
                     />
                   </svg>
-                  <span className="text-indigo-400">
+                  <span className="text-indigo-400 whitespace-normal break-all">
                     {activeEndpoint.endpoint}
                   </span>
                 </div>
@@ -846,7 +898,45 @@ const APIDocumentationGeneralPage = () => {
                   Send a live request to the mock server using your credentials.
                 </p>
 
-                <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-4">
+                {/* --- NEW POSTMAN SUGGESTION BLOCK --- */}
+                <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center gap-4">
+                  <div className="p-3 bg-gray-800 rounded-full border border-gray-700 shrink-0">
+                    <svg
+                      className="w-6 h-6 text-orange-500"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                  </div>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h4 className="text-sm font-bold text-white">
+                      Recommended: Test in Postman
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      To avoid exposing your <strong>Secret Key</strong> in the
+                      browser, we recommend testing secure endpoints using
+                      Postman.
+                    </p>
+                  </div>
+                  <a
+                    href="https://www.postman.com/downloads/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg border border-gray-700 transition-colors whitespace-nowrap"
+                  >
+                    Download Postman ↗
+                  </a>
+                </div>
+                {/* ------------------------------------ */}
+
+                <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-6 space-y-4">
                   {/* Header Inputs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
@@ -887,11 +977,11 @@ const APIDocumentationGeneralPage = () => {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
                     <button
                       onClick={sendTryRequest}
                       disabled={tryLoading}
-                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-wait text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20"
+                      className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-wait text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20"
                     >
                       {tryLoading ? "Sending..." : "Send Request"}
                     </button>

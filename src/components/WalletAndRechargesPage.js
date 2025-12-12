@@ -139,6 +139,7 @@ const WalletAndRechargesPage = () => {
                 label="Wallet & Recharge"
                 active={true}
               />
+              <NavItem to="/give-feedback" label="Give feedback" />
               <NavItem to="/profile" label="Profile" />
             </div>
 
@@ -226,6 +227,12 @@ const WalletAndRechargesPage = () => {
                 className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
               >
                 Wallet & Recharge
+              </Link>
+              <Link
+                to="/give-feedback"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                Give feedback
               </Link>
               <Link
                 to="/profile"

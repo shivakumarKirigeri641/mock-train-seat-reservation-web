@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
 const AboutMe = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -27,7 +28,7 @@ const AboutMe = () => {
                 Home
               </button>
               <button
-                onClick={() => navigate("/api-pricing")}
+                onClick={() => navigate("/general-api-pricing")}
                 className="hover:text-indigo-400 transition-colors"
               >
                 API Pricing
@@ -61,8 +62,64 @@ const AboutMe = () => {
                 Start using mock APIs
               </button>
             </div>
+
+            {/* Mobile menu button (Hamburger) */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white focus:outline-none"
+              >
+                <span className="text-2xl">☰</span>
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* --- ADDED: Mobile Menu Dropdown --- */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300 absolute w-full left-0 z-50">
+            <div className="px-4 py-4 flex flex-col space-y-3 shadow-2xl">
+              <button
+                onClick={() => navigate("/")}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => navigate("/general-api-pricing")}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Pricing
+              </button>
+              <button
+                onClick={() => navigate("/general-api-documentation")}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Documentation
+              </button>
+              <button
+                onClick={() => navigate("/about-me")}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                About Me
+              </button>
+              <button
+                onClick={() => navigate("/contact-me")}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Contact Me
+              </button>
+              <div className="pt-2 border-t border-gray-700">
+                <button
+                  onClick={() => navigate("/user-login")}
+                  className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Start using mock APIs
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* --- Main Content --- */}
@@ -75,9 +132,9 @@ const AboutMe = () => {
             </div>
           </div>
           <div className="text-center md:text-left">
-            <div className="flex items-center">
-              👨‍🦱
-              <h1 className="text-4xl font-bold text-pink-400 mb-2 italic">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+              <span className="text-2xl">👨‍🦱</span>
+              <h1 className="text-4xl font-bold text-pink-400 italic">
                 Shivakumar V K
               </h1>
             </div>

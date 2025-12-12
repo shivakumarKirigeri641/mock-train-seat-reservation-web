@@ -121,17 +121,69 @@ const ApiPricingGeneral = () => {
               </button>
             </div>
 
-            {/* Mobile menu button (Hamburger) - simplified for this view */}
+            {/* Mobile menu button (Hamburger) */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-300 hover:text-white"
+                className="text-gray-300 hover:text-white focus:outline-none"
               >
                 <span className="text-2xl">☰</span>
               </button>
             </div>
           </div>
         </div>
+
+        {/* --- ADDED: Mobile Menu Dropdown --- */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300 absolute w-full left-0 z-50">
+            <div className="px-4 py-4 flex flex-col space-y-3 shadow-2xl">
+              <a
+                href="/"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Home
+              </a>
+              <a
+                href="/general-api-pricing"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Pricing
+              </a>
+              <button
+                onClick={() => {
+                  navigate("/general-api-documentation");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                API Documentation
+              </button>
+              <a
+                href="/about-me"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                About Me
+              </a>
+              <a
+                href="/contact-me"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+              >
+                Contact Me
+              </a>
+              <div className="pt-2 border-t border-gray-700">
+                <button
+                  onClick={() => {
+                    navigate("/user-login");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Start using mock APIs
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* --- MAIN CONTENT --- */}
@@ -252,7 +304,7 @@ const ApiPricingGeneral = () => {
 
               {/* Button */}
               <button
-                onClick={() => navigate("/wallet-recharge")}
+                onClick={() => navigate("/user-login")}
                 className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
               >
                 Buy Now

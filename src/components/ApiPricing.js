@@ -92,6 +92,7 @@ const ApiPricing = () => {
               <NavItem to="/api-documentation" label="API Documentation" />
               <NavItem to="/api-pricing" label="API Pricing" />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
+              <NavItem to="/give-feedback" label="Give feedback" />
               <NavItem to="/profile" label="Profile" />
             </div>
 
@@ -179,6 +180,12 @@ const ApiPricing = () => {
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 Wallet & Recharge
+              </Link>
+              <Link
+                to="/give-feedback"
+                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+              >
+                Give feedback
               </Link>
               <Link
                 to="/profile"
