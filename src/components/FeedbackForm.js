@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 const FeedbackForm = () => {
   const navigate = useNavigate();
@@ -9,6 +10,18 @@ const FeedbackForm = () => {
     rating: 5,
     message: "",
   });
+  const NavItem = ({ to, label, active = false }) => (
+    <Link
+      to={to}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+        active
+          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+          : "text-gray-300 hover:text-white hover:bg-gray-800"
+      }`}
+    >
+      {label}
+    </Link>
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -49,8 +62,12 @@ const FeedbackForm = () => {
               <NavItem to="/api-documentation" label="API Documentation" />
               <NavItem to="/api-pricing" label="API Pricing" />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
-              <NavItem to="/give-feedback" label="Give feedback" />
-              <NavItem to="/profile" label="Profile" active={true} />
+              <NavItem
+                to="/give-feedback"
+                label="Give feedback"
+                active={true}
+              />
+              <NavItem to="/profile" label="Profile" />
             </div>
 
             {/* Logout */}
