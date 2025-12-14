@@ -338,7 +338,7 @@ const ApiPricing = () => {
 
                   {/* Button */}
                   <button
-                    onClick={() => navigate("/wallet-recharge")}
+                    onClick={() => navigate("/plan-summary")}
                     className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
                   >
                     Buy Now

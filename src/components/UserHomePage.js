@@ -465,7 +465,7 @@ const UserHomePage = () => {
                 <p className="text-sm font-medium text-gray-400">
                   Available API credits
                 </p>
-                <h3 className="text-lg font-bold text-white mt-1">
+                <h3 className="text-3xl font-bold text-white mt-1">
                   {userData?.user_details?.api_credits || "..."}
                 </h3>
               </div>

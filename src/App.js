@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom/client";
+import SummaryPage from "./components/SummaryPage";
 import LogoutPage from "./components/LogoutPage";
 import Layout from "./components/Layout";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
@@ -61,6 +62,7 @@ const appRouter = createBrowserRouter([
           },
           { path: "/wallet-recharge", element: <WalletAndRechargesPage /> },
           { path: "/give-feedback", element: <FeedbackForm /> },
+          { path: "/plan-summary", element: <SummaryPage /> },
           { path: "/profile", element: <ProfilePage /> },
           { path: "/refund-policy", element: <RefundPolicyPage /> },
         ],
