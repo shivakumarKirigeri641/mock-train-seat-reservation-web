@@ -12,8 +12,18 @@ const ApiUsage = () => {
   // State for data
   const [dailyStats, setDailyStats] = useState([]);
   const [allLogs, setAllLogs] = useState([]);
+  const [analytics, setAnalytics] = useState({
+    totalRequests: 0,
+    avgLatency: "0.00",
+    successRate: "0.00%",
+    postPercentage: "0.00%",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const userdetails = useSelector((store) => store.loggedInUser);
+
+  // const BASE_URL = "https://serverpe.in"; // Production URL placeholder
+  const BASE_URL = "http://localhost:8888"; // Local dev URL placeholder
+
   useEffect(() => {
     if (!userdetails) {
       navigate("/");
@@ -22,14 +32,19 @@ const ApiUsage = () => {
         setIsLoading(true);
         try {
           // --- PLACEHOLDER FOR API CALL ---
-          const response = await axios.get(
-            process.env.REACT_APP_BACKEND_URL +
-              "/mockapis/serverpeuser/loggedinuser/api-usage",
+          const response_stats_logs = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-usage`,
             { withCredentials: true }
           );
-          console.log(response?.data?.data);
-          setDailyStats(response?.data?.data?.mockStats);
-          setAllLogs(response?.data?.data?.mockLogs);
+          const response_usage_analytics = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/usage-analytics`,
+            { withCredentials: true }
+          );
+          console.log(response_stats_logs?.data?.data);
+          console.log(response_usage_analytics?.data);
+          setDailyStats(response_stats_logs?.data?.data.mockStats);
+          setAllLogs(response_stats_logs?.data?.data.mockLogs);
+          setAnalytics(response_usage_analytics?.data?.data); // Set analytics state
         } catch (error) {
           console.error("Failed to load usage data", error);
         } finally {
@@ -248,33 +263,41 @@ const ApiUsage = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
           <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Total Requests (7 Days)
+              Total Calls
             </p>
-            <h3 className="text-3xl font-bold text-white mt-2">3,150</h3>
+            <h3 className="text-3xl font-bold text-white mt-2">
+              {analytics?.total_calls}
+            </h3>
             <span className="text-xs text-green-400 flex items-center gap-1 mt-1">
-              ↑ 12% vs last week
+              Lifetime requests
             </span>
           </div>
           <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Avg. Latency
             </p>
-            <h3 className="text-3xl font-bold text-indigo-400 mt-2">185ms</h3>
+            <h3 className="text-3xl font-bold text-indigo-400 mt-2">
+              {analytics.avg_latency}ms
+            </h3>
             <span className="text-xs text-gray-500 mt-1">Global average</span>
           </div>
           <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Success Rate
+              GET Requests
             </p>
-            <h3 className="text-3xl font-bold text-emerald-400 mt-2">99.2%</h3>
-            <span className="text-xs text-gray-500 mt-1">Status 2xx</span>
+            <h3 className="text-3xl font-bold text-emerald-400 mt-2">
+              {analytics.get_percentage}%
+            </h3>
+            <span className="text-xs text-gray-500 mt-1">Read operations</span>
           </div>
           <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Errors
+              POST Requests
             </p>
-            <h3 className="text-3xl font-bold text-red-400 mt-2">27</h3>
-            <span className="text-xs text-gray-500 mt-1">Status 4xx & 5xx</span>
+            <h3 className="text-3xl font-bold text-purple-400 mt-2">
+              {analytics.post_percentage}%
+            </h3>
+            <span className="text-xs text-gray-500 mt-1">Write operations</span>
           </div>
         </div>
 
@@ -300,7 +323,7 @@ const ApiUsage = () => {
                   {/* Bar */}
                   <div
                     className="w-full max-w-[40px] bg-gray-700 rounded-t-lg relative overflow-hidden transition-all hover:bg-gray-600"
-                    style={{ height: `${height}%` }}
+                    style={{ height }}
                   >
                     <div
                       className="absolute bottom-0 left-0 w-full bg-indigo-600/80 transition-all hover:bg-indigo-500"
@@ -413,7 +436,7 @@ const ApiUsage = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       No logs found matching filters.

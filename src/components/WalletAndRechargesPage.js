@@ -19,14 +19,18 @@ const NavItem = ({ to, label, active = false }) => (
 const WalletAndRechargesPage = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [filterType, setFilterType] = useState("All");
-  const [filterStatus, setFilterStatus] = useState("All");
 
   // State for data
-  const [transactions, setTransactions] = useState([]);
+  const [recharges, setRecharges] = useState([]);
+  const [deductions, setDeductions] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [activePlan, setActivePlan] = useState("Free");
   const [isLoading, setIsLoading] = useState(true);
+
+  // Pagination states
+  const [rechargePage, setRechargePage] = useState(1);
+  const [deductionPage, setDeductionPage] = useState(1);
+  const itemsPerPage = 10;
 
   // const BASE_URL = "https://serverpe.in";
   const BASE_URL = "http://localhost:8888"; // Local dev
@@ -35,12 +39,11 @@ const WalletAndRechargesPage = () => {
     const fetchWalletData = async () => {
       setIsLoading(true);
       try {
-        // --- API Call ---
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
           { withCredentials: true }
         );
-        const data = response?.data?.data;
+        const data = response.data.data;
 
         // 1. Set Wallet Balance & Plan
         const totalCredits =
@@ -48,7 +51,37 @@ const WalletAndRechargesPage = () => {
           (data.user_details.outstanding_apikey_count_free || 0);
         setWalletBalance(totalCredits);
         setActivePlan(data.user_details.price_name || "Free");
-        setTransactions(formattedTxns);
+
+        // 2. Process Credits (Recharges)
+        const creditsData = data.credit_details
+          .map((c) => ({
+            id: `CRD_${c.credit_id}`,
+            date: new Date(c.credited_on).toLocaleString(),
+            description: `Plan: ${c.price_name}`,
+            amount: `+${c.price_name === "Free" ? "Free Credits" : "Credits"}`,
+            cost: `₹${c.price}`,
+            status: c.transaction_status ? "Success" : "Failed",
+            rawDate: new Date(c.credited_on),
+          }))
+          .sort((a, b) => b.rawDate - a.rawDate);
+
+        setRecharges(creditsData);
+
+        // 3. Process Debits (Deductions)
+        const debitsData = data.debit_details
+          .map((d) => ({
+            id: `DBT_${d.debit_id}`,
+            date: new Date(d.debited_on).toLocaleString(),
+            description: "API Usage",
+            amount: `-${d.api_call_deduction}`,
+            responseStatus: d.response_status,
+            ip: d.ip_address,
+            status: d.response_status === 200 ? "Success" : "Failed", // Assuming 200 is success
+            rawDate: new Date(d.debited_on),
+          }))
+          .sort((a, b) => b.rawDate - a.rawDate);
+
+        setDeductions(debitsData);
       } catch (error) {
         console.error("Failed to load wallet data", error);
       } finally {
@@ -59,17 +92,11 @@ const WalletAndRechargesPage = () => {
     fetchWalletData();
   }, []);
 
-  // Filtering Logic
-  const filteredTransactions = transactions.filter((txn) => {
-    const matchesType =
-      filterType === "All" ||
-      (filterType === "Recharge" && txn.type === "Recharge") ||
-      (filterType === "Usage" && txn.type === "Deduction");
-
-    const matchesStatus = filterStatus === "All" || txn.status === filterStatus;
-
-    return matchesType && matchesStatus;
-  });
+  // Pagination Logic
+  const getPaginatedData = (data, page) => {
+    const startIndex = (page - 1) * itemsPerPage;
+    return data.slice(startIndex, startIndex + itemsPerPage);
+  };
 
   // Mock Download Function
   const downloadInvoice = (txn) => {
@@ -232,9 +259,9 @@ const WalletAndRechargesPage = () => {
       </nav>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-10">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-10 space-y-12">
         {/* Wallet Overview Card */}
-        <div className="bg-gradient-to-r from-gray-800 to-indigo-900/40 border border-gray-700 rounded-2xl p-8 mb-10 shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-800 to-indigo-900/40 border border-gray-700 rounded-2xl p-8 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <svg
               className="w-40 h-40 text-white"
@@ -289,13 +316,12 @@ const WalletAndRechargesPage = () => {
           </div>
         </div>
 
-        {/* Transaction History Section */}
+        {/* --- SECTION 1: RECHARGES (CREDITS) --- */}
         <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden">
-          {/* Filters Header */}
-          <div className="p-6 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <div className="p-6 border-b border-gray-700">
+            <h2 className="text-xl font-bold text-emerald-400 flex items-center gap-2">
               <svg
-                className="w-5 h-5 text-gray-400"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -304,83 +330,34 @@ const WalletAndRechargesPage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              Transaction History
+              Recharge History
             </h2>
-
-            <div className="flex flex-wrap gap-3">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="bg-gray-900 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5"
-              >
-                <option value="All">All Types</option>
-                <option value="Recharge">Recharges</option>
-                <option value="Usage">Deductions</option>
-              </select>
-
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="bg-gray-900 border border-gray-600 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5"
-              >
-                <option value="All">All Status</option>
-                <option value="Success">Success</option>
-                <option value="Failed">Failed</option>
-              </select>
-            </div>
           </div>
-
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-400">
               <thead className="text-xs text-gray-500 uppercase bg-gray-900/50">
                 <tr>
-                  <th className="px-6 py-4">Transaction ID</th>
-                  <th className="px-6 py-4">Date & Time</th>
-                  <th className="px-6 py-4">Description</th>
-                  <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Credits</th>
+                  <th className="px-6 py-4">ID</th>
+                  <th className="px-6 py-4">Date</th>
+                  <th className="px-6 py-4">Plan</th>
                   <th className="px-6 py-4">Amount</th>
+                  <th className="px-6 py-4">Cost</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-center">Invoice</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
                 {isLoading ? (
-                  // Loading Skeleton
-                  [1, 2, 3, 4, 5].map((i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-20"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-32"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-40"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-4 bg-gray-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="h-6 w-6 bg-gray-700 rounded mx-auto"></div>
-                      </td>
-                    </tr>
-                  ))
-                ) : filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((txn) => (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : recharges.length > 0 ? (
+                  getPaginatedData(recharges, rechargePage).map((txn) => (
                     <tr
                       key={txn.id}
                       className="hover:bg-gray-750 transition-colors"
@@ -394,104 +371,183 @@ const WalletAndRechargesPage = () => {
                       <td className="px-6 py-4 font-medium text-gray-300">
                         {txn.description}
                       </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-bold ${
-                            txn.type === "Recharge"
-                              ? "bg-emerald-900/30 text-emerald-400 border border-emerald-500/20"
-                              : "bg-orange-900/30 text-orange-400 border border-orange-500/20"
-                          }`}
-                        >
-                          {txn.type}
-                        </span>
-                      </td>
-                      <td
-                        className={`px-6 py-4 font-bold ${
-                          txn.type === "Recharge"
-                            ? "text-emerald-400"
-                            : "text-gray-400"
-                        }`}
-                      >
+                      <td className="px-6 py-4 font-bold text-emerald-400">
                         {txn.amount}
                       </td>
                       <td className="px-6 py-4">{txn.cost}</td>
                       <td className="px-6 py-4">
                         <span
-                          className={`flex items-center gap-1.5 ${
-                            txn.status === "Success"
-                              ? "text-green-400"
-                              : "text-red-400"
-                          }`}
+                          className={`px-2 py-1 rounded text-xs font-bold bg-emerald-900/30 text-emerald-400 border border-emerald-500/20`}
                         >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              txn.status === "Success"
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }`}
-                          ></span>
                           {txn.status}
                         </span>
                       </td>
-                      {/* Invoice Column */}
                       <td className="px-6 py-4 text-center">
-                        {txn.type === "Recharge" && txn.status === "Success" ? (
-                          <button
-                            onClick={() => downloadInvoice(txn)}
-                            className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all group"
-                            title="Download Invoice"
+                        <button
+                          onClick={() => downloadInvoice(txn)}
+                          className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all"
+                          title="Download Invoice"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            <svg
-                              className="w-5 h-5 group-hover:scale-110 transition-transform"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                              />
-                            </svg>
-                          </button>
-                        ) : (
-                          <span className="text-gray-700">-</span>
-                        )}
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
+                          </svg>
+                        </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan="8"
-                      className="px-6 py-12 text-center text-gray-500"
+                      colSpan="7"
+                      className="px-6 py-8 text-center text-gray-500"
                     >
-                      No transactions found matching your filters.
+                      No recharges found.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-
-          {/* Pagination */}
-          <div className="bg-gray-900/30 px-6 py-4 border-t border-gray-700 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              Showing {filteredTransactions.length} entries
-            </p>
-            <div className="flex gap-2">
-              <button
-                className="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-300 disabled:opacity-50"
-                disabled
-              >
-                Prev
-              </button>
-              <button className="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-300 hover:bg-gray-700">
-                Next
-              </button>
+          {recharges.length > itemsPerPage && (
+            <div className="bg-gray-900/30 px-6 py-4 border-t border-gray-700 flex justify-between items-center">
+              <span className="text-xs text-gray-500">Page {rechargePage}</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setRechargePage((p) => Math.max(1, p - 1))}
+                  disabled={rechargePage === 1}
+                  className="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-300 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => setRechargePage((p) => p + 1)}
+                  disabled={recharges.length <= rechargePage * itemsPerPage}
+                  className="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-300"
+                >
+                  Next
+                </button>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* --- SECTION 2: DEDUCTIONS (USAGE) --- */}
+        <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 border-b border-gray-700">
+            <h2 className="text-xl font-bold text-orange-400 flex items-center gap-2">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              Usage Deductions
+            </h2>
           </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-400">
+              <thead className="text-xs text-gray-500 uppercase bg-gray-900/50">
+                <tr>
+                  <th className="px-6 py-4">ID</th>
+                  <th className="px-6 py-4">Date</th>
+                  <th className="px-6 py-4">Type</th>
+                  <th className="px-6 py-4">Credits</th>
+                  <th className="px-6 py-4">Status Code</th>
+                  <th className="px-6 py-4">IP Address</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700/50">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : deductions.length > 0 ? (
+                  getPaginatedData(deductions, deductionPage).map((txn) => (
+                    <tr
+                      key={txn.id}
+                      className="hover:bg-gray-750 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-mono text-xs text-gray-500">
+                        {txn.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {txn.date}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-gray-300">
+                        {txn.description}
+                      </td>
+                      <td className="px-6 py-4 font-bold text-orange-400">
+                        {txn.amount}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-bold ${
+                            txn.responseStatus === 200
+                              ? "bg-green-900/30 text-green-400"
+                              : "bg-red-900/30 text-red-400"
+                          } border border-gray-600`}
+                        >
+                          {txn.responseStatus}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-xs">{txn.ip}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      No usage deductions found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {deductions.length > itemsPerPage && (
+            <div className="bg-gray-900/30 px-6 py-4 border-t border-gray-700 flex justify-between items-center">
+              <span className="text-xs text-gray-500">
+                Page {deductionPage}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDeductionPage((p) => Math.max(1, p - 1))}
+                  disabled={deductionPage === 1}
+                  className="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-300 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => setDeductionPage((p) => p + 1)}
+                  disabled={deductions.length <= deductionPage * itemsPerPage}
+                  className="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-xs text-gray-300"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
