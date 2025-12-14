@@ -122,7 +122,6 @@ const APIDocumentationGeneralPage = () => {
         );
         setApiData(response?.data?.data);
         console.log(response?.data?.data);
-        console.log(apiData);
 
         // Set default active endpoint
         if (

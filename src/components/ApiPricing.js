@@ -1,58 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
+import axios from "axios";
 
 const ApiPricing = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // ---------------- PLANS DATA ----------------
-  const plans = [
-    {
-      id: "tiny",
-      name: "Tiny",
-      price: 19,
-      calls: 100,
-      rateLimit: 3,
-      validity: "Unlimited",
-      color: "border-gray-600",
-      bg: "bg-gray-800",
-      badge: null,
-    },
-    {
-      id: "chotu",
-      name: "Chotu",
-      price: 79,
-      calls: 500,
-      rateLimit: 3,
-      validity: "Unlimited",
-      color: "border-blue-500/50",
-      bg: "bg-gray-800",
-      badge: "Popular",
-    },
-    {
-      id: "okok",
-      name: "Okok",
-      price: 179,
-      calls: 1200,
-      rateLimit: 3,
-      validity: "Unlimited",
-      color: "border-indigo-500/50",
-      bg: "bg-gray-800",
-      badge: "Best Value",
-    },
-    {
-      id: "wow",
-      name: "Wow",
-      price: 1599,
-      calls: 10000,
-      rateLimit: 3,
-      validity: "Unlimited",
-      color: "border-purple-500/50",
-      bg: "bg-gradient-to-br from-gray-800 to-purple-900/20",
-      badge: "Premium",
-    },
-  ];
+  // State for plans data and loading
+  const [plans, setPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // const BASE_URL = "https://serverpe.in";
+  const BASE_URL = "http://localhost:8888"; // Local dev
+
+  const userdetails = useSelector((store) => store.loggedInUser);
+
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/");
+      return;
+    }
+
+    const fetchPlans = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch plans from API
+        // Ensure your backend has this endpoint or adjust accordingly
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-plans-premium`,
+          { withCredentials: true }
+        );
+        console.log("priceing:", response?.data?.data);
+        setPlans(response?.data?.data);
+      } catch (error) {
+        console.error("Failed to load pricing plans", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, [userdetails, navigate]);
 
   const NavItem = ({ to, label, active = false }) => (
     <Link
@@ -66,12 +55,7 @@ const ApiPricing = () => {
       {label}
     </Link>
   );
-  const userdetails = useSelector((store) => store.loggedInUser);
-  useEffect(() => {
-    if (!userdetails) {
-      navigate("/");
-    }
-  }, []);
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}
@@ -231,110 +215,137 @@ const ApiPricing = () => {
 
         {/* Plans Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative rounded-2xl border ${plan.color} ${plan.bg} p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300`}
-            >
-              {/* Badge */}
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                  {plan.badge}
+          {isLoading
+            ? // --- Loading Placeholders ---
+              Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-800 border border-gray-700 rounded-2xl p-6 h-96 flex flex-col animate-pulse"
+                >
+                  <div className="h-6 w-1/2 bg-gray-700 rounded mb-4 mx-auto"></div>
+                  <div className="h-10 w-2/3 bg-gray-700 rounded mb-6 mx-auto"></div>
+                  <div className="h-px bg-gray-700 mb-6"></div>
+                  <div className="space-y-4 flex-1">
+                    <div className="h-4 bg-gray-700 rounded w-full"></div>
+                    <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-700 rounded w-4/6"></div>
+                  </div>
+                  <div className="h-12 bg-gray-700 rounded-xl mt-6"></div>
                 </div>
-              )}
+              ))
+            : // --- Actual Plans ---
+              plans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`relative rounded-2xl border ${
+                    plan.color || "border-gray-600"
+                  } ${
+                    plan.bg || "bg-gray-800"
+                  } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300`}
+                >
+                  {/* Badge */}
+                  {plan.badge && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                      {plan.badge}
+                    </div>
+                  )}
 
-              {/* Header */}
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {plan.name}
-                </h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-sm text-gray-400">₹</span>
-                  <span className="text-4xl font-extrabold text-white">
-                    {plan.price}
-                  </span>
-                  <span className="text-xs text-gray-500">/pack</span>
+                  {/* Header */}
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {plan.price_name}
+                    </h3>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-sm text-gray-400">₹</span>
+                      <span className="text-4xl font-extrabold text-white">
+                        {plan.price}
+                      </span>
+                      <span className="text-xs text-gray-500">/pack</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Inclusive of GST
+                    </p>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-full h-px bg-gray-700 mb-6"></div>
+
+                  {/* Features */}
+                  <ul className="space-y-4 mb-8 flex-1">
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
+                        <svg
+                          className="w-3.5 h-3.5 text-indigo-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300 text-sm">
+                        <strong className="text-white">
+                          {plan.api_calls_count}
+                        </strong>{" "}
+                        API Calls
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
+                        <svg
+                          className="w-3.5 h-3.5 text-indigo-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300 text-sm">
+                        {!plan?.validity ? "Unlimited" : plan?.validity}
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
+                        <svg
+                          className="w-3.5 h-3.5 text-indigo-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                      </div>
+                      <span className="text-gray-300 text-sm">
+                        Rate Limit: {plan.rate_limit}/sec
+                      </span>
+                    </li>
+                  </ul>
+
+                  {/* Button */}
+                  <button
+                    onClick={() => navigate("/wallet-recharge")}
+                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
+                  >
+                    Buy Now
+                  </button>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Inclusive of GST</p>
-              </div>
-
-              {/* Divider */}
-              <div className="w-full h-px bg-gray-700 mb-6"></div>
-
-              {/* Features */}
-              <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
-                    <svg
-                      className="w-3.5 h-3.5 text-indigo-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-gray-300 text-sm">
-                    <strong className="text-white">{plan.calls}</strong> API
-                    Calls
-                  </span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
-                    <svg
-                      className="w-3.5 h-3.5 text-indigo-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-gray-300 text-sm">
-                    {plan.validity} Validity
-                  </span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
-                    <svg
-                      className="w-3.5 h-3.5 text-indigo-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-gray-300 text-sm">
-                    Rate Limit: {plan.rateLimit}/sec
-                  </span>
-                </li>
-              </ul>
-
-              {/* Button */}
-              <button
-                onClick={() => navigate("/wallet-recharge")}
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
-              >
-                Buy Now
-              </button>
-            </div>
-          ))}
+              ))}
         </div>
 
         {/* Trust/Footer Note */}
