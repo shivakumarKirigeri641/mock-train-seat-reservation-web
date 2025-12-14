@@ -18,7 +18,7 @@ const ApiPricing = () => {
 
   useEffect(() => {
     if (!userdetails) {
-      navigate("/");
+      navigate("/user-login");
       return;
     }
 
@@ -31,7 +31,6 @@ const ApiPricing = () => {
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-plans-premium`,
           { withCredentials: true }
         );
-        console.log("priceing:", response?.data?.data);
         setPlans(response?.data?.data);
       } catch (error) {
         console.error("Failed to load pricing plans", error);
@@ -148,7 +147,7 @@ const ApiPricing = () => {
                 Home
               </Link>
               <Link
-                to="/usage"
+                to="/api-usage"
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 API Usage

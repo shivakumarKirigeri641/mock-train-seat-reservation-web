@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
+import axios from "axios";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -7,34 +9,48 @@ const ProfilePage = () => {
 
   // User State
   const [profile, setProfile] = useState({
-    name: "Shiva",
-    mobile: "9876543210",
-    state: "Karnataka",
+    name: "",
+    mobile: "",
+    state: "",
     email: "",
     address: "",
+    memberSince: "", // New Field
+    lastLogin: "", // New Field
   });
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [otpSent, setOtpSent] = useState(false); // For email verification simulation
+  const [otpSent, setOtpSent] = useState(false);
 
-  const indianStates = [
-    "Karnataka",
-    "Tamil Nadu",
-    "Maharashtra",
-    "Kerala",
-    "Telangana",
-    "Andhra Pradesh",
-    "Delhi",
-    "Gujarat",
-    "Rajasthan",
-    "Uttar Pradesh",
-    "West Bengal",
-    "Madhya Pradesh",
-    "Bihar",
-    "Punjab",
-    "Haryana",
-  ];
+  const [indianStates, setIndianStates] = useState([]);
+
+  const userdetails = useSelector((store) => store.loggedInUser);
+
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/user-login");
+    } else {
+      const fetchProfileData = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+            { withCredentials: true }
+          );
+          const response_states = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
+            { withCredentials: true }
+          );
+          setIndianStates(response_states?.data?.data);
+          setProfile(response?.data?.data);
+          setIsEmailVerified(profile?.myemail_veifystatus || false);
+        } catch (error) {
+          console.error("Failed to load profile data", error);
+        }
+      };
+
+      fetchProfileData();
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,26 +63,48 @@ const ProfilePage = () => {
     }
   };
 
-  const handleVerifyEmail = () => {
-    if (!profile.email) return;
-    // Simulate sending OTP
+  const handleVerifyEmail = async () => {
+    if (!profile.myemail) return;
     setOtpSent(true);
-    // Simulate immediate verification for demo
-    setTimeout(() => {
-      setIsEmailVerified(true);
+
+    try {
+      // API Call for Email Verification
+      await axios.post(
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
+        { email: profile?.myemail },
+        { withCredentials: true }
+      );
+      alert("OTP sent to your email!");
+    } catch (error) {
+      console.error("Email verification failed", error);
       setOtpSent(false);
-      alert("Email verified successfully! (Mock)");
-    }, 1500);
+      alert("Failed to send OTP.");
+    }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate API Call
-    setTimeout(() => {
-      setIsSaving(false);
+
+    try {
+      // --- API PLACEHOLDER FOR SAVE ---
+      await axios.put(
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/update-profile`,
+        {
+          name: profile.user_name,
+          state: profile.state,
+          email: profile.myemail,
+          address: profile.address,
+        },
+        { withCredentials: true }
+      );
       alert("Profile updated successfully!");
-    }, 1500);
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      alert("Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const NavItem = ({ to, label, active = false }) => (
@@ -81,12 +119,7 @@ const ProfilePage = () => {
       {label}
     </Link>
   );
-  const userdetails = useSelector((store) => store.loggedInUser);
-  useEffect(() => {
-    if (!userdetails) {
-      navigate("/");
-    }
-  }, []);
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}
@@ -109,7 +142,7 @@ const ProfilePage = () => {
             {/* Desktop Menu */}
             <div className="hidden lg:flex items-center space-x-2">
               <NavItem to="/user-home" label="Home" />
-              <NavItem to="/usage" label="API Usage" />
+              <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/api-documentation" label="API Documentation" />
               <NavItem to="/api-pricing" label="API Pricing" />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
@@ -240,18 +273,40 @@ const ProfilePage = () => {
           <div className="md:col-span-1">
             <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 flex flex-col items-center text-center shadow-lg">
               <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-xl mb-4">
-                {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
+                {profile.user_name
+                  ? profile?.user_name.charAt(0).toUpperCase()
+                  : "U"}
               </div>
-              <h2 className="text-xl font-bold text-white">{profile.name}</h2>
-              <p className="text-sm text-gray-400 mt-1">{profile.state}</p>
-              <div className="mt-6 w-full pt-6 border-t border-gray-700">
-                <div className="flex justify-between text-sm mb-2">
+              <h2 className="text-xl font-bold text-white">
+                {profile?.user_name}
+              </h2>
+              <p className="text-sm text-gray-400 mt-1">
+                {profile?.state_name}
+              </p>
+
+              <div className="mt-6 w-full pt-6 border-t border-gray-700 space-y-3">
+                <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Plan</span>
-                  <span className="text-white font-medium">Enterprise</span>
+                  <span className="text-white font-medium">
+                    {profile?.price_name}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Status</span>
                   <span className="text-green-400 font-medium">Active</span>
+                </div>
+                {/* Added Last Login & Member Since */}
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Joined</span>
+                  <span className="text-white font-medium text-xs">
+                    {profile?.created_at?.split("T")[0]}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Last Login</span>
+                  <span className="text-white font-medium text-xs">
+                    {profile?.updated_at?.split("T")[0]}
+                  </span>
                 </div>
               </div>
             </div>
@@ -273,7 +328,7 @@ const ProfilePage = () => {
                     <input
                       type="text"
                       name="name"
-                      value={profile.name}
+                      value={profile.user_name}
                       onChange={handleInputChange}
                       className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
@@ -285,7 +340,7 @@ const ProfilePage = () => {
                     <input
                       type="text"
                       name="mobile"
-                      value={profile.mobile}
+                      value={profile?.mobile_number}
                       onChange={handleInputChange}
                       className="w-full bg-gray-900/50 border border-gray-700 text-gray-400 rounded-xl px-4 py-3 focus:outline-none cursor-not-allowed"
                     />
@@ -297,12 +352,22 @@ const ProfilePage = () => {
                   <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                     State / Territory
                   </label>
-                  <input
+                  <select
                     name="state"
-                    value={profile.state}
-                    readOnly
+                    value={profile.state_name}
+                    disabled
+                    onChange={handleInputChange}
                     className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  ></input>
+                  >
+                    <option value="" disabled>
+                      Select state
+                    </option>
+                    {indianStates?.map((state) => (
+                      <option key={state?.id} value={state?.state_name}>
+                        {state?.state_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Email & Verification */}
@@ -314,7 +379,7 @@ const ProfilePage = () => {
                     <input
                       type="email"
                       name="email"
-                      value={profile.email}
+                      value={profile.myemail}
                       onChange={handleInputChange}
                       placeholder="Enter your email"
                       className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 pr-24 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -341,7 +406,7 @@ const ProfilePage = () => {
                         <button
                           type="button"
                           onClick={handleVerifyEmail}
-                          disabled={!profile.email || otpSent}
+                          disabled={!profile.myemail || otpSent}
                           className="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:text-gray-500 text-white px-3 py-1.5 rounded-lg transition-colors"
                         >
                           {otpSent ? "Sending..." : "Verify"}

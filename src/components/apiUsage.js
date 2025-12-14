@@ -26,7 +26,7 @@ const ApiUsage = () => {
 
   useEffect(() => {
     if (!userdetails) {
-      navigate("/");
+      navigate("/user-login");
     } else {
       const fetchUsageData = async () => {
         setIsLoading(true);
@@ -40,8 +40,6 @@ const ApiUsage = () => {
             `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/usage-analytics`,
             { withCredentials: true }
           );
-          console.log(response_stats_logs?.data?.data);
-          console.log(response_usage_analytics?.data);
           setDailyStats(response_stats_logs?.data?.data.mockStats);
           setAllLogs(response_stats_logs?.data?.data.mockLogs);
           setAnalytics(response_usage_analytics?.data?.data); // Set analytics state

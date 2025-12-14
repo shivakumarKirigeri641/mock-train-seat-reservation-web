@@ -31,7 +31,6 @@ const LoginPage = () => {
           {},
           { widthCredentials: true }
         );
-        console.log(response?.data?.data);
         // Assuming response.data is: [{ id: 1, name: "Karnataka" }, ...]
         // If it's just an array of strings, the map below will need adjustment.
         setIndianStates(response?.data?.data);
@@ -91,7 +90,6 @@ const LoginPage = () => {
       );
 
       if (response.data.successstatus) {
-        console.log("OTP Sent:", response.data.message);
         setStep("otp");
         setOtp("");
       } else {

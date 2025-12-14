@@ -120,15 +120,14 @@ const APIDocumentationGeneralPage = () => {
             "/mockapis/serverpeuser/loggedinuser/all-endpoints",
           { withCredentials: true }
         );
-        setApiData(response?.data?.data);
         console.log(response?.data?.data);
-
+        setApiData(response?.data?.data);
         // Set default active endpoint
         if (
           response?.data?.data?.length > 0 &&
           response?.data?.data[0].endpoints?.length > 0
         ) {
-          setActiveEndpointId(response[0].endpoints[0].id);
+          setActiveEndpointId(apiData[0].endpoints[0].id);
         }
       } catch (error) {
         console.error("Error fetching API documentation:", error);
@@ -150,7 +149,7 @@ const APIDocumentationGeneralPage = () => {
   useEffect(() => {
     if (!activeEndpoint) return;
     const catIndex = apiData.findIndex((c) =>
-      c.endpoints.some((e) => e.id === activeEndpointId)
+      c?.endpoints?.some((e) => e.id === activeEndpointId)
     );
     if (catIndex !== -1) setActiveCategoryIndex(catIndex);
   }, [activeEndpointId, apiData]);
@@ -202,7 +201,6 @@ const APIDocumentationGeneralPage = () => {
 
       const res = await axios.get(url, options);
       const text = await res?.data?.data;
-      console.log(res?.data?.data.text);
       let parsed;
       try {
         parsed = JSON.parse(text);

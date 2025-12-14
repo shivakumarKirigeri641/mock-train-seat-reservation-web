@@ -121,8 +121,6 @@ const APIDocumentationGeneralPage = () => {
           { withCredentials: true }
         );
         setApiData(response?.data?.data);
-        console.log(response?.data?.data);
-        console.log(apiData);
 
         // Set default active endpoint
         if (
@@ -203,7 +201,6 @@ const APIDocumentationGeneralPage = () => {
 
       const res = await axios.get(url, options);
       const text = await res?.data?.data;
-      console.log(res?.data?.data.text);
       let parsed;
       try {
         parsed = JSON.parse(text);

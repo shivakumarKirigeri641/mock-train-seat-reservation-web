@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
 
@@ -38,7 +39,7 @@ const FeedbackForm = () => {
   const userdetails = useSelector((store) => store.loggedInUser);
   useEffect(() => {
     if (!userdetails) {
-      navigate("/");
+      navigate("/user-login");
     }
   }, []);
   return (
@@ -63,7 +64,7 @@ const FeedbackForm = () => {
             {/* Desktop Menu */}
             <div className="hidden lg:flex items-center space-x-2">
               <NavItem to="/user-home" label="Home" />
-              <NavItem to="/usage" label="API Usage" />
+              <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/api-documentation" label="API Documentation" />
               <NavItem to="/api-pricing" label="API Pricing" />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />

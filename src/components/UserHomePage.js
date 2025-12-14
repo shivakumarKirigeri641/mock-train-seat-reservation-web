@@ -1,63 +1,53 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
+import axios from "axios";
 
 const UserHomePage = () => {
   const navigate = useNavigate();
   const userdetails = useSelector((store) => store.loggedInUser);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // State for Credentials
+  // State for user data from API
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // State for Credentials Visibility
   const [showSecret, setShowSecret] = useState(false);
   const [copiedField, setCopiedField] = useState(null); // 'api' or 'secret'
 
-  // Mock Credentials
-  const apiKey = "srv_live_89234789234_xk9s";
-  const secretKey = "sk_live_998877_secure_hash_x9s88d";
+  // const BASE_URL = "https://serverpe.in";
+  const BASE_URL = "http://localhost:8888"; // Local dev
 
-  // Mock API History Data
-  const [apiHistory] = useState([
-    {
-      id: 1,
-      endpoint: "/api/v1/trains/search",
-      method: "GET",
-      status: 200,
-      latency: "120ms",
-      time: "2 mins ago",
-    },
-    {
-      id: 2,
-      endpoint: "/api/v1/booking/create",
-      method: "POST",
-      status: 201,
-      latency: "450ms",
-      time: "15 mins ago",
-    },
-    {
-      id: 3,
-      endpoint: "/api/v1/pincode/560001",
-      method: "GET",
-      status: 200,
-      latency: "90ms",
-      time: "1 hour ago",
-    },
-    {
-      id: 4,
-      endpoint: "/api/v1/cars/specs",
-      method: "GET",
-      status: 401,
-      latency: "45ms",
-      time: "3 hours ago",
-    },
-    {
-      id: 5,
-      endpoint: "/api/v1/bikes/info",
-      method: "GET",
-      status: 200,
-      latency: "110ms",
-      time: "5 hours ago",
-    },
-  ]);
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/user-login");
+      return;
+    }
+
+    const fetchUserData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch user dashboard data
+        // Replace with your actual endpoint
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (response.data.successstatus) {
+          setUserData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to load user dashboard data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userdetails, navigate]);
 
   const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text);
@@ -78,11 +68,46 @@ const UserHomePage = () => {
     </Link>
   );
 
-  useEffect(() => {
-    if (!userdetails) {
-      navigate("/");
-    }
-  }, []);
+  // Helper to format date relative time (e.g., "2 mins ago")
+  const timeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) + " seconds ago";
+  };
+
+  // Loading State
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700">
+            <span className="text-3xl">⚡</span>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              Loading Dashboard
+            </h3>
+            <p className="text-sm text-gray-400 font-mono">
+              Fetching account details...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
       {/* --- TOP NAVIGATION BAR --- */}
@@ -239,7 +264,7 @@ const UserHomePage = () => {
               Plan
             </span>
             <span className="text-sm font-bold text-white">
-              Enterprise v2.0
+              {userData?.user_plan?.price_name || "Free"}
             </span>
           </div>
         </div>
@@ -275,11 +300,13 @@ const UserHomePage = () => {
                   <input
                     type="text"
                     readOnly
-                    value={apiKey}
+                    value={userData?.user_details?.apikey_text || ""}
                     className="w-full bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded-lg p-3 pr-10 focus:ring-1 focus:ring-indigo-500 focus:outline-none font-mono"
                   />
                   <button
-                    onClick={() => handleCopy(apiKey, "api")}
+                    onClick={() =>
+                      handleCopy(userData?.user_details?.apikey_text, "api")
+                    }
                     className="absolute right-2 top-2 p-1 text-gray-500 hover:text-white transition-colors"
                     title="Copy Key"
                   >
@@ -325,7 +352,7 @@ const UserHomePage = () => {
                   <input
                     type={showSecret ? "text" : "password"}
                     readOnly
-                    value={secretKey}
+                    value={userData?.user_details?.secret_key || ""}
                     className="w-full bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded-lg p-3 pr-20 focus:ring-1 focus:ring-indigo-500 focus:outline-none font-mono"
                   />
                   <div className="absolute right-2 top-2 flex items-center gap-1">
@@ -371,7 +398,9 @@ const UserHomePage = () => {
                       )}
                     </button>
                     <button
-                      onClick={() => handleCopy(secretKey, "secret")}
+                      onClick={() =>
+                        handleCopy(userData?.user_details?.secret_key, "secret")
+                      }
                       className="p-1 text-gray-500 hover:text-white transition-colors"
                       title="Copy Secret"
                     >
@@ -429,16 +458,20 @@ const UserHomePage = () => {
               </div>
             </div>
 
-            {/* Mini Wallet Summary */}
+            {/* Mini Wallet Summary - Updated to remove balance but keep recharge button if needed, or update text */}
+            {/* Using 'outstanding_apikey_count_free' as a proxy for 'balance' if you have a credit system */}
             <div className="bg-gradient-to-r from-gray-800 to-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl flex items-center justify-between hover:border-gray-500 transition-all cursor-pointer transform hover:-translate-y-1">
               <div>
                 <p className="text-sm font-medium text-gray-400">
-                  Wallet Balance
+                  Available API credits
                 </p>
-                <h3 className="text-2xl font-bold text-white mt-1">₹ 15,000</h3>
+                <h3 className="text-lg font-bold text-white mt-1">
+                  {userData?.user_details?.api_credits || "..."}
+                </h3>
               </div>
+
               <button
-                onClick={() => navigate("/wallet-recharge")}
+                onClick={() => navigate("/api-pricing")}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm transition-colors shadow-lg shadow-indigo-500/20"
               >
                 Recharge
@@ -486,55 +519,72 @@ const UserHomePage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700/50">
-                    {apiHistory.map((log) => (
-                      <tr
-                        key={log.id}
-                        className="hover:bg-gray-750 transition-colors"
-                      >
-                        <td className="px-6 py-4 font-mono text-gray-300">
-                          {log.endpoint}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2 py-1 rounded text-[10px] font-bold tracking-wide border ${
-                              log.method === "GET"
-                                ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
-                                : log.method === "POST"
-                                ? "border-green-500/30 text-green-400 bg-green-500/10"
-                                : "border-gray-500 text-gray-400"
-                            }`}
+                    {userData?.latest_5_api_histories?.length > 0 ? (
+                      userData.latest_5_api_histories.map((log, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-750 transition-colors"
+                        >
+                          <td
+                            className="px-6 py-4 font-mono text-gray-300 truncate max-w-[200px]"
+                            title={log.endpoint}
                           >
-                            {log.method}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
+                            {/* Truncate endpoint if too long for display */}
+                            {log.endpoint.split("/mockapis")[1] || log.endpoint}
+                          </td>
+                          <td className="px-6 py-4">
                             <span
-                              className={`w-2 h-2 rounded-full ${
-                                log.status >= 200 && log.status < 300
-                                  ? "bg-green-500"
-                                  : "bg-red-500"
+                              className={`px-2 py-1 rounded text-[10px] font-bold tracking-wide border ${
+                                log.method === "GET"
+                                  ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
+                                  : log.method === "POST"
+                                  ? "border-green-500/30 text-green-400 bg-green-500/10"
+                                  : "border-gray-500 text-gray-400"
                               }`}
-                            ></span>
-                            <span
-                              className={
-                                log.status >= 200 && log.status < 300
-                                  ? "text-green-400"
-                                  : "text-red-400"
-                              }
                             >
-                              {log.status}
+                              {log.method}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 font-mono text-xs">
-                          {log.latency}
-                        </td>
-                        <td className="px-6 py-4 text-right text-gray-500 text-xs">
-                          {log.time}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`w-2 h-2 rounded-full ${
+                                  log.response_status >= 200 &&
+                                  log.response_status < 300
+                                    ? "bg-green-500"
+                                    : "bg-red-500"
+                                }`}
+                              ></span>
+                              <span
+                                className={
+                                  log.response_status >= 200 &&
+                                  log.response_status < 300
+                                    ? "text-green-400"
+                                    : "text-red-400"
+                                }
+                              >
+                                {log.response_status}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500 font-mono text-xs">
+                            {log.latency === "NaN" ? "-" : `${log.latency}ms`}
+                          </td>
+                          <td className="px-6 py-4 text-right text-gray-500 text-xs">
+                            {timeAgo(log.created_at)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="px-6 py-4 text-center text-gray-500"
+                        >
+                          No history available yet.
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
