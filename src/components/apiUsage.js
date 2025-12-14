@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const ApiUsage = () => {
   const navigate = useNavigate();
@@ -7,92 +9,36 @@ const ApiUsage = () => {
   const [filterEndpoint, setFilterEndpoint] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  // Mock Data: Daily Stats for the Chart
-  const dailyStats = [
-    { day: "Mon", calls: 450, error: 2 },
-    { day: "Tue", calls: 520, error: 5 },
-    { day: "Wed", calls: 380, error: 0 },
-    { day: "Thu", calls: 600, error: 8 },
-    { day: "Fri", calls: 850, error: 12 },
-    { day: "Sat", calls: 200, error: 0 },
-    { day: "Sun", calls: 150, error: 0 },
-  ];
-
-  // Mock Data: Detailed Logs
-  const allLogs = [
-    {
-      id: 1,
-      method: "POST",
-      endpoint: "/api/v1/booking/create",
-      status: 201,
-      latency: "420ms",
-      time: "2025-10-25 10:30:01",
-      ip: "192.168.1.45",
-    },
-    {
-      id: 2,
-      method: "GET",
-      endpoint: "/api/v1/trains/search",
-      status: 200,
-      latency: "120ms",
-      time: "2025-10-25 10:28:15",
-      ip: "192.168.1.45",
-    },
-    {
-      id: 3,
-      method: "GET",
-      endpoint: "/api/v1/cars/specs",
-      status: 401,
-      latency: "45ms",
-      time: "2025-10-25 09:15:00",
-      ip: "10.0.0.12",
-    },
-    {
-      id: 4,
-      method: "GET",
-      endpoint: "/api/v1/pincode/560001",
-      status: 200,
-      latency: "85ms",
-      time: "2025-10-25 09:10:22",
-      ip: "192.168.1.45",
-    },
-    {
-      id: 5,
-      method: "POST",
-      endpoint: "/api/v1/booking/cancel",
-      status: 500,
-      latency: "800ms",
-      time: "2025-10-24 23:45:11",
-      ip: "172.16.0.5",
-    },
-    {
-      id: 6,
-      method: "GET",
-      endpoint: "/api/v1/bikes/info",
-      status: 200,
-      latency: "110ms",
-      time: "2025-10-24 18:30:00",
-      ip: "192.168.1.45",
-    },
-    {
-      id: 7,
-      method: "GET",
-      endpoint: "/api/v1/trains/pnr",
-      status: 200,
-      latency: "150ms",
-      time: "2025-10-24 15:20:10",
-      ip: "10.0.0.12",
-    },
-    {
-      id: 8,
-      method: "GET",
-      endpoint: "/api/v1/cars/specs",
-      status: 429,
-      latency: "10ms",
-      time: "2025-10-24 12:00:00",
-      ip: "192.168.1.45",
-    },
-  ];
+  // State for data
+  const [dailyStats, setDailyStats] = useState([]);
+  const [allLogs, setAllLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const userdetails = useSelector((store) => store.loggedInUser);
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/");
+    } else {
+      const fetchUsageData = async () => {
+        setIsLoading(true);
+        try {
+          // --- PLACEHOLDER FOR API CALL ---
+          const response = await axios.get(
+            process.env.REACT_APP_BACKEND_URL +
+              "/mockapis/serverpeuser/loggedinuser/api-usage",
+            { withCredentials: true }
+          );
+          console.log(response?.data?.data);
+          setDailyStats(response?.data?.data?.mockStats);
+          setAllLogs(response?.data?.data?.mockLogs);
+        } catch (error) {
+          console.error("Failed to load usage data", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchUsageData();
+    }
+  }, []);
 
   // Filter Logic
   const filteredLogs = allLogs.filter((log) => {
@@ -120,9 +66,45 @@ const ApiUsage = () => {
     </Link>
   );
 
+  // ---------------- LOADING STATE ----------------
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700">
+            <svg
+              className="w-8 h-8 text-indigo-500 animate-spin"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              Analyzing Traffic
+            </h3>
+            <p className="text-sm text-gray-400 font-mono">
+              Fetching usage logs...
+            </p>
+          </div>
+          <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-500 animate-loading-bar"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
-      {/* --- TOP NAVIGATION BAR (Matching UserHomePage) --- */}
+      {/* --- TOP NAVIGATION BAR --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
@@ -302,9 +284,9 @@ const ApiUsage = () => {
             Traffic Overview
           </h3>
           <div className="flex items-end justify-between h-48 gap-2 sm:gap-4">
-            {dailyStats.map((item, index) => {
+            {dailyStats?.map((item, index) => {
               // Calculate height percentage relative to max value (e.g. 850)
-              const height = (item.calls / 1000) * 100;
+              const height = (item?.calls / 1000) * 100;
               return (
                 <div
                   key={index}
@@ -312,7 +294,7 @@ const ApiUsage = () => {
                 >
                   {/* Tooltip */}
                   <div className="absolute -top-10 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-gray-700 z-10">
-                    {item.calls} reqs
+                    {item?.calls} reqs
                   </div>
 
                   {/* Bar */}
@@ -328,7 +310,7 @@ const ApiUsage = () => {
 
                   {/* Label */}
                   <span className="text-xs text-gray-400 mt-3 font-medium">
-                    {item.day}
+                    {item?.day}
                   </span>
                 </div>
               );

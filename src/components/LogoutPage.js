@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 const LogoutPage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [cancelled, setCancelled] = useState(false);
   const [progress, setProgress] = useState(100);
@@ -11,6 +13,7 @@ const LogoutPage = () => {
 
     // auto navigate after 1s
     const timer = setTimeout(() => {
+      dispatch(removeloggedInUser());
       navigate("/");
     }, 3000);
 
@@ -30,6 +33,7 @@ const LogoutPage = () => {
 
   const handleHomeClick = () => {
     setCancelled(true);
+    dispatch(removeloggedInUser());
     navigate("/");
   };
 

@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
-
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { addloggedInUser } from "../store/slices/loggedInUserSlice";
 const LoginPage = () => {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   // State
   const [username, setUsername] = useState("Shiva");
-  const [mobile, setMobile] = useState("9876543210");
-  const [state, setState] = useState("Karnataka");
-  const [otp, setOtp] = useState("");
+  const [mobile, setMobile] = useState("9886122415");
+  //const [state, setState] = useState(0); // Default ID 11
+  const [state, setState] = useState(11); // Default ID 11
+  const [otp, setOtp] = useState("1234");
   const [step, setStep] = useState("form"); // form | otp
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [indianStates, setIndianStates] = useState([]);
 
-  const indianStates = [
-    "Karnataka",
-    "Tamil Nadu",
-    "Maharashtra",
-    "Kerala",
-    "Telangana",
-    "Andhra Pradesh",
-    "Delhi",
-    "Gujarat",
-    "Rajasthan",
-    "Uttar Pradesh",
-  ];
+  // Base URL (Update as needed for prod)
+  // const BASE_URL = "https://serverpe.in";
+
+  // --- Fetch States from API ---
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
+          {},
+          { widthCredentials: true }
+        );
+        console.log(response?.data?.data);
+        // Assuming response.data is: [{ id: 1, name: "Karnataka" }, ...]
+        // If it's just an array of strings, the map below will need adjustment.
+        setIndianStates(response?.data?.data);
+      } catch (error) {
+        console.error("Failed to fetch states", error);
+        // Fallback or error handling can be added here
+      }
+    };
+    fetchStates();
+  }, []);
 
   // Clear specific error when user types
   useEffect(() => {
@@ -60,31 +75,78 @@ const LoginPage = () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    // Simulate API Network Delay
-    setTimeout(() => {
-      console.log("Send OTP to:", mobile);
+    setErrors({});
+
+    try {
+      // API Call: Send OTP
+      // Payload structure matched to user request
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/send-otp`,
+        {
+          user_name: username,
+          mobile_number: mobile,
+          stateid: parseInt(state), // Ensure ID is sent as integer
+        },
+        { withCredentials: true }
+      );
+
+      if (response.data.successstatus) {
+        console.log("OTP Sent:", response.data.message);
+        setStep("otp");
+        setOtp("");
+      } else {
+        setErrors({ form: response.data.error || "Failed to send OTP." });
+      }
+    } catch (error) {
+      console.error("Send OTP Error:", error);
+      setErrors({
+        form: error.response?.data?.error || "Network error. Please try again.",
+      });
+    } finally {
       setIsLoading(false);
-      setStep("otp");
-      setOtp(""); // Reset OTP field
-    }, 1500);
+    }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (!otp.match(/^\d{4,6}$/)) {
       setErrors({ otp: "Enter valid OTP (4-6 digits)." });
       return;
     }
 
     setIsLoading(true);
-    // Simulate API Validation Delay
-    setTimeout(() => {
-      console.log("Logged in successfully!");
+    setErrors({});
+
+    try {
+      // API Call: Verify OTP
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
+        {
+          mobile_number: mobile,
+          otp: otp,
+        },
+        { withCredentials: true }
+      );
+
+      if (response.data.successstatus) {
+        // localStorage.setItem("token", response.data.token); // Store token if needed
+        //call redux to store the user details
+        dispatch(addloggedInUser(response?.data?.data));
+        navigate("/user-home");
+      } else {
+        setErrors({ otp: response.data.error || "Invalid OTP." });
+      }
+    } catch (error) {
+      console.error("Verify OTP Error:", error);
+      setErrors({
+        otp:
+          error.response?.data?.error ||
+          "Verification failed. Please try again.",
+      });
+    } finally {
       setIsLoading(false);
-      navigate("/user-home");
-    }, 1500);
+    }
   };
 
-  // Handle Enter Key
   const handleKeyDown = (e, action) => {
     if (e.key === "Enter") action();
   };
@@ -131,6 +193,13 @@ const LoginPage = () => {
             - Your mock seat is pakka -
           </p>
         </div>
+
+        {/* Global Form Error */}
+        {errors.form && (
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-red-200 text-sm text-center animate-shake">
+            {errors.form}
+          </div>
+        )}
 
         {/* Form Content Swapper */}
         <div className="relative overflow-hidden min-h-[320px]">
@@ -207,11 +276,17 @@ const LoginPage = () => {
                       <option value="" className="text-gray-500">
                         Select state
                       </option>
-                      {indianStates.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
+                      {indianStates?.length > 0 ? (
+                        indianStates?.map((s) => (
+                          <option key={s?.id || s} value={s?.id || s}>
+                            {s?.state_name || s}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>
+                          Loading states...
                         </option>
-                      ))}
+                      )}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
                       <svg
@@ -404,7 +479,7 @@ const LoginPage = () => {
           </AnimatePresence>
         </div>
 
-        {/* --- ADDED: Back to Home Link --- */}
+        {/* --- Back to Home Link --- */}
         <div className="text-center mt-6">
           <button
             onClick={() => navigate("/")}
@@ -420,11 +495,13 @@ const LoginPage = () => {
 
       {/* Disclaimer */}
       <motion.div className="mt-8 max-w-md text-center px-4">
-        <p className="text-red-300 font-medium bg-red-900/10 px-6 py-3 rounded-lg border border-red-900/30">
-          <strong>Disclaimer:</strong> These mock APIs are strictly for
-          learning, practicing Web-UI, training, and testing purposes only. No
-          real-world scenarios, real bookings, or live databases are connected
-          here.
+        <p className="text-[10px] text-gray-500 leading-relaxed border border-gray-700/50 p-3 rounded-lg bg-gray-800/30 backdrop-blur-sm">
+          <span className="font-bold text-red-400 block mb-1">
+            ⚠️ DISCLAIMER
+          </span>
+          This is a sample demo UI developed with provided APIs for testing &
+          learning purposes only. No real data is processed. Check the developer
+          console for API logs.
         </p>
       </motion.div>
     </div>

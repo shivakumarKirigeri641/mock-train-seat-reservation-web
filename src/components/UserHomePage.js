@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 
 const UserHomePage = () => {
   const navigate = useNavigate();
+  const userdetails = useSelector((store) => store.loggedInUser);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // State for Credentials
@@ -76,6 +78,11 @@ const UserHomePage = () => {
     </Link>
   );
 
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
       {/* --- TOP NAVIGATION BAR --- */}

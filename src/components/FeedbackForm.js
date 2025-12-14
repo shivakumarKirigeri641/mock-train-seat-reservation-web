@@ -35,7 +35,12 @@ const FeedbackForm = () => {
       setFeedbackData({ category: "Feedback", rating: 5, message: "" });
     }, 1500);
   };
-
+  const userdetails = useSelector((store) => store.loggedInUser);
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}

@@ -4,7 +4,7 @@ import stationslistslicsourcedestinationdojReducer from "./slices/sourcedestinat
 import trainsListReducer from "./slices/trainsListSlice";
 import loggeduserReducer from "./slices/userSlice";
 import trainScheduleReducer from "./slices/trainScheduleSlice";
-import apiendpointsReducer from "./slices/apiendpointsSlice";
+import loggedInUserReducer from "./slices/loggedInUserSlice";
 const appStore = configureStore({
   reducer: {
     stationslist: stationslistReducer,
@@ -13,7 +13,7 @@ const appStore = configureStore({
     trainsList: trainsListReducer,
     trainSchedule: trainScheduleReducer,
     loggeduser: loggeduserReducer,
-    apiendpoints: apiendpointsReducer,
+    loggedInUser: loggedInUserReducer,
   },
 });
 export default appStore;

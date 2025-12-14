@@ -117,8 +117,7 @@ const APIDocumentationGeneralPage = () => {
       try {
         const response = await axios.get(
           process.env.REACT_APP_BACKEND_URL +
-            "/mockapis/serverpeuser/all-endpoints",
-          {},
+            "/mockapis/serverpeuser/loggedinuser/all-endpoints",
           { withCredentials: true }
         );
         setApiData(response?.data?.data);
@@ -139,7 +138,7 @@ const APIDocumentationGeneralPage = () => {
       }
     };
     fetchApiDocumentation();
-  }, [apiData]);
+  }, []);
 
   const allEndpoints = apiData?.flatMap((cat) =>
     cat?.endpoints?.map((ep) => ({ ...ep, category: cat.category }))
