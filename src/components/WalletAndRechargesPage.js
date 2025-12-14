@@ -1,5 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+import axios from "axios";
+
+// --- NavItem Component Definition ---
+const NavItem = ({ to, label, active = false }) => (
+  <Link
+    to={to}
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+      active
+        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+        : "text-gray-300 hover:text-white hover:bg-gray-800"
+    }`}
+  >
+    {label}
+  </Link>
+);
 
 const WalletAndRechargesPage = () => {
   const navigate = useNavigate();
@@ -7,63 +22,42 @@ const WalletAndRechargesPage = () => {
   const [filterType, setFilterType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  // Mock Data: Transactions
-  const [transactions] = useState([
-    {
-      id: "TXN_1001",
-      date: "2025-11-01 10:30 AM",
-      type: "Recharge",
-      description: "Purchased 'Wow' Plan",
-      amount: "+1200 Credits",
-      cost: "₹179",
-      status: "Success",
-    },
-    {
-      id: "USG_8821",
-      date: "2025-11-01 11:15 AM",
-      type: "Deduction",
-      description: "API Call: /trains/search",
-      amount: "-1 Credit",
-      cost: "N/A",
-      status: "Success",
-    },
-    {
-      id: "USG_8822",
-      date: "2025-11-01 11:20 AM",
-      type: "Deduction",
-      description: "API Call: /pincode/details",
-      amount: "-1 Credit",
-      cost: "N/A",
-      status: "Success",
-    },
-    {
-      id: "TXN_1002",
-      date: "2025-10-25 09:00 AM",
-      type: "Recharge",
-      description: "Purchased 'Tiny' Plan",
-      amount: "+100 Credits",
-      cost: "₹19",
-      status: "Success",
-    },
-    {
-      id: "USG_8823",
-      date: "2025-10-25 09:10 AM",
-      type: "Deduction",
-      description: "API Call: /cars/specs",
-      amount: "-1 Credit",
-      cost: "N/A",
-      status: "Failed",
-    },
-    {
-      id: "TXN_1003",
-      date: "2025-10-20 02:00 PM",
-      type: "Recharge",
-      description: "Purchased 'Chotu' Plan",
-      amount: "+500 Credits",
-      cost: "₹79",
-      status: "Failed", // Failed recharge shouldn't have invoice
-    },
-  ]);
+  // State for data
+  const [transactions, setTransactions] = useState([]);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [activePlan, setActivePlan] = useState("Free");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // const BASE_URL = "https://serverpe.in";
+  const BASE_URL = "http://localhost:8888"; // Local dev
+
+  useEffect(() => {
+    const fetchWalletData = async () => {
+      setIsLoading(true);
+      try {
+        // --- API Call ---
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
+          { withCredentials: true }
+        );
+        const data = response?.data?.data;
+
+        // 1. Set Wallet Balance & Plan
+        const totalCredits =
+          (data.user_details.outstanding_apikey_count || 0) +
+          (data.user_details.outstanding_apikey_count_free || 0);
+        setWalletBalance(totalCredits);
+        setActivePlan(data.user_details.price_name || "Free");
+        setTransactions(formattedTxns);
+      } catch (error) {
+        console.error("Failed to load wallet data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWalletData();
+  }, []);
 
   // Filtering Logic
   const filteredTransactions = transactions.filter((txn) => {
@@ -79,7 +73,6 @@ const WalletAndRechargesPage = () => {
 
   // Mock Download Function
   const downloadInvoice = (txn) => {
-    // In a real app, this would trigger a PDF download from an API endpoint
     const invoiceContent = `
       INVOICE #INV-${txn.id}
       ----------------------
@@ -95,19 +88,6 @@ const WalletAndRechargesPage = () => {
     a.download = `Invoice_${txn.id}.txt`;
     a.click();
   };
-
-  const NavItem = ({ to, label, active = false }) => (
-    <Link
-      to={to}
-      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-        active
-          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-          : "text-gray-300 hover:text-white hover:bg-gray-800"
-      }`}
-    >
-      {label}
-    </Link>
-  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -131,7 +111,7 @@ const WalletAndRechargesPage = () => {
             {/* Desktop Menu */}
             <div className="hidden lg:flex items-center space-x-2">
               <NavItem to="/user-home" label="Home" />
-              <NavItem to="/usage" label="API Usage" />
+              <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/api-documentation" label="API Documentation" />
               <NavItem to="/api-pricing" label="API Pricing" />
               <NavItem
@@ -276,10 +256,12 @@ const WalletAndRechargesPage = () => {
               <p className="text-gray-400 font-medium uppercase tracking-wider text-sm">
                 Available Credits
               </p>
-              <h1 className="text-5xl font-extrabold text-white mt-2">1,597</h1>
+              <h1 className="text-5xl font-extrabold text-white mt-2">
+                {isLoading ? "..." : walletBalance}
+              </h1>
               <p className="text-indigo-300 text-sm mt-2 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                Plan Active: Wow (Unlimited Validity)
+                Plan Active: {isLoading ? "..." : activePlan}
               </p>
             </div>
 
@@ -367,7 +349,37 @@ const WalletAndRechargesPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
-                {filteredTransactions.length > 0 ? (
+                {isLoading ? (
+                  // Loading Skeleton
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-20"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-32"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-40"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-gray-700 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-6 w-6 bg-gray-700 rounded mx-auto"></div>
+                      </td>
+                    </tr>
+                  ))
+                ) : filteredTransactions.length > 0 ? (
                   filteredTransactions.map((txn) => (
                     <tr
                       key={txn.id}

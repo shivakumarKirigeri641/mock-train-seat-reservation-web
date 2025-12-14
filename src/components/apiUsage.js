@@ -359,6 +359,7 @@ const ApiUsage = () => {
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Latency</th>
                   <th className="px-6 py-4">Client IP</th>
+                  <th className="px-6 py-4">Deduction</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
@@ -404,6 +405,9 @@ const ApiUsage = () => {
                         {log.latency}
                       </td>
                       <td className="px-6 py-4 font-mono text-xs">{log.ip}</td>
+                      <td className="px-6 py-4 font-mono text-xs">
+                        {log.api_call_deduction}
+                      </td>
                     </tr>
                   ))
                 ) : (
