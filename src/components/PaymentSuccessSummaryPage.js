@@ -22,9 +22,11 @@ const PaymentSuccessSummaryPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(15); // Increased countdown to allow reading
   const [orderDetails, setOrderDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userState, setUserState] = useState("");
+  const [userProfile, setUserProfile] = useState(null);
 
   // Retrieve user details from Redux
   const userdetails = useSelector((store) => store.loggedInUser);
@@ -39,62 +41,131 @@ const PaymentSuccessSummaryPage = () => {
       return;
     }
 
-    const fetchPaymentDetails = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        // --- API Call to fetch transaction details ---
-        const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
-          { razorpay_payment_id: paymentId }, // Send paymentId if your API expects it in body
+        // 1. Fetch User Profile for State Info
+        const profileResponse = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
           { withCredentials: true }
         );
 
-        if (response.data?.successstatus) {
-          const data = response.data.data;
+        let currentState = "";
+        if (profileResponse?.data?.successstatus) {
+          const profileData = profileResponse.data.data;
+          setUserProfile(profileData);
+          currentState = profileData.state_name;
+          setUserState(currentState);
+        }
 
-          // Map API response to UI state
-          setOrderDetails({
-            transaction_id: data.id,
-            amount: (data.amount / 100).toFixed(2), // Convert paise to rupees if amount is in paise (Razorpay standard)
-            plan_name: data.description || "API Subscription",
-            // Since the API response doesn't explicitly return 'credits_added',
-            // we can display the amount or fetch plan details separately if needed.
-            // For now, mapping logic assumes credits proportional to amount or static text.
-            credits_added: "Applied to Account",
-            date: new Date(data.created_at * 1000).toLocaleString(), // Convert Unix timestamp to Date
-            status: data.status === "captured" ? "Success" : data.status,
-            email: data.email,
-          });
+        // 2. Fetch Payment Details
+        console.log("payment:", paymentId);
+        if (paymentId) {
+          const response = await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
+            { razorpay_payment_id: paymentId }, // Send paymentId if your API expects it in body
+            { withCredentials: true }
+          );
+
+          if (response.data?.successstatus) {
+            const data = response.data.data;
+
+            setOrderDetails({
+              transaction_id: data.id,
+              amount: (data.amount / 100).toFixed(2),
+              plan_name: data.description || "API Subscription",
+              credits_added: "Applied to Account",
+              date: new Date(data.created_at * 1000).toLocaleString(),
+              status: data.status === "captured" ? "Success" : data.status,
+              email: data.email,
+            });
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch payment details", error);
+        console.error("Failed to fetch details", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (paymentId) {
-      fetchPaymentDetails();
-    } else {
-      // Handle case where no payment ID is present
-      setIsLoading(false);
-    }
+    fetchData();
 
     // Countdown Timer for Redirect
     /*const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
     }, 1000);
 
-    // Redirect after 5 seconds
+    // Redirect after countdown
     const redirectTimeout = setTimeout(() => {
       navigate("/user-home");
-    }, 5000);*/
+    }, 15000); // 15 seconds
 
-    /*return () => {
+    return () => {
       clearInterval(timer);
       clearTimeout(redirectTimeout);
     };*/
-  }, []);
+  }, [userdetails, navigate, BASE_URL, paymentId]);
+
+  // Tax Calculation Logic
+  const calculateTax = () => {
+    if (!orderDetails) return null;
+    const totalAmount = parseFloat(orderDetails.amount);
+    const baseAmount = totalAmount / 1.18;
+    const totalTax = totalAmount - baseAmount;
+
+    const isKarnataka = userState?.toLowerCase() === "karnataka";
+
+    return {
+      baseAmount: baseAmount.toFixed(2),
+      totalTax: totalTax.toFixed(2),
+      isKarnataka,
+      cgst: (totalTax / 2).toFixed(2),
+      sgst: (totalTax / 2).toFixed(2),
+      igst: totalTax.toFixed(2),
+    };
+  };
+
+  const taxDetails = calculateTax();
+
+  const handleDownloadInvoice = () => {
+    if (!orderDetails || !taxDetails || !userProfile) return;
+
+    const invoiceText = `
+      INVOICE - ServerPe.in
+      ------------------------------------------------
+      Transaction ID: ${orderDetails.transaction_id}
+      Date: ${orderDetails.date}
+      Status: ${orderDetails.status}
+      
+      Billed To:
+      Name: ${userProfile.user_name}
+      Email: ${orderDetails.email}
+      State: ${userState}
+      ------------------------------------------------
+      Plan Item:                  ${orderDetails.plan_name}
+      Base Amount:                ₹${taxDetails.baseAmount}
+      
+      Tax Details (18% GST):
+      ${
+        taxDetails.isKarnataka
+          ? `CGST (9%):                  ₹${taxDetails.cgst}\n      SGST (9%):                  ₹${taxDetails.sgst}`
+          : `IGST (18%):                 ₹${taxDetails.igst}`
+      }
+      
+      ------------------------------------------------
+      TOTAL PAID:                 ₹${orderDetails.amount}
+      ------------------------------------------------
+      `;
+
+    const blob = new Blob([invoiceText], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Invoice_${orderDetails.transaction_id}.txt`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -266,7 +337,7 @@ const PaymentSuccessSummaryPage = () => {
             <p className="text-gray-400 mb-8">Thank you for your purchase.</p>
 
             {/* Order Details */}
-            {orderDetails && (
+            {orderDetails && taxDetails && (
               <div className="bg-gray-900/50 rounded-xl p-6 mb-8 text-left space-y-3 border border-gray-700">
                 <div className="flex justify-between">
                   <span className="text-gray-400 text-sm">Transaction ID</span>
@@ -281,12 +352,6 @@ const PaymentSuccessSummaryPage = () => {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 text-sm">Status</span>
-                  <span className="text-green-400 font-bold uppercase">
-                    {orderDetails.status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-gray-400 text-sm">Date</span>
                   <span className="text-gray-300 text-sm">
                     {orderDetails.date}
@@ -298,9 +363,44 @@ const PaymentSuccessSummaryPage = () => {
                     {orderDetails.email}
                   </span>
                 </div>
+
+                <div className="border-t border-gray-700 my-2"></div>
+
+                {/* Tax Breakup */}
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Base Amount</span>
+                  <span className="text-gray-300 text-sm">
+                    ₹{taxDetails.baseAmount}
+                  </span>
+                </div>
+
+                {taxDetails.isKarnataka ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400 text-sm">CGST (9%)</span>
+                      <span className="text-gray-300 text-sm">
+                        ₹{taxDetails.cgst}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400 text-sm">SGST (9%)</span>
+                      <span className="text-gray-300 text-sm">
+                        ₹{taxDetails.sgst}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400 text-sm">IGST (18%)</span>
+                    <span className="text-gray-300 text-sm">
+                      ₹{taxDetails.igst}
+                    </span>
+                  </div>
+                )}
+
                 <div className="border-t border-gray-700 pt-3 flex justify-between">
                   <span className="text-gray-300 font-semibold">
-                    Amount Paid
+                    Total Paid
                   </span>
                   <span className="text-white font-bold text-lg">
                     ₹{orderDetails.amount}
@@ -309,16 +409,32 @@ const PaymentSuccessSummaryPage = () => {
               </div>
             )}
 
-            {/* Redirect Notice */}
-            <p className="text-sm text-gray-500 mb-6">
-              Redirecting you to home page in{" "}
-              <span className="text-white font-bold">{countdown}</span>{" "}
-              seconds...
-            </p>
+            {/* Buttons Row */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+              <button
+                onClick={handleDownloadInvoice}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Download Invoice
+              </button>
+            </div>
 
             <button
               onClick={() => navigate("/user-home")}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+              className="text-indigo-400 hover:text-indigo-300 text-sm hover:underline"
             >
               Go to Dashboard Now
             </button>
