@@ -1,7 +1,90 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { useSelector } from "react-redux";
 import axios from "axios";
+
+// --- Confetti Component ---
+const ConfettiSparkles = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    let particles = [];
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const colors = [
+      "#FFD700",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#96CEB4",
+      "#FFEEAD",
+    ];
+
+    const createParticle = () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: Math.random() * 5 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speedY: Math.random() * 3 + 1,
+      speedX: Math.random() * 2 - 1,
+      rotation: Math.random() * 360,
+      rotationSpeed: Math.random() * 5 - 2.5,
+    });
+
+    // Initialize particles
+    for (let i = 0; i < 150; i++) {
+      particles.push(createParticle());
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((p, index) => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+        p.rotation += p.rotationSpeed;
+
+        if (p.y > canvas.height) {
+          particles[index] = createParticle();
+          particles[index].y = -10; // Reset to top
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed top-0 left-0 w-full h-full pointer-events-none z-50"
+    />
+  );
+};
 
 // --- NavItem Component Definition ---
 const NavItem = ({ to, label, active = false }) => (
@@ -22,7 +105,7 @@ const PaymentSuccessSummaryPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [countdown, setCountdown] = useState(15); // Increased countdown to allow reading
+  const [countdown, setCountdown] = useState(15);
   const [orderDetails, setOrderDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userState, setUserState] = useState("");
@@ -63,21 +146,29 @@ const PaymentSuccessSummaryPage = () => {
         if (paymentId) {
           const response = await axios.post(
             `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
-            { razorpay_payment_id: paymentId }, // Send paymentId if your API expects it in body
+            { razorpay_payment_id: paymentId },
             { withCredentials: true }
           );
-
-          if (response.data?.successstatus) {
+          console.log(response?.data?.data);
+          if (response.data?.data?.successstatus) {
             const data = response.data.data;
-
+            //some details not fetching...contineu
             setOrderDetails({
-              transaction_id: data.id,
-              amount: (data.amount / 100).toFixed(2),
-              plan_name: data.description || "API Subscription",
+              transaction_id: data.result_transaction.razorpay_order_id,
+              amount: (data.result_transaction.amount / 100).toFixed(2),
+              plan_name:
+                data.result_transaction.description || "API Subscription",
               credits_added: "Applied to Account",
-              date: new Date(data.created_at * 1000).toLocaleString(),
-              status: data.status === "captured" ? "Success" : data.status,
-              email: !data.myemail ? "Not provided" : data.myemail,
+              date: new Date(
+                data.result_transaction.created_at * 1000
+              ).toLocaleString(),
+              status:
+                data.result_transaction.status === "captured"
+                  ? "Success"
+                  : data.result_transaction.status,
+              email: !data.result_user_details.myemail
+                ? "Not provided"
+                : data.result_user_details.myemail,
             });
           }
         }
@@ -89,21 +180,6 @@ const PaymentSuccessSummaryPage = () => {
     };
 
     fetchData();
-
-    // Countdown Timer for Redirect
-    /*const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    // Redirect after countdown
-    const redirectTimeout = setTimeout(() => {
-      navigate("/user-home");
-    }, 15000); // 15 seconds
-
-    return () => {
-      clearInterval(timer);
-      clearTimeout(redirectTimeout);
-    };*/
   }, [userdetails, navigate, BASE_URL, paymentId]);
 
   // Tax Calculation Logic
@@ -168,7 +244,10 @@ const PaymentSuccessSummaryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col relative overflow-hidden">
+      {/* --- ADDED: Confetti Animation --- */}
+      <ConfettiSparkles />
+
       {/* --- NAVIGATION BAR --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
@@ -306,7 +385,7 @@ const PaymentSuccessSummaryPage = () => {
       </nav>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-16 flex flex-col items-center justify-center">
+      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-16 flex flex-col items-center justify-center relative z-10">
         {isLoading ? (
           <div className="flex flex-col items-center gap-4 animate-pulse">
             <div className="w-20 h-20 bg-gray-800 rounded-full"></div>
@@ -360,7 +439,7 @@ const PaymentSuccessSummaryPage = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-400 text-sm">Email</span>
                   <span className="text-gray-300 text-sm">
-                    {orderDetails.email}
+                    {orderDetails.myemail}
                   </span>
                 </div>
 
