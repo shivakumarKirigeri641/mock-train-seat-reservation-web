@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 // ---------------- SUB-COMPONENTS ----------------
 
 const NavItem = ({ to, label, active = false }) => (
@@ -99,7 +99,7 @@ const MethodBadge = ({ method }) => {
 
 const APIDocumentationGeneralPage = () => {
   const navigate = useNavigate();
-  // State for Navigation
+  const dispatch = useDispatch();
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
   const [isDocsSidebarOpen, setIsDocsSidebarOpen] = useState(false);
 
@@ -130,7 +130,11 @@ const APIDocumentationGeneralPage = () => {
           setActiveEndpointId(apiData[0].endpoints[0].id);
         }
       } catch (error) {
-        console.error("Error fetching API documentation:", error);
+        if (error.status !== 401) {
+          alert("session expired. Please re-login!");
+        }
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
       } finally {
         setIsLoading(false);
       }

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import loadRazorpay from "../utils/loadRazorPay";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 // --- NavItem Component Definition ---
 const NavItem = ({ to, label, active = false }) => (
   <Link
@@ -18,18 +18,51 @@ const NavItem = ({ to, label, active = false }) => (
   </Link>
 );
 
+// --- Error Modal Component ---
+const ErrorModal = ({ message, onClose }) => (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+    <div className="bg-gray-800 border border-red-500/50 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl transform transition-all scale-100">
+      <div className="w-16 h-16 bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </div>
+      <h3 className="text-xl font-bold text-white text-center mb-2">
+        Payment Failed
+      </h3>
+      <p className="text-gray-400 text-center mb-6 text-sm">{message}</p>
+      <button
+        onClick={onClose}
+        className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-semibold transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  </div>
+);
+
 const SummaryPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const location = useLocation();
-  console.log("location:", location.state.plan);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null); // State for error popup
 
   // Retrieve user details from Redux
   const userdetails = useSelector((store) => store.loggedInUser);
 
   // Retrieve selected plan from navigation state or fallback
-  // In a real app, you might pass the selected plan ID via route params or state
   const selectedPlan = location.state?.plan;
   const [indianStates, setIndianStates] = useState([]);
   const [billingAddress, setProfile] = useState({});
@@ -41,8 +74,8 @@ const SummaryPage = () => {
     if (!userdetails) {
       navigate("/");
     }
-    // Optionally fetch latest address here if needed
   }, [userdetails, navigate]);
+
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
@@ -59,30 +92,40 @@ const SummaryPage = () => {
           );
           setIndianStates(response_states?.data?.data);
           setProfile(response?.data?.data);
-          //setIsEmailVerified(profile?.myemail_veifystatus || false);
         } catch (error) {
-          console.error("Failed to load profile data", error);
+          if (error.status !== 401) {
+            alert("session expired. Please re-login!");
+          }
+          dispatch(removeloggedInUser());
+          navigate("/user-login");
         }
       };
 
       fetchProfileData();
     }
   }, []);
+
   const handlePayment = async () => {
     setIsProcessing(true);
+    setErrorMsg(null); // Clear previous errors
+
     try {
       const res = await loadRazorpay();
       if (!res) {
-        alert("Razorpay SDK failed");
+        setErrorMsg(
+          "Razorpay SDK failed to load. Check your internet connection."
+        );
+        setIsProcessing(false);
         return;
       }
+
       // 1️⃣ Create order
       const orderRes = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
         { amount: selectedPlan.price },
         { withCredentials: true }
       );
-      console.log(orderRes);
+
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID,
         amount: orderRes.data.amount,
@@ -91,69 +134,59 @@ const SummaryPage = () => {
         description: "Mock API Subscription",
         order_id: orderRes.data.id,
         handler: async function (response) {
-          // 2️⃣ Verify payment
-          const verifyRes = await axios.post(
-            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
-            response,
-            { withCredentials: true }
-          );
-          console.log("verifyresponse:", verifyRes);
-          if (verifyRes?.data?.statuscode) {
-            alert(
-              "Payment Successful, mock api calls credited to wallet successfully. Check the wallet history."
+          try {
+            // 2️⃣ Verify payment
+            const verifyRes = await axios.post(
+              `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
+              response,
+              { withCredentials: true }
             );
-          } else {
-            alert("Payment Verification Failed");
+
+            if (verifyRes?.data?.statuscode) {
+              // SUCCESS: Navigate to the Success Page (Popup)
+              navigate(
+                `/payment-success?payment_id=${response.razorpay_payment_id}`
+              );
+            } else {
+              // VERIFICATION FAILED
+              setErrorMsg(
+                "Payment verification failed. Any amount deducted will be credited to you!"
+              );
+            }
+          } catch (err) {
+            console.error("Verification Error", err);
+            setErrorMsg("An error occurred while verifying the payment.");
           }
         },
         prefill: {
-          name: "User",
-          email: "user@email.com",
-          contact: "9999999999",
+          name: billingAddress.user_name || "User",
+          email: billingAddress.myemail || "user@email.com",
+          contact: billingAddress.mobile_number || "9999999999",
         },
         theme: { color: "#0f172a" },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+          },
+        },
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
-      // 1. Create Order on Backend (Placeholder)
-      // const orderResponse = await axios.post(`${BASE_URL}/api/payment/create-order`, {
-      //   planId: selectedPlan.id,
-      //   amount: selectedPlan.price
-      // }, { withCredentials: true });
-
-      // 2. Initialize Razorpay (Placeholder logic)
-      // const options = {
-      //   key: "YOUR_RAZORPAY_KEY",
-      //   amount: orderResponse.data.amount,
-      //   currency: "INR",
-      //   name: "ServerPe.in",
-      //   description: `Purchase ${selectedPlan.name}`,
-      //   order_id: orderResponse.data.id,
-      //   handler: async function (response) {
-      //      // Verify payment on backend
-      //      alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
-      //      navigate("/wallet-recharge");
-      //   },
-      //   prefill: {
-      //     name: billingAddress.name,
-      //     email: billingAddress.email,
-      //     contact: billingAddress.mobile,
-      //   },
-      // };
-      // const rzp1 = new window.Razorpay(options);
-      // rzp1.open();
-      navigate("/user-home"); // Redirect to wallet or success page
     } catch (error) {
       console.error("Payment initiation failed", error);
-      alert("Failed to initiate payment. Please try again.");
-    } finally {
+      setErrorMsg("Failed to initiate payment. Please try again later.");
       setIsProcessing(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Error Popup */}
+      {errorMsg && (
+        <ErrorModal message={errorMsg} onClose={() => setErrorMsg(null)} />
+      )}
+
       {/* --- NAVIGATION BAR --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
@@ -305,26 +338,34 @@ const SummaryPage = () => {
             <h2 className="text-lg font-semibold text-white mb-4 border-b border-gray-700 pb-2">
               Selected Plan
             </h2>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-300 text-lg font-medium">
-                {selectedPlan.price_name}
-              </span>
-              <span className="text-white text-xl font-bold">
-                ₹{selectedPlan.price}
-              </span>
-            </div>
-            <div className="text-sm text-gray-400 space-y-1">
-              <p>
-                API Calls:{" "}
-                <span className="text-indigo-400 font-medium">
-                  {selectedPlan.api_calls_count}
-                </span>
-              </p>
-              <p>
-                Validity:{" "}
-                {selectedPlan.validity ? selectedPlan.validity : "Unlimited"}
-              </p>
-            </div>
+            {selectedPlan ? (
+              <>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-300 text-lg font-medium">
+                    {selectedPlan.price_name}
+                  </span>
+                  <span className="text-white text-xl font-bold">
+                    ₹{selectedPlan.price}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-400 space-y-1">
+                  <p>
+                    API Calls:{" "}
+                    <span className="text-indigo-400 font-medium">
+                      {selectedPlan.api_calls_count}
+                    </span>
+                  </p>
+                  <p>
+                    Validity:{" "}
+                    {selectedPlan.validity
+                      ? selectedPlan.validity
+                      : "Unlimited"}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-red-400">No plan selected. Please go back.</p>
+            )}
           </div>
 
           {/* Billing Address */}
@@ -360,13 +401,15 @@ const SummaryPage = () => {
                 <strong className="text-gray-500 block text-xs uppercase tracking-wide mb-1">
                   Address
                 </strong>{" "}
-                {billingAddress.address}
+                {billingAddress.address || "Not provided"}
               </p>
               <p>
                 <strong className="text-gray-500 block text-xs uppercase tracking-wide mb-1">
                   Mobile
                 </strong>{" "}
-                +91{billingAddress.mobile_number}
+                {billingAddress.mobile_number
+                  ? `+91 ${billingAddress.mobile_number}`
+                  : "Not provided"}
               </p>
             </div>
           </div>
@@ -376,13 +419,13 @@ const SummaryPage = () => {
             <div className="flex justify-between items-center mb-6">
               <span className="text-xl font-bold text-white">Total Amount</span>
               <span className="text-2xl font-extrabold text-green-400">
-                ₹{selectedPlan.price}
+                ₹{selectedPlan ? selectedPlan.price : "0"}
               </span>
             </div>
 
             <button
               onClick={handlePayment}
-              disabled={isProcessing}
+              disabled={isProcessing || !selectedPlan}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2"
             >
               {isProcessing ? (

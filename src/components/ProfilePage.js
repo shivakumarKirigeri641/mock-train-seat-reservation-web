@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -25,7 +25,7 @@ const ProfilePage = () => {
   const [indianStates, setIndianStates] = useState([]);
 
   const userdetails = useSelector((store) => store.loggedInUser);
-
+  const dispatch = useDispatch();
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
@@ -44,7 +44,11 @@ const ProfilePage = () => {
           setProfile(response?.data?.data);
           setIsEmailVerified(profile?.myemail_veifystatus || false);
         } catch (error) {
-          console.error("Failed to load profile data", error);
+          if (error.status !== 401) {
+            alert("session expired. Please re-login!");
+          }
+          dispatch(removeloggedInUser());
+          navigate("/user-login");
         }
       };
 

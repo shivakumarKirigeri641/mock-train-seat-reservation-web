@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -19,8 +19,8 @@ const NavItem = ({ to, label, active = false }) => (
 
 const PaymentSuccessSummaryPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
+  console.log("searchparams:", searchParams);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [orderDetails, setOrderDetails] = useState(null);
@@ -29,7 +29,8 @@ const PaymentSuccessSummaryPage = () => {
   // Retrieve user details from Redux
   const userdetails = useSelector((store) => store.loggedInUser);
   const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-  const paymentId = location.state.payment_id;
+  const paymentId = searchParams.get("payment_id") || "PAY_MOCK_123456"; // Get ID from URL or mock
+  console.log("paymentid:", paymentId);
 
   useEffect(() => {
     if (!userdetails) {
@@ -40,17 +41,11 @@ const PaymentSuccessSummaryPage = () => {
     const fetchPaymentDetails = async () => {
       setIsLoading(true);
       try {
-        const result = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
-          {},
-          { withCredentials: true }
-        );
         // --- API Call to fetch transaction details ---
         // Replace with actual endpoint: e.g., /api/payment/status/:id
         // const response = await axios.get(`${BASE_URL}/mockapis/payment/status/${paymentId}`, { withCredentials: true });
-
         // --- Mock Response ---
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        /*await new Promise((resolve) => setTimeout(resolve, 1000));
         const mockResponse = {
           success: true,
           data: {
@@ -63,7 +58,7 @@ const PaymentSuccessSummaryPage = () => {
           },
         };
 
-        setOrderDetails(mockResponse.data);
+        setOrderDetails(mockResponse.data);*/
       } catch (error) {
         console.error("Failed to fetch payment details", error);
       } finally {
@@ -74,18 +69,17 @@ const PaymentSuccessSummaryPage = () => {
     fetchPaymentDetails();
 
     // Countdown Timer for Redirect
-    const timer = setInterval(() => {
+    /*const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
     }, 1000);
 
     // Redirect after 5 seconds
     const redirectTimeout = setTimeout(() => {
       navigate("/user-home");
-    }, 5000);
-
+    }, 5000);*/
     return () => {
-      clearInterval(timer);
-      clearTimeout(redirectTimeout);
+      //clearInterval(timer);
+      //clearTimeout(redirectTimeout);
     };
   }, [userdetails, navigate, BASE_URL, paymentId]);
 

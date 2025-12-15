@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 const FeedbackForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [feedbackData, setFeedbackData] = useState({
     category: "Feedback",

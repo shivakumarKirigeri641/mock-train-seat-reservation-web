@@ -67,7 +67,7 @@ const appRouter = createBrowserRouter([
           { path: "/profile", element: <ProfilePage /> },
           { path: "/refund-policy", element: <RefundPolicyPage /> },
           {
-            path: "/payment-success-summary",
+            path: "/payment-success",
             element: <PaymentSuccessSummaryPage />,
           },
         ],

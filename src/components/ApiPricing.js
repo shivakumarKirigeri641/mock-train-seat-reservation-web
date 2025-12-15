@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 const ApiPricing = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // State for plans data and loading
@@ -33,7 +34,11 @@ const ApiPricing = () => {
         );
         setPlans(response?.data?.data);
       } catch (error) {
-        console.error("Failed to load pricing plans", error);
+        if (error.status !== 401) {
+          alert("session expired. Please re-login!");
+        }
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
       } finally {
         setIsLoading(false);
       }

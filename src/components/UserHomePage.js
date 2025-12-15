@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useDebugValue, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 const UserHomePage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const userdetails = useSelector((store) => store.loggedInUser);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -40,7 +41,11 @@ const UserHomePage = () => {
           setUserData(response.data.data);
         }
       } catch (error) {
-        console.error("Failed to load user dashboard data", error);
+        if (error.status !== 401) {
+          alert("session expired. Please re-login!");
+        }
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
       } finally {
         setIsLoading(false);
       }

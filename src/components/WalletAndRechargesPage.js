@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
-
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 // --- NavItem Component Definition ---
 const NavItem = ({ to, label, active = false }) => (
   <Link
@@ -17,6 +17,7 @@ const NavItem = ({ to, label, active = false }) => (
 );
 
 const WalletAndRechargesPage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -83,7 +84,11 @@ const WalletAndRechargesPage = () => {
 
         setDeductions(debitsData);
       } catch (error) {
-        console.error("Failed to load wallet data", error);
+        if (error.status !== 401) {
+          alert("session expired. Please re-login!");
+        }
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
       } finally {
         setIsLoading(false);
       }

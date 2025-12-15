@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
-import { useSelector } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 const ApiUsage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [filterEndpoint, setFilterEndpoint] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -20,10 +21,6 @@ const ApiUsage = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const userdetails = useSelector((store) => store.loggedInUser);
-
-  // const BASE_URL = "https://serverpe.in"; // Production URL placeholder
-  const BASE_URL = "http://localhost:8888"; // Local dev URL placeholder
-
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
@@ -44,7 +41,11 @@ const ApiUsage = () => {
           setAllLogs(response_stats_logs?.data?.data.mockLogs);
           setAnalytics(response_usage_analytics?.data?.data); // Set analytics state
         } catch (error) {
-          console.error("Failed to load usage data", error);
+          if (error.status !== 401) {
+            alert("session expired. Please re-login!");
+          }
+          dispatch(removeloggedInUser());
+          navigate("/user-login");
         } finally {
           setIsLoading(false);
         }
