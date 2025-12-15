@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom/client";
+import PaymentSuccessSummaryPage from "./components/PaymentSuccessSummaryPage";
 import SummaryPage from "./components/SummaryPage";
 import LogoutPage from "./components/LogoutPage";
 import Layout from "./components/Layout";
@@ -65,6 +66,10 @@ const appRouter = createBrowserRouter([
           { path: "/plan-summary", element: <SummaryPage /> },
           { path: "/profile", element: <ProfilePage /> },
           { path: "/refund-policy", element: <RefundPolicyPage /> },
+          {
+            path: "/payment-success-summary",
+            element: <PaymentSuccessSummaryPage />,
+          },
         ],
       },
 

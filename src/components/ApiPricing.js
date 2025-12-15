@@ -338,7 +338,9 @@ const ApiPricing = () => {
 
                   {/* Button */}
                   <button
-                    onClick={() => navigate("/plan-summary")}
+                    onClick={() =>
+                      navigate("/plan-summary", { state: { plan } })
+                    }
                     className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
                   >
                     Buy Now

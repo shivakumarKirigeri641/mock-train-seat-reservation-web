@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import loadRazorpay from "../utils/loadRazorPay";
 
 // --- NavItem Component Definition ---
 const NavItem = ({ to, label, active = false }) => (
@@ -20,6 +21,7 @@ const NavItem = ({ to, label, active = false }) => (
 const SummaryPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  console.log("location:", location.state.plan);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -28,21 +30,9 @@ const SummaryPage = () => {
 
   // Retrieve selected plan from navigation state or fallback
   // In a real app, you might pass the selected plan ID via route params or state
-  const selectedPlan = location.state?.plan || {
-    id: "wow",
-    name: "Wow Plan",
-    price: 1599,
-    calls: 10000,
-    validity: "Unlimited",
-  };
-
-  // Mock billing address (fetch from profile or redux in a real scenario)
-  const [billingAddress, setBillingAddress] = useState({
-    name: userdetails?.name || "Shiva",
-    email: userdetails?.email || "shiva@example.com",
-    address: "123, Tech Park, Bengaluru, Karnataka - 560001",
-    mobile: userdetails?.mobile || "9876543210",
-  });
+  const selectedPlan = location.state?.plan;
+  const [indianStates, setIndianStates] = useState([]);
+  const [billingAddress, setProfile] = useState({});
 
   // Use environment variable or default
   const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8888";
@@ -53,10 +43,79 @@ const SummaryPage = () => {
     }
     // Optionally fetch latest address here if needed
   }, [userdetails, navigate]);
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/user-login");
+    } else {
+      const fetchProfileData = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+            { withCredentials: true }
+          );
+          const response_states = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
+            { withCredentials: true }
+          );
+          setIndianStates(response_states?.data?.data);
+          setProfile(response?.data?.data);
+          //setIsEmailVerified(profile?.myemail_veifystatus || false);
+        } catch (error) {
+          console.error("Failed to load profile data", error);
+        }
+      };
 
+      fetchProfileData();
+    }
+  }, []);
   const handlePayment = async () => {
     setIsProcessing(true);
     try {
+      const res = await loadRazorpay();
+      if (!res) {
+        alert("Razorpay SDK failed");
+        return;
+      }
+      // 1️⃣ Create order
+      const orderRes = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
+        { amount: selectedPlan.price },
+        { withCredentials: true }
+      );
+      console.log(orderRes);
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: orderRes.data.amount,
+        currency: "INR",
+        name: "ServerPe",
+        description: "Mock API Subscription",
+        order_id: orderRes.data.id,
+        handler: async function (response) {
+          // 2️⃣ Verify payment
+          const verifyRes = await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
+            response,
+            { withCredentials: true }
+          );
+          console.log("verifyresponse:", verifyRes);
+          if (verifyRes?.data?.statuscode) {
+            alert(
+              "Payment Successful, mock api calls credited to wallet successfully. Check the wallet history."
+            );
+          } else {
+            alert("Payment Verification Failed");
+          }
+        },
+        prefill: {
+          name: "User",
+          email: "user@email.com",
+          contact: "9999999999",
+        },
+        theme: { color: "#0f172a" },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
       // 1. Create Order on Backend (Placeholder)
       // const orderResponse = await axios.post(`${BASE_URL}/api/payment/create-order`, {
       //   planId: selectedPlan.id,
@@ -84,12 +143,7 @@ const SummaryPage = () => {
       // };
       // const rzp1 = new window.Razorpay(options);
       // rzp1.open();
-
-      // --- Simulation for Demo ---
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      alert(`Redirecting to Payment Gateway for ₹${selectedPlan.price}...`);
-      // After payment success in simulation:
-      navigate("/wallet-recharge"); // Redirect to wallet or success page
+      navigate("/user-home"); // Redirect to wallet or success page
     } catch (error) {
       console.error("Payment initiation failed", error);
       alert("Failed to initiate payment. Please try again.");
@@ -253,7 +307,7 @@ const SummaryPage = () => {
             </h2>
             <div className="flex justify-between items-center mb-2">
               <span className="text-gray-300 text-lg font-medium">
-                {selectedPlan.name}
+                {selectedPlan.price_name}
               </span>
               <span className="text-white text-xl font-bold">
                 ₹{selectedPlan.price}
@@ -263,10 +317,13 @@ const SummaryPage = () => {
               <p>
                 API Calls:{" "}
                 <span className="text-indigo-400 font-medium">
-                  {selectedPlan.calls}
+                  {selectedPlan.api_calls_count}
                 </span>
               </p>
-              <p>Validity: {selectedPlan.validity}</p>
+              <p>
+                Validity:{" "}
+                {selectedPlan.validity ? selectedPlan.validity : "Unlimited"}
+              </p>
             </div>
           </div>
 
@@ -289,13 +346,15 @@ const SummaryPage = () => {
                 <strong className="text-gray-500 block text-xs uppercase tracking-wide mb-1">
                   Name
                 </strong>{" "}
-                {billingAddress.name}
+                {billingAddress.user_name}
               </p>
               <p>
                 <strong className="text-gray-500 block text-xs uppercase tracking-wide mb-1">
                   Email
                 </strong>{" "}
-                {billingAddress.email}
+                {billingAddress.myemail
+                  ? billingAddress.myemail
+                  : "Not provided"}
               </p>
               <p>
                 <strong className="text-gray-500 block text-xs uppercase tracking-wide mb-1">
@@ -307,7 +366,7 @@ const SummaryPage = () => {
                 <strong className="text-gray-500 block text-xs uppercase tracking-wide mb-1">
                   Mobile
                 </strong>{" "}
-                {billingAddress.mobile}
+                +91{billingAddress.mobile_number}
               </p>
             </div>
           </div>
