@@ -77,7 +77,7 @@ const PaymentSuccessSummaryPage = () => {
               credits_added: "Applied to Account",
               date: new Date(data.created_at * 1000).toLocaleString(),
               status: data.status === "captured" ? "Success" : data.status,
-              email: data.email,
+              email: !data.myemail ? "Not provided" : data.myemail,
             });
           }
         }
@@ -139,8 +139,8 @@ const PaymentSuccessSummaryPage = () => {
       
       Billed To:
       Name: ${userProfile.user_name}
-      Email: ${orderDetails.email}
-      State: ${userState}
+      Email: ${!userProfile.myemail ? "Not provided" : userProfile.myemail}
+      State: ${userProfile.state_name}
       ------------------------------------------------
       Plan Item:                  ${orderDetails.plan_name}
       Base Amount:                ₹${taxDetails.baseAmount}
