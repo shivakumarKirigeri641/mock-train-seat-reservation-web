@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { useSelector } from "react-redux";
 import axios from "axios";
 
@@ -19,8 +19,8 @@ const NavItem = ({ to, label, active = false }) => (
 
 const PaymentSuccessSummaryPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  console.log("searchparams:", searchParams);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [orderDetails, setOrderDetails] = useState(null);
@@ -29,8 +29,9 @@ const PaymentSuccessSummaryPage = () => {
   // Retrieve user details from Redux
   const userdetails = useSelector((store) => store.loggedInUser);
   const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-  const paymentId = searchParams.get("payment_id") || "PAY_MOCK_123456"; // Get ID from URL or mock
-  console.log("paymentid:", paymentId);
+  // Get payment ID from navigation state (preferred) or URL params
+  const paymentId =
+    location.state?.payment_id || searchParams.get("payment_id");
 
   useEffect(() => {
     if (!userdetails) {
@@ -42,23 +43,29 @@ const PaymentSuccessSummaryPage = () => {
       setIsLoading(true);
       try {
         // --- API Call to fetch transaction details ---
-        // Replace with actual endpoint: e.g., /api/payment/status/:id
-        // const response = await axios.get(`${BASE_URL}/mockapis/payment/status/${paymentId}`, { withCredentials: true });
-        // --- Mock Response ---
-        /*await new Promise((resolve) => setTimeout(resolve, 1000));
-        const mockResponse = {
-          success: true,
-          data: {
-            transaction_id: paymentId,
-            amount: "1599.00",
-            plan_name: "Wow Plan",
-            credits_added: 10000,
-            date: new Date().toISOString(),
-            status: "Success",
-          },
-        };
+        const response = await axios.post(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
+          { razorpay_payment_id: paymentId }, // Send paymentId if your API expects it in body
+          { withCredentials: true }
+        );
 
-        setOrderDetails(mockResponse.data);*/
+        if (response.data?.successstatus) {
+          const data = response.data.data;
+
+          // Map API response to UI state
+          setOrderDetails({
+            transaction_id: data.id,
+            amount: (data.amount / 100).toFixed(2), // Convert paise to rupees if amount is in paise (Razorpay standard)
+            plan_name: data.description || "API Subscription",
+            // Since the API response doesn't explicitly return 'credits_added',
+            // we can display the amount or fetch plan details separately if needed.
+            // For now, mapping logic assumes credits proportional to amount or static text.
+            credits_added: "Applied to Account",
+            date: new Date(data.created_at * 1000).toLocaleString(), // Convert Unix timestamp to Date
+            status: data.status === "captured" ? "Success" : data.status,
+            email: data.email,
+          });
+        }
       } catch (error) {
         console.error("Failed to fetch payment details", error);
       } finally {
@@ -66,7 +73,12 @@ const PaymentSuccessSummaryPage = () => {
       }
     };
 
-    fetchPaymentDetails();
+    if (paymentId) {
+      fetchPaymentDetails();
+    } else {
+      // Handle case where no payment ID is present
+      setIsLoading(false);
+    }
 
     // Countdown Timer for Redirect
     /*const timer = setInterval(() => {
@@ -77,11 +89,12 @@ const PaymentSuccessSummaryPage = () => {
     const redirectTimeout = setTimeout(() => {
       navigate("/user-home");
     }, 5000);*/
-    return () => {
-      //clearInterval(timer);
-      //clearTimeout(redirectTimeout);
-    };
-  }, [userdetails, navigate, BASE_URL, paymentId]);
+
+    /*return () => {
+      clearInterval(timer);
+      clearTimeout(redirectTimeout);
+    };*/
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -268,9 +281,21 @@ const PaymentSuccessSummaryPage = () => {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400 text-sm">Credits Added</span>
-                  <span className="text-green-400 font-bold">
-                    +{orderDetails.credits_added}
+                  <span className="text-gray-400 text-sm">Status</span>
+                  <span className="text-green-400 font-bold uppercase">
+                    {orderDetails.status}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Date</span>
+                  <span className="text-gray-300 text-sm">
+                    {orderDetails.date}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Email</span>
+                  <span className="text-gray-300 text-sm">
+                    {orderDetails.email}
                   </span>
                 </div>
                 <div className="border-t border-gray-700 pt-3 flex justify-between">
