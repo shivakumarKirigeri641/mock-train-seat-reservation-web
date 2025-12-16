@@ -46,7 +46,6 @@ const WalletAndRechargesPage = () => {
           { withCredentials: true }
         );
         const data = response.data.data;
-        console.log(response.data);
         // 1. Set Wallet Balance & Plan
         const totalCredits =
           (data.user_details.outstanding_apikey_count || 0) +

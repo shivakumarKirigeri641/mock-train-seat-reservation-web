@@ -21,24 +21,9 @@ const TestimonialPage = () => {
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
         );
-        console.log(response?.data?.data);
-
         // Check if data exists, otherwise use fallback
         if (response.data && response?.data?.data.length > 0) {
-          // Map API response to match UI structure if necessary
-          // Assuming API returns objects compatible or we normalize them here
-          const formattedData = response?.data?.data.map((item, index) => ({
-            id: item.id,
-            name: item.user_name,
-            role: item.category_name,
-            text: item.message,
-            avatar: item.avatar || "👤", // Default avatar if missing
-            date:
-              item.created_at ||
-              item.date ||
-              new Date().toISOString().split("T")[0],
-          }));
-          setTestimonials(formattedData);
+          setTestimonials(response?.data?.data);
         } else {
           setTestimonials(FALLBACK_TESTIMONIALS);
         }

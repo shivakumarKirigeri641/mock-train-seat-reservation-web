@@ -46,19 +46,9 @@ const FeedbackForm = () => {
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
           { withCredentials: true }
         );
-        console.log("feedback categorie:", response.data?.data);
-        // Assuming API returns array like: [{label: "General Feedback", value: "Feedback"}, ...]
         setCategories(response.data?.data);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
-        // Fallback options in case API fails
-        setCategories([
-          { label: "General Feedback", value: "Feedback" },
-          { label: "Feature Suggestion", value: "Suggestion" },
-          { label: "Report a Bug", value: "Bug" },
-          { label: "Improvement Idea", value: "Improvement" },
-          { label: "Other Query", value: "Query" },
-        ]);
       }
     };
 

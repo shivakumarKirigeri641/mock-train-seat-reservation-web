@@ -121,7 +121,6 @@ const APIDocumentationGeneralPage = () => {
             "/mockapis/serverpeuser/loggedinuser/all-endpoints",
           { withCredentials: true }
         );
-        console.log(response?.data?.data);
         setApiData(response?.data?.data);
         // Set default active endpoint
         if (apiData.length > 0 && apiData[0].endpoints?.length > 0) {

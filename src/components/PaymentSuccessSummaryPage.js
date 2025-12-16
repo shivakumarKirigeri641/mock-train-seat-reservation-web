@@ -142,14 +142,12 @@ const PaymentSuccessSummaryPage = () => {
         }
 
         // 2. Fetch Payment Details
-        console.log("payment:", paymentId);
         if (paymentId) {
           const response = await axios.post(
             `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
             { razorpay_payment_id: paymentId },
             { withCredentials: true }
           );
-          console.log(response?.data?.data);
           if (response.data?.data?.successstatus) {
             const data = response.data.data;
             //some details not fetching...contineu

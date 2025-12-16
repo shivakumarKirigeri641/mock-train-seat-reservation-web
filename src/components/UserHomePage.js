@@ -46,7 +46,6 @@ const UserHomePage = () => {
             `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`,
             { withCredentials: true }
           );
-          console.log("testimonitals:", testimonialResponse?.data?.data);
           setTestimonials(testimonialResponse?.data?.data);
         } catch (err) {
           console.log("Error fetching testimonials, using fallback", err);
