@@ -38,7 +38,7 @@ const UserHomePage = () => {
         `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
         { withCredentials: true }
       );
-
+      console.log("dash:", dashboardResponse.data.data);
       if (dashboardResponse.data.successstatus) {
         setUserData(dashboardResponse.data.data);
       } else {

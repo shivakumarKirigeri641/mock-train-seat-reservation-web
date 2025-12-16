@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // User State
@@ -14,47 +16,72 @@ const ProfilePage = () => {
     state: "",
     email: "",
     address: "",
-    memberSince: "", // New Field
-    lastLogin: "", // New Field
+    memberSince: "",
+    lastLogin: "",
   });
 
+  const [indianStates, setIndianStates] = useState([]);
+
+  // Action States
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
-  const [indianStates, setIndianStates] = useState([]);
+  // --- NEW: Page Loading & Error States ---
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const userdetails = useSelector((store) => store.loggedInUser);
-  const dispatch = useDispatch();
+  const BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
+  // --- REFACTORED: Fetch Logic wrapped in useCallback ---
+  const fetchProfileData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Fetch Profile and States in parallel
+      const [profileResponse, statesResponse] = await Promise.all([
+        axios.get(
+          `${BASE_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+          { withCredentials: true }
+        ),
+        axios.get(`${BASE_URL}/mockapis/serverpeuser/states`, {
+          withCredentials: true,
+        }),
+      ]);
+
+      setProfile(profileResponse?.data?.data);
+      setIsEmailVerified(
+        profileResponse?.data?.data?.myemail_veifystatus || false
+      );
+      setIndianStates(statesResponse?.data?.data || []);
+    } catch (error) {
+      console.error("Profile Fetch Error:", error);
+
+      if (error.response && error.response.status === 401) {
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else if (error.code === "ERR_NETWORK") {
+        setError(
+          "Network Error: Unable to load profile data. Please check your internet connection."
+        );
+      } else {
+        setError("Failed to load profile information. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [BASE_URL, dispatch, navigate]);
+
+  // Initial Fetch
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
     } else {
-      const fetchProfileData = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
-            { withCredentials: true }
-          );
-          const response_states = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
-            { withCredentials: true }
-          );
-          setIndianStates(response_states?.data?.data);
-          setProfile(response?.data?.data);
-          setIsEmailVerified(profile?.myemail_veifystatus || false);
-        } catch (error) {
-          if (error.status !== 401) {
-            alert("session expired. Please re-login!");
-          }
-          dispatch(removeloggedInUser());
-          navigate("/user-login");
-        }
-      };
-
       fetchProfileData();
     }
-  }, []);
+  }, [userdetails, navigate, fetchProfileData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -72,7 +99,6 @@ const ProfilePage = () => {
     setOtpSent(true);
 
     try {
-      // API Call for Email Verification
       await axios.post(
         `${BASE_URL}/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
         { email: profile?.myemail },
@@ -91,7 +117,6 @@ const ProfilePage = () => {
     setIsSaving(true);
 
     try {
-      // --- API PLACEHOLDER FOR SAVE ---
       await axios.put(
         `${BASE_URL}/mockapis/serverpeuser/loggedinuser/update-profile`,
         {
@@ -124,6 +149,67 @@ const ProfilePage = () => {
     </Link>
   );
 
+  // ---------------- LOADING STATE ----------------
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="w-24 h-24 bg-gray-800 rounded-full border border-gray-700"></div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              Loading Profile
+            </h3>
+            <p className="text-sm text-gray-400 font-mono">
+              Fetching user details...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- ERROR STATE ----------------
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Unavailable</h3>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={fetchProfileData}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/user-home")}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- MAIN CONTENT ----------------
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}

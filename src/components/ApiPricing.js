@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+
 const ApiPricing = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -12,40 +13,51 @@ const ApiPricing = () => {
   const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // const BASE_URL = "https://serverpe.in";
-  const BASE_URL = "http://localhost:8888"; // Local dev
+  // --- NEW: Error State ---
+  const [error, setError] = useState(null);
 
   const userdetails = useSelector((store) => store.loggedInUser);
 
+  // --- REFACTORED: Fetch Logic wrapped in useCallback ---
+  const fetchPlans = useCallback(async () => {
+    setIsLoading(true);
+    setError(null); // Reset error on retry
+
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-plans-premium`,
+        { withCredentials: true }
+      );
+      setPlans(response?.data?.data || []);
+    } catch (error) {
+      console.error("Pricing Fetch Error:", error);
+
+      if (error.response && error.response.status === 401) {
+        // Session Expired
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else if (error.code === "ERR_NETWORK") {
+        // Network Error
+        setError(
+          "Network Error: Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        // General Error
+        setError("Failed to load pricing plans. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, navigate]);
+
+  // Initial Fetch
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
       return;
     }
-
-    const fetchPlans = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch plans from API
-        // Ensure your backend has this endpoint or adjust accordingly
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-plans-premium`,
-          { withCredentials: true }
-        );
-        setPlans(response?.data?.data);
-      } catch (error) {
-        if (error.status !== 401) {
-          alert("session expired. Please re-login!");
-        }
-        dispatch(removeloggedInUser());
-        navigate("/user-login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchPlans();
-  }, [userdetails, navigate]);
+  }, [userdetails, navigate, fetchPlans]);
 
   const NavItem = ({ to, label, active = false }) => (
     <Link
@@ -60,6 +72,59 @@ const ApiPricing = () => {
     </Link>
   );
 
+  // --- VIEW: Error State ---
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+        {/* Simplified Nav for Context */}
+        <nav className="border-b border-gray-800 h-20 flex items-center px-6">
+          <div className="font-bold text-xl tracking-tighter text-white">
+            ServerPe<span className="text-indigo-500">.in</span>
+          </div>
+        </nav>
+
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              Unable to Load Plans
+            </h3>
+            <p className="text-gray-400 mb-8">{error}</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={fetchPlans}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+              >
+                Retry
+              </button>
+              <button
+                onClick={() => navigate("/user-home")}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- VIEW: Main Content ---
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}
@@ -84,7 +149,7 @@ const ApiPricing = () => {
               <NavItem to="/user-home" label="Home" />
               <NavItem to="/api-usage" label="API Usage" />
               <NavItem to="/api-documentation" label="API Documentation" />
-              <NavItem to="/api-pricing" label="API Pricing" active="true" />
+              <NavItem to="/api-pricing" label="API Pricing" active={true} />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
               <NavItem to="/give-feedback" label="Give feedback" />
               <NavItem to="/profile" label="Profile" />

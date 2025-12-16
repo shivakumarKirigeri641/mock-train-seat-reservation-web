@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+
 // --- NavItem Component Definition ---
 const NavItem = ({ to, label, active = false }) => (
   <Link
@@ -27,76 +28,97 @@ const WalletAndRechargesPage = () => {
   const [deductions, setDeductions] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [activePlan, setActivePlan] = useState("Free");
+
+  // Loading & Error States
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Pagination states
   const [rechargePage, setRechargePage] = useState(1);
   const [deductionPage, setDeductionPage] = useState(1);
   const itemsPerPage = 10;
 
-  // const BASE_URL = "https://serverpe.in";
-  const BASE_URL = "http://localhost:8888"; // Local dev
+  const userdetails = useSelector((store) => store.loggedInUser);
 
-  useEffect(() => {
-    const fetchWalletData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
-          { withCredentials: true }
-        );
-        const data = response.data.data;
-        // 1. Set Wallet Balance & Plan
-        const totalCredits =
-          (data.user_details.outstanding_apikey_count || 0) +
-          (data.user_details.outstanding_apikey_count_free || 0);
-        setWalletBalance(totalCredits);
-        setActivePlan(data.user_details.price_name || "Free");
+  // --- REFACTORED: Fetch Logic wrapped in useCallback ---
+  const fetchWalletData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-        // 2. Process Credits (Recharges)
-        const creditsData = data.credit_details
-          .map((c) => ({
-            id: `CRD_${c.credit_id}`,
-            date: new Date(c.credited_on).toLocaleString(),
-            description: `Plan: ${c.price_name}`,
-            amount: `+${c.price_name === "Free" ? "Free Credits" : "Credits"}`,
-            cost: `₹${c.price}`,
-            api_calls: `${c.api_calls_count}`,
-            status: c.transaction_status ? "Success" : "Failed",
-            rawDate: new Date(c.credited_on),
-          }))
-          .sort((a, b) => b.rawDate - a.rawDate);
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
+        { withCredentials: true }
+      );
+      const data = response.data.data;
 
-        setRecharges(creditsData);
+      // 1. Set Wallet Balance & Plan
+      const totalCredits =
+        (data.user_details.outstanding_apikey_count || 0) +
+        (data.user_details.outstanding_apikey_count_free || 0);
+      setWalletBalance(totalCredits);
+      setActivePlan(data.user_details.price_name || "Free");
 
-        // 3. Process Debits (Deductions)
-        const debitsData = data.debit_details
-          .map((d) => ({
-            id: `DBT_${d.debit_id}`,
-            date: new Date(d.debited_on).toLocaleString(),
-            description: "API Usage",
-            amount: `-${d.api_call_deduction}`,
-            responseStatus: d.response_status,
-            ip: d.ip_address,
-            status: d.response_status === 200 ? "Success" : "Failed", // Assuming 200 is success
-            rawDate: new Date(d.debited_on),
-          }))
-          .sort((a, b) => b.rawDate - a.rawDate);
+      // 2. Process Credits (Recharges)
+      const creditsData = (data.credit_details || [])
+        .map((c) => ({
+          id: `CRD_${c.credit_id}`,
+          date: new Date(c.credited_on).toLocaleString(),
+          description: `Plan: ${c.price_name}`,
+          amount: `+${c.price_name === "Free" ? "Free Credits" : "Credits"}`,
+          cost: `₹${c.price}`,
+          api_calls: `${c.api_calls_count}`,
+          status: c.transaction_status ? "Success" : "Failed",
+          rawDate: new Date(c.credited_on),
+        }))
+        .sort((a, b) => b.rawDate - a.rawDate);
 
-        setDeductions(debitsData);
-      } catch (error) {
-        if (error.status !== 401) {
-          alert("session expired. Please re-login!");
-        }
+      setRecharges(creditsData);
+
+      // 3. Process Debits (Deductions)
+      const debitsData = (data.debit_details || [])
+        .map((d) => ({
+          id: `DBT_${d.debit_id}`,
+          date: new Date(d.debited_on).toLocaleString(),
+          description: "API Usage",
+          amount: `-${d.api_call_deduction}`,
+          responseStatus: d.response_status,
+          ip: d.ip_address,
+          status: d.response_status === 200 ? "Success" : "Failed",
+          rawDate: new Date(d.debited_on),
+        }))
+        .sort((a, b) => b.rawDate - a.rawDate);
+
+      setDeductions(debitsData);
+    } catch (error) {
+      console.error("Wallet Fetch Error:", error);
+
+      if (error.response && error.response.status === 401) {
+        // Session Expired
         dispatch(removeloggedInUser());
         navigate("/user-login");
-      } finally {
-        setIsLoading(false);
+      } else if (error.code === "ERR_NETWORK") {
+        // Network Error
+        setError(
+          "Network Error: Unable to retrieve wallet details. Please check your connection."
+        );
+      } else {
+        // Generic Error
+        setError("Failed to load wallet transactions. Please try again later.");
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, navigate]);
 
-    fetchWalletData();
-  }, []);
+  // Initial Fetch
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/user-login");
+    } else {
+      fetchWalletData();
+    }
+  }, [userdetails, navigate, fetchWalletData]);
 
   // Pagination Logic
   const getPaginatedData = (data, page) => {
@@ -122,6 +144,69 @@ const WalletAndRechargesPage = () => {
     a.click();
   };
 
+  // ---------------- LOADING STATE ----------------
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700">
+            <span className="text-3xl">⚡</span>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              Loading Wallet
+            </h3>
+            <p className="text-sm text-gray-400 font-mono">
+              Fetching transactions...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- ERROR STATE ----------------
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Unavailable</h3>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={fetchWalletData}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/user-home")}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- MAIN CONTENT ----------------
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}
@@ -290,11 +375,11 @@ const WalletAndRechargesPage = () => {
                 Available Credits
               </p>
               <h1 className="text-5xl font-extrabold text-white mt-2">
-                {isLoading ? "..." : walletBalance}
+                {walletBalance}
               </h1>
               <p className="text-indigo-300 text-sm mt-2 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                Plan Active: {isLoading ? "..." : activePlan}
+                Plan Active: {activePlan}
               </p>
             </div>
 
@@ -356,13 +441,7 @@ const WalletAndRechargesPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center">
-                      Loading...
-                    </td>
-                  </tr>
-                ) : recharges.length > 0 ? (
+                {recharges.length > 0 ? (
                   getPaginatedData(recharges, rechargePage).map((txn) => (
                     <tr
                       key={txn.id}
@@ -474,13 +553,7 @@ const WalletAndRechargesPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center">
-                      Loading...
-                    </td>
-                  </tr>
-                ) : deductions.length > 0 ? (
+                {deductions.length > 0 ? (
                   getPaginatedData(deductions, deductionPage).map((txn) => (
                     <tr
                       key={txn.id}

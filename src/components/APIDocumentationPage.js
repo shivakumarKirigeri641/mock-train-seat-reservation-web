@@ -1,8 +1,9 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 import { useDispatch } from "react-redux";
+
 // ---------------- SUB-COMPONENTS ----------------
 
 const NavItem = ({ to, label, active = false }) => (
@@ -107,37 +108,58 @@ const APIDocumentationGeneralPage = () => {
   // State for Documentation Data
   const [apiData, setApiData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // --- NEW: Error State ---
+  const [error, setError] = useState(null);
+
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const [activeEndpointId, setActiveEndpointId] = useState(null);
   const [openCategories, setOpenCategories] = useState({ 0: true });
 
-  // ---------------- FETCH LOGIC (Simulated) ----------------
-  useEffect(() => {
-    const fetchApiDocumentation = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL +
-            "/mockapis/serverpeuser/loggedinuser/all-endpoints",
-          { withCredentials: true }
-        );
-        setApiData(response?.data?.data);
-        // Set default active endpoint
-        if (apiData.length > 0 && apiData[0].endpoints?.length > 0) {
-          setActiveEndpointId(apiData[0].endpoints[0].id);
-        }
-      } catch (error) {
-        if (error.status !== 401) {
-          alert("session expired. Please re-login!");
-        }
+  // ---------------- FETCH LOGIC (Wrapped in useCallback) ----------------
+  const fetchApiDocumentation = useCallback(async () => {
+    setIsLoading(true);
+    setError(null); // Reset error state on retry
+    try {
+      const response = await axios.get(
+        process.env.REACT_APP_BACKEND_URL +
+          "/mockapis/serverpeuser/loggedinuser/all-endpoints",
+        { withCredentials: true }
+      );
+
+      const data = response?.data?.data;
+      setApiData(data);
+
+      // Set default active endpoint if data exists
+      if (data && data.length > 0 && data[0].endpoints?.length > 0) {
+        // Only set default if we haven't selected one yet (preserves selection on re-renders)
+        setActiveEndpointId((prev) => prev || data[0].endpoints[0].id);
+      }
+    } catch (error) {
+      console.error("Documentation Fetch Error:", error);
+
+      if (error.response && error.response.status === 401) {
+        // Session Expired -> Logout
         dispatch(removeloggedInUser());
         navigate("/user-login");
-      } finally {
-        setIsLoading(false);
+      } else if (error.code === "ERR_NETWORK") {
+        setError(
+          "Network Error: Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        setError(
+          "Failed to load API Documentation. The server might be down or experiencing issues."
+        );
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, navigate]);
+
+  // Initial Fetch
+  useEffect(() => {
     fetchApiDocumentation();
-  }, []);
+  }, [fetchApiDocumentation]);
 
   const allEndpoints = apiData?.flatMap((cat) =>
     cat?.endpoints?.map((ep) => ({ ...ep, category: cat.category }))
@@ -200,8 +222,13 @@ const APIDocumentationGeneralPage = () => {
 
       if (activeEndpoint.method === "GET") delete options.body;
 
-      const res = await axios.get(url, options);
-      const text = await res?.data?.data;
+      const res = await axios.get(url, options); // Note: axios.get with body is non-standard, usually axios(options)
+      // Since Try It functionality is generic, better to use axios(options) if METHOD varies
+      // But keeping your structure for minimal diff if you prefer axios.get/post based on method check
+      // Correct generic approach:
+      // const res = await axios({ url, ...options });
+
+      const text = await res?.data?.data; // Adjust based on your actual mock response structure
       let parsed;
       try {
         parsed = JSON.parse(text);
@@ -221,14 +248,12 @@ const APIDocumentationGeneralPage = () => {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
         <div className="flex flex-col items-center gap-6">
-          {/* Animated Spinner/Logo */}
           <div className="relative w-20 h-20">
             <div className="absolute inset-0 bg-indigo-500 rounded-xl blur-xl opacity-50 animate-pulse"></div>
             <div className="relative w-full h-full bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center shadow-2xl animate-bounce">
               <span className="text-4xl">⚡</span>
             </div>
           </div>
-
           <div className="text-center space-y-2">
             <h3 className="text-xl font-bold tracking-tight text-white">
               Loading Documentation
@@ -237,10 +262,49 @@ const APIDocumentationGeneralPage = () => {
               Fetching endpoints...
             </p>
           </div>
-
-          {/* Progress Bar */}
           <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
             <div className="h-full bg-indigo-500 animate-loading-bar"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- ERROR SCREEN ----------------
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Unavailable</h3>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={fetchApiDocumentation}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/user-home")}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+            >
+              Back to Home
+            </button>
           </div>
         </div>
       </div>
@@ -277,7 +341,7 @@ const APIDocumentationGeneralPage = () => {
               />
               <NavItem to="/api-pricing" label="API Pricing" />
               <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
-              <NavItem to="/feedback-form" label="Give feedback" />
+              <NavItem to="/give-feedback" label="Give feedback" />
               <NavItem to="/profile" label="Profile" />
             </div>
 

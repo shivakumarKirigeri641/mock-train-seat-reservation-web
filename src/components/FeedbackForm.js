@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
@@ -10,14 +10,111 @@ const FeedbackForm = () => {
   const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // 1. Create state to hold categories from API
+  // State for categories
   const [categories, setCategories] = useState([]);
+
+  // --- NEW: Loading & Error States ---
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [feedbackData, setFeedbackData] = useState({
     category: "Feedback",
     rating: 5,
     message: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(null); // Separate error for form submission
+
+  const userdetails = useSelector((store) => store.loggedInUser);
+
+  // --- REFACTORED: Fetch Logic wrapped in useCallback ---
+  const fetchCategories = useCallback(async () => {
+    setIsLoading(true);
+    setError(null); // Reset page-level error
+
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
+        { withCredentials: true }
+      );
+
+      const fetchedCategories = response.data?.data || [];
+      setCategories(fetchedCategories);
+
+      // Optional: Set the first category as default if available
+      if (fetchedCategories.length > 0) {
+        setFeedbackData((prev) => ({
+          ...prev,
+          category:
+            fetchedCategories[0].value || fetchedCategories[0].category_name,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+
+      if (error.response && error.response.status === 401) {
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else if (error.code === "ERR_NETWORK") {
+        setError(
+          "Network Error: Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        setError("Failed to load feedback categories. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, navigate]);
+
+  // Initial Fetch
+  useEffect(() => {
+    if (!userdetails) {
+      navigate("/user-login");
+    } else {
+      fetchCategories();
+    }
+  }, [userdetails, navigate, fetchCategories]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/feedback`,
+        {
+          category: feedbackData.category,
+          rating: feedbackData.rating,
+          message: feedbackData.message,
+        },
+        { withCredentials: true }
+      );
+      setSubmitted(true);
+      // Reset form
+      setFeedbackData({
+        category:
+          categories.length > 0
+            ? categories[0].value || categories[0].category_name
+            : "Feedback",
+        rating: 5,
+        message: "",
+      });
+    } catch (error) {
+      console.error("Submission error", error);
+      if (error.response && error.response.status === 401) {
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else {
+        setSubmitError("Failed to submit feedback. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const NavItem = ({ to, label, active = false }) => (
     <Link
@@ -32,61 +129,81 @@ const FeedbackForm = () => {
     </Link>
   );
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  // ---------------- LOADING STATE ----------------
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700">
+            <svg
+              className="w-8 h-8 text-indigo-500 animate-spin"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-white">
+              Loading Feedback Form
+            </h3>
+            <p className="text-sm text-gray-400 font-mono">
+              Fetching categories...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const userdetails = useSelector((store) => store.loggedInUser);
+  // ---------------- ERROR STATE ----------------
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Unavailable</h3>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={fetchCategories}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/user-home")}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // 2. Fetch categories when component loads
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        // Replace with your actual endpoint for categories
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
-          { withCredentials: true }
-        );
-        setCategories(response.data?.data);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-
-    fetchCategories();
-
-    if (!userdetails) {
-      navigate("/user-login");
-    }
-  }, [userdetails, navigate]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/feedback`,
-        {
-          category: feedbackData.category,
-          rating: feedbackData.rating,
-          message: feedbackData.message,
-        },
-        { withCredentials: true }
-      );
-      setSubmitted(true);
-      setFeedbackData({
-        category: categories[0].category_name,
-        rating: 5,
-        message: "",
-      });
-    } catch (error) {
-      if (error.status !== 401) {
-        alert("session expired. Please re-login!");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  // ---------------- MAIN CONTENT ----------------
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}
@@ -268,6 +385,13 @@ const FeedbackForm = () => {
                 Share Your Feedback
               </h2>
 
+              {/* Submission Error Message */}
+              {submitError && (
+                <div className="p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-sm text-red-300 text-center mb-4">
+                  {submitError}
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   What is this about?
@@ -283,8 +407,8 @@ const FeedbackForm = () => {
                   }
                   className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 >
-                  {categories.map((cat) => (
-                    <option key={cat.category_name} value={cat.value}>
+                  {categories.map((cat, index) => (
+                    <option key={index} value={cat.value || cat.category_name}>
                       {cat.category_name}
                     </option>
                   ))}

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+
 const ApiUsage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -19,40 +20,68 @@ const ApiUsage = () => {
     successRate: "0.00%",
     postPercentage: "0.00%",
   });
+
   const [isLoading, setIsLoading] = useState(true);
+
+  // --- NEW: Error State ---
+  const [error, setError] = useState(null);
+
   const userdetails = useSelector((store) => store.loggedInUser);
+
+  // --- REFACTORED: Fetch Logic wrapped in useCallback ---
+  const fetchUsageData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null); // Reset error state on retry
+
+    try {
+      const response_stats_logs = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-usage`,
+        { withCredentials: true }
+      );
+      const response_usage_analytics = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/usage-analytics`,
+        { withCredentials: true }
+      );
+
+      setDailyStats(response_stats_logs?.data?.data.mockStats || []);
+      setAllLogs(response_stats_logs?.data?.data.mockLogs || []);
+      setAnalytics(
+        response_usage_analytics?.data?.data || {
+          totalRequests: 0,
+          avgLatency: "0.00",
+          successRate: "0.00%",
+          postPercentage: "0.00%",
+        }
+      );
+    } catch (error) {
+      console.error("Usage Data Fetch Error:", error);
+
+      if (error.response && error.response.status === 401) {
+        // Session Expired
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else if (error.code === "ERR_NETWORK") {
+        // Network Error
+        setError(
+          "Network Error: Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        // General Error
+        setError("Failed to load usage analytics. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, navigate]);
+
+  // Initial Fetch
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
     } else {
-      const fetchUsageData = async () => {
-        setIsLoading(true);
-        try {
-          // --- PLACEHOLDER FOR API CALL ---
-          const response_stats_logs = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-usage`,
-            { withCredentials: true }
-          );
-          const response_usage_analytics = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/usage-analytics`,
-            { withCredentials: true }
-          );
-          setDailyStats(response_stats_logs?.data?.data.mockStats);
-          setAllLogs(response_stats_logs?.data?.data.mockLogs);
-          setAnalytics(response_usage_analytics?.data?.data); // Set analytics state
-        } catch (error) {
-          if (error.status !== 401) {
-            alert("session expired. Please re-login!");
-          }
-          dispatch(removeloggedInUser());
-          navigate("/user-login");
-        } finally {
-          setIsLoading(false);
-        }
-      };
       fetchUsageData();
     }
-  }, []);
+  }, [userdetails, navigate, fetchUsageData]);
 
   // Filter Logic
   const filteredLogs = allLogs.filter((log) => {
@@ -110,6 +139,47 @@ const ApiUsage = () => {
           </div>
           <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
             <div className="h-full bg-indigo-500 animate-loading-bar"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- ERROR STATE ----------------
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Unavailable</h3>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={fetchUsageData}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/user-home")}
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+            >
+              Back to Dashboard
+            </button>
           </div>
         </div>
       </div>
@@ -322,7 +392,7 @@ const ApiUsage = () => {
                   {/* Bar */}
                   <div
                     className="w-full max-w-[40px] bg-gray-700 rounded-t-lg relative overflow-hidden transition-all hover:bg-gray-600"
-                    style={{ height }}
+                    style={{ height: `${height}%` }}
                   >
                     <div
                       className="absolute bottom-0 left-0 w-full bg-indigo-600/80 transition-all hover:bg-indigo-500"
