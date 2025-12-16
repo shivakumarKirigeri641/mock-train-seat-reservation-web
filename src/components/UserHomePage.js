@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+
 const UserHomePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -13,32 +14,42 @@ const UserHomePage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // State for Testimonials
+  const [testimonials, setTestimonials] = useState([]);
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+
   // State for Credentials Visibility
   const [showSecret, setShowSecret] = useState(false);
   const [copiedField, setCopiedField] = useState(null); // 'api' or 'secret'
-
-  // const BASE_URL = "https://serverpe.in";
-  const BASE_URL = "http://localhost:8888"; // Local dev
 
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
       return;
     }
-
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch user dashboard data
-        // Replace with your actual endpoint
-        const response = await axios.get(
+        // 1. Fetch User Dashboard Data
+        const dashboardResponse = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
-        if (response.data.successstatus) {
-          setUserData(response.data.data);
+
+        if (dashboardResponse.data.successstatus) {
+          setUserData(dashboardResponse.data.data);
+        }
+
+        // 2. Fetch Testimonials
+        try {
+          const testimonialResponse = await axios.get(
+            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`,
+            { withCredentials: true }
+          );
+          console.log("testimonitals:", testimonialResponse?.data?.data);
+          setTestimonials(testimonialResponse?.data?.data);
+        } catch (err) {
+          console.log("Error fetching testimonials, using fallback", err);
         }
       } catch (error) {
         if (error.status !== 401) {
@@ -51,8 +62,17 @@ const UserHomePage = () => {
       }
     };
 
-    fetchUserData();
-  }, [userdetails, navigate]);
+    fetchData();
+  }, [userdetails, navigate, dispatch]);
+
+  // Testimonial Carousel Auto-Rotation
+  useEffect(() => {
+    if (testimonials.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+    }, 5000); // Change every 5 seconds
+    return () => clearInterval(interval);
+  }, [testimonials]);
 
   const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text);
@@ -73,7 +93,7 @@ const UserHomePage = () => {
     </Link>
   );
 
-  // Helper to format date relative time (e.g., "2 mins ago")
+  // Helper to format date relative time
   const timeAgo = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -463,8 +483,7 @@ const UserHomePage = () => {
               </div>
             </div>
 
-            {/* Mini Wallet Summary - Updated to remove balance but keep recharge button if needed, or update text */}
-            {/* Using 'outstanding_apikey_count_free' as a proxy for 'balance' if you have a credit system */}
+            {/* Wallet Summary */}
             <div className="bg-gradient-to-r from-gray-800 to-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl flex items-center justify-between hover:border-gray-500 transition-all cursor-pointer transform hover:-translate-y-1">
               <div>
                 <p className="text-sm font-medium text-gray-400">
@@ -602,6 +621,61 @@ const UserHomePage = () => {
             </div>
           </div>
         </div>
+
+        {/* --- TESTIMONIALS CAROUSEL SECTION --- */}
+        {testimonials.length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <span className="text-indigo-500">❤️</span> Community Feedback
+            </h3>
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+              <div className="relative z-10 h-40 flex items-center justify-center">
+                {testimonials.map((test, index) => (
+                  <div
+                    key={test?.id || index}
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out flex flex-col items-center justify-center text-center ${
+                      index === currentTestimonialIndex
+                        ? "opacity-100 translate-x-0"
+                        : "opacity-0 translate-x-8"
+                    }`}
+                  >
+                    <div className="text-indigo-400 text-4xl mb-2 opacity-50">
+                      {test.user_name}
+                    </div>
+                    <p className="text-lg md:text-xl text-gray-200 italic font-medium max-w-3xl leading-relaxed">
+                      {test.message}
+                    </p>
+                    <div className="mt-6 flex flex-col items-center">
+                      <span className="text-white font-bold">{test.name}</span>
+                      <span className="text-indigo-400 text-sm">
+                        {test.category_name}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Indicators */}
+              <div className="flex justify-center gap-2 mt-4 relative z-10">
+                {testimonials.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentTestimonialIndex(idx)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      idx === currentTestimonialIndex
+                        ? "bg-indigo-500 w-6"
+                        : "bg-gray-600 hover:bg-gray-500"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

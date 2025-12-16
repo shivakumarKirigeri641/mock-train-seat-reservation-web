@@ -3,15 +3,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+import axios from "axios";
+
 const FeedbackForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // 1. Create state to hold categories from API
+  const [categories, setCategories] = useState([]);
+
   const [feedbackData, setFeedbackData] = useState({
     category: "Feedback",
     rating: 5,
     message: "",
   });
+
   const NavItem = ({ to, label, active = false }) => (
     <Link
       to={to}
@@ -24,25 +31,72 @@ const FeedbackForm = () => {
       {label}
     </Link>
   );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      setFeedbackData({ category: "Feedback", rating: 5, message: "" });
-    }, 1500);
-  };
   const userdetails = useSelector((store) => store.loggedInUser);
+
+  // 2. Fetch categories when component loads
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Replace with your actual endpoint for categories
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
+          { withCredentials: true }
+        );
+        console.log("feedback categorie:", response.data?.data);
+        // Assuming API returns array like: [{label: "General Feedback", value: "Feedback"}, ...]
+        setCategories(response.data?.data);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        // Fallback options in case API fails
+        setCategories([
+          { label: "General Feedback", value: "Feedback" },
+          { label: "Feature Suggestion", value: "Suggestion" },
+          { label: "Report a Bug", value: "Bug" },
+          { label: "Improvement Idea", value: "Improvement" },
+          { label: "Other Query", value: "Query" },
+        ]);
+      }
+    };
+
+    fetchCategories();
+
     if (!userdetails) {
       navigate("/user-login");
     }
-  }, []);
+  }, [userdetails, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/feedback`,
+        {
+          category: feedbackData.category,
+          rating: feedbackData.rating,
+          message: feedbackData.message,
+        },
+        { withCredentials: true }
+      );
+      setSubmitted(true);
+      setFeedbackData({
+        category: categories[0].category_name,
+        rating: 5,
+        message: "",
+      });
+    } catch (error) {
+      if (error.status !== 401) {
+        alert("session expired. Please re-login!");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       {/* --- NAVIGATION BAR --- */}
@@ -228,6 +282,7 @@ const FeedbackForm = () => {
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   What is this about?
                 </label>
+                {/* 3. Map the fetched categories here */}
                 <select
                   value={feedbackData.category}
                   onChange={(e) =>
@@ -238,11 +293,11 @@ const FeedbackForm = () => {
                   }
                   className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 >
-                  <option value="Feedback">General Feedback</option>
-                  <option value="Suggestion">Feature Suggestion</option>
-                  <option value="Bug">Report a Bug</option>
-                  <option value="Improvement">Improvement Idea</option>
-                  <option value="Query">Other Query</option>
+                  {categories.map((cat) => (
+                    <option key={cat.category_name} value={cat.value}>
+                      {cat.category_name}
+                    </option>
+                  ))}
                 </select>
               </div>
 

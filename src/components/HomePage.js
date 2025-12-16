@@ -1,37 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Footer from "./Footer";
 import { useNavigate } from "react-router";
+import axios from "axios";
 
 const HomePage = () => {
   const navigate = useNavigate();
 
-  // State for mobile menu toggling (optional, but good for responsiveness)
+  // State for mobile menu toggling
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Mock Testimonials Data (Preview)
-  const testimonialsPreview = [
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      role: "Frontend Developer",
-      text: "ServerPe's mock APIs saved me weeks of backend dependency. The train reservation flow is incredibly detailed!",
-      avatar: "👨‍💻",
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      role: "QA Engineer",
-      text: "Finally, a way to test edge cases like 'WL' and 'RAC' without needing a live PNR. The error simulation is spot on.",
-      avatar: "👩‍🔬",
-    },
-    {
-      id: 3,
-      name: "Amit Patel",
-      role: "Freelancer",
-      text: "The vehicle specs API is a goldmine. I built a car comparison tool in just 2 days using this data.",
-      avatar: "🚀",
-    },
-  ];
+  // State for Testimonials
+  const [testimonials, setTestimonials] = useState([]);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
+        );
+        setTestimonials(response?.data?.data);
+      } catch (error) {
+        console.error("Failed to fetch testimonials, using fallback.", error);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -318,11 +312,11 @@ const HomePage = () => {
       <section className="bg-gray-800/50 border-y border-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
-            Loved by Developers
+            What Developers says...
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            {testimonialsPreview.map((t) => (
+            {testimonials.map((t) => (
               <div
                 key={t.id}
                 className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-lg"
@@ -332,14 +326,14 @@ const HomePage = () => {
                     {t.avatar}
                   </div>
                   <div>
-                    <h4 className="text-white font-bold">{t.name}</h4>
+                    <h4 className="text-white font-bold">{t.user_name}</h4>
                     <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium">
-                      {t.role}
+                      {t.category_name}
                     </p>
                   </div>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed italic">
-                  "{t.text}"
+                  "{t.message}"
                 </p>
               </div>
             ))}

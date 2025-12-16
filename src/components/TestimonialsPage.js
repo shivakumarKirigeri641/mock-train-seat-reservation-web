@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import axios from "axios";
 import Footer from "./Footer";
 
 const TestimonialPage = () => {
@@ -8,61 +9,57 @@ const TestimonialPage = () => {
   const [filterRole, setFilterRole] = useState("All");
   const [sortOrder, setSortOrder] = useState("Latest");
 
-  const testimonials = [
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      role: "Frontend Developer",
-      text: "ServerPe's mock APIs saved me weeks of backend dependency. The train reservation flow is incredibly detailed!",
-      avatar: "👨‍💻",
-      date: "2023-10-15",
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      role: "QA Engineer",
-      text: "Finally, a way to test edge cases like 'WL' and 'RAC' without needing a live PNR. The error simulation is spot on.",
-      avatar: "👩‍🔬",
-      date: "2023-11-02",
-    },
-    {
-      id: 3,
-      name: "Amit Patel",
-      role: "Freelancer",
-      text: "The vehicle specs API is a goldmine. I built a car comparison tool in just 2 days using this data.",
-      avatar: "🚀",
-      date: "2023-09-20",
-    },
-    {
-      id: 4,
-      name: "Sneha Reddy",
-      role: "UI/UX Designer",
-      text: "The realistic data helped me design better loading states and error messages. Highly recommended for prototyping.",
-      avatar: "🎨",
-      date: "2023-11-10",
-    },
-    {
-      id: 5,
-      name: "Vikram Malhotra",
-      role: "Backend Dev",
-      text: "Even as a backend dev, I use this to quickly prototype frontend ideas without spinning up my own server.",
-      avatar: "⚙️",
-      date: "2023-08-05",
-    },
-    {
-      id: 6,
-      name: "Anjali Gupta",
-      role: "Product Manager",
-      text: "Great for demos! We used the mock train API to show a proof of concept to stakeholders without any real integrations.",
-      avatar: "📈",
-      date: "2023-10-30",
-    },
-  ];
+  // State for data
+  const [testimonials, setTestimonials] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch Testimonials from API
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
+        );
+        console.log(response?.data?.data);
+
+        // Check if data exists, otherwise use fallback
+        if (response.data && response?.data?.data.length > 0) {
+          // Map API response to match UI structure if necessary
+          // Assuming API returns objects compatible or we normalize them here
+          const formattedData = response?.data?.data.map((item, index) => ({
+            id: item.id,
+            name: item.user_name,
+            role: item.category_name,
+            text: item.message,
+            avatar: item.avatar || "👤", // Default avatar if missing
+            date:
+              item.created_at ||
+              item.date ||
+              new Date().toISOString().split("T")[0],
+          }));
+          setTestimonials(formattedData);
+        } else {
+          setTestimonials(FALLBACK_TESTIMONIALS);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch testimonials, using fallback data:",
+          error
+        );
+        setTestimonials(FALLBACK_TESTIMONIALS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   // --- Filtering Logic ---
   const filteredTestimonials = testimonials.filter((t) => {
     if (filterRole === "All") return true;
-    return t.role === filterRole;
+    return t.category_name === filterRole;
   });
 
   // --- Sorting Logic ---
@@ -239,47 +236,53 @@ const TestimonialPage = () => {
         </div>
 
         {/* --- Testimonials Grid --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedTestimonials.length > 0 ? (
-            sortedTestimonials.map((t) => (
-              <div
-                key={t.id}
-                className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl hover:border-indigo-500/50 transition-colors flex flex-col h-full"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-3xl border border-gray-700 shadow-inner shrink-0">
-                    {t.avatar}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {sortedTestimonials.length > 0 ? (
+              sortedTestimonials.map((t) => (
+                <div
+                  key={t.id}
+                  className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl hover:border-indigo-500/50 transition-colors flex flex-col h-full"
+                >
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-3xl border border-gray-700 shadow-inner shrink-0">
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-lg">{t.name}</h4>
+                      <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium bg-indigo-900/30 px-2 py-1 rounded inline-block mt-1">
+                        {t.role}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-white font-bold text-lg">{t.name}</h4>
-                    <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium bg-indigo-900/30 px-2 py-1 rounded inline-block mt-1">
-                      {t.role}
+                  <div className="relative flex-1">
+                    <span className="absolute -top-2 -left-2 text-4xl text-gray-700 opacity-50 font-serif">
+                      "
+                    </span>
+                    <p className="text-gray-300 text-base leading-relaxed relative z-10 pl-2">
+                      {t.text}
                     </p>
                   </div>
+                  <div className="mt-6 pt-4 border-t border-gray-700 text-right">
+                    <span className="text-xs text-gray-500 font-mono">
+                      {new Date(t.date).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-                <div className="relative flex-1">
-                  <span className="absolute -top-2 -left-2 text-4xl text-gray-700 opacity-50 font-serif">
-                    "
-                  </span>
-                  <p className="text-gray-300 text-base leading-relaxed relative z-10 pl-2">
-                    {t.text}
-                  </p>
-                </div>
-                <div className="mt-6 pt-4 border-t border-gray-700 text-right">
-                  <span className="text-xs text-gray-500 font-mono">
-                    {t.date}
-                  </span>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  No testimonials found for this filter.
+                </p>
               </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-lg">
-                No testimonials found for this filter.
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-16 text-center">
           <div className="inline-block bg-gray-800 rounded-full px-6 py-3 border border-gray-700">
