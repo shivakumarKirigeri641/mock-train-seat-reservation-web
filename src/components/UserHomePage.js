@@ -1,4 +1,4 @@
-import React, { useDebugValue, useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
@@ -14,62 +14,91 @@ const UserHomePage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // --- NEW: Error State ---
+  const [error, setError] = useState(null);
+
   // State for Testimonials
   const [testimonials, setTestimonials] = useState([]);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
   // State for Credentials Visibility
   const [showSecret, setShowSecret] = useState(false);
-  const [copiedField, setCopiedField] = useState(null); // 'api' or 'secret'
+  const [copiedField, setCopiedField] = useState(null);
 
+  // --- REFACTORED: Fetch Logic moved to useCallback for Retry capability ---
+  const fetchDashboardData = useCallback(async () => {
+    if (!userdetails) return;
+
+    setIsLoading(true);
+    setError(null); // Reset error before fetching
+
+    try {
+      // 1. Fetch User Dashboard Data (Critical)
+      const dashboardResponse = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
+        { withCredentials: true }
+      );
+
+      if (dashboardResponse.data.successstatus) {
+        setUserData(dashboardResponse.data.data);
+      } else {
+        // Handle logical error from API even if status is 200
+        throw new Error("Failed to retrieve dashboard data.");
+      }
+
+      // 2. Fetch Testimonials (Non-Critical - Graceful Degradation)
+      try {
+        const testimonialResponse = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`,
+          { withCredentials: true }
+        );
+        // Ensure data exists before setting
+        if (testimonialResponse?.data?.data) {
+          setTestimonials(testimonialResponse.data.data);
+        }
+      } catch (err) {
+        // Silently fail for testimonials, don't block dashboard
+        console.warn("Testimonials failed to load:", err);
+      }
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+
+      // Handle Specific Error Types
+      if (error.response && error.response.status === 401) {
+        // Auth failed - redirect to login
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else if (error.code === "ERR_NETWORK") {
+        // Network error (server down or no internet)
+        setError(
+          "Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        // Generic Server Error (500, 404, etc.)
+        setError(
+          "Something went wrong while loading your dashboard. Please try again later."
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userdetails, dispatch, navigate]);
+
+  // Initial Fetch
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
-      return;
+    } else {
+      fetchDashboardData();
     }
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        // 1. Fetch User Dashboard Data
-        const dashboardResponse = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
-          { withCredentials: true }
-        );
-
-        if (dashboardResponse.data.successstatus) {
-          setUserData(dashboardResponse.data.data);
-        }
-
-        // 2. Fetch Testimonials
-        try {
-          const testimonialResponse = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`,
-            { withCredentials: true }
-          );
-          setTestimonials(testimonialResponse?.data?.data);
-        } catch (err) {
-          console.log("Error fetching testimonials, using fallback", err);
-        }
-      } catch (error) {
-        if (error.status !== 401) {
-          alert("session expired. Please re-login!");
-        }
-        dispatch(removeloggedInUser());
-        navigate("/user-login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [userdetails, navigate, dispatch]);
+  }, [userdetails, navigate, fetchDashboardData]);
 
   // Testimonial Carousel Auto-Rotation
   useEffect(() => {
     if (testimonials.length === 0) return;
     const interval = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000); // Change every 5 seconds
+    }, 5000);
     return () => clearInterval(interval);
   }, [testimonials]);
 
@@ -92,12 +121,12 @@ const UserHomePage = () => {
     </Link>
   );
 
-  // Helper to format date relative time
   const timeAgo = (dateString) => {
+    if (!dateString) return "-";
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-
+    // ... (rest of timeAgo logic is fine)
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years ago";
     interval = seconds / 2592000;
@@ -111,7 +140,7 @@ const UserHomePage = () => {
     return Math.floor(seconds) + " seconds ago";
   };
 
-  // Loading State
+  // --- VIEW: Loading State ---
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
@@ -132,9 +161,53 @@ const UserHomePage = () => {
     );
   }
 
+  // --- VIEW: Error State ---
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+          <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">
+            Oops! Something went wrong
+          </h3>
+          <p className="text-gray-400 mb-8">{error}</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={fetchDashboardData}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/contact-support")} // Optional: route to support
+              className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
+            >
+              Contact Support
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- VIEW: Main Dashboard ---
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
-      {/* --- TOP NAVIGATION BAR --- */}
+      {/* ... (Keep your Navigation Bar exactly as is) ... */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">

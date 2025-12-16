@@ -1,27 +1,75 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import axios from "axios";
 
 const ContactMe = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // State for Categories (Subjects)
+  const [categories, setCategories] = useState([]);
+
   const [formData, setFormData] = useState({
-    name: "",
+    user_name: "",
     email: "",
-    subject: "Feedback",
+    category_name: "", // Default value
     message: "",
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Fetch Categories from API on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Replace with your actual endpoint
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
+          { withCredentials: true }
+        );
+        console.log("categories:", response.data.data);
+        if (response.data && response.data.data.length > 0) {
+          setCategories(response.data.data);
+          // Optional: Set default subject to the first item from API
+          setFormData((prev) => ({
+            ...prev,
+            category_name: response.data.data[0].category_name,
+          }));
+        } else {
+          throw new Error("No data");
+        }
+      } catch (error) {
+        console.error("Failed to fetch subjects, using fallback:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Send formData directly (not wrapped in an object unless your backend specifically requires { formData: ... })
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/contact-me`,
+        formData,
+        { withCredentials: true }
+      );
       setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "Feedback", message: "" });
-    }, 1500);
+      setFormData({
+        name: "",
+        email: "",
+        category_name: categories[0]?.category_name,
+        message: "",
+      });
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      alert("Something went wrong. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -198,9 +246,9 @@ const ContactMe = () => {
                   <input
                     type="text"
                     required
-                    value={formData.name}
+                    value={formData.user_name}
                     onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
+                      setFormData({ ...formData, user_name: e.target.value })
                     }
                     className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     placeholder="Your Name"
@@ -228,17 +276,17 @@ const ContactMe = () => {
                   Category
                 </label>
                 <select
-                  value={formData.subject}
+                  value={formData.category_name}
                   onChange={(e) =>
-                    setFormData({ ...formData, subject: e.target.value })
+                    setFormData({ ...formData, category_name: e.target.value })
                   }
                   className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 >
-                  <option value="Feedback">General Feedback</option>
-                  <option value="Suggestion">Feature Suggestion</option>
-                  <option value="Bug">Report a Bug</option>
-                  <option value="Query">API Usage Query</option>
-                  <option value="Other">Other</option>
+                  {categories.map((cat) => (
+                    <option key={cat.category_name} value={cat.category_name}>
+                      {cat.category_name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
