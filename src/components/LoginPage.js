@@ -8,11 +8,11 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // State
-  const [username, setUsername] = useState("Shiva");
-  const [mobile, setMobile] = useState("9886122415");
+  const [username, setUsername] = useState("");
+  const [mobile, setMobile] = useState("");
   //const [state, setState] = useState(0); // Default ID 11
-  const [state, setState] = useState(11); // Default ID 11
-  const [otp, setOtp] = useState("1234");
+  const [state, setState] = useState(); // Default ID 11
+  const [otp, setOtp] = useState("");
   const [step, setStep] = useState("form"); // form | otp
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -403,8 +403,8 @@ const LoginPage = () => {
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-600 focus:border-emerald-500"
                     } rounded-xl text-white placeholder-gray-600 text-center tracking-[0.5em] text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all`}
-                    placeholder="••••••"
-                    maxLength={6}
+                    placeholder="••••"
+                    maxLength={4}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     onKeyDown={(e) => handleKeyDown(e, handleVerifyOtp)}
