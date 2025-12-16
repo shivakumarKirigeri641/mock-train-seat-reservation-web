@@ -124,10 +124,7 @@ const APIDocumentationGeneralPage = () => {
         console.log(response?.data?.data);
         setApiData(response?.data?.data);
         // Set default active endpoint
-        if (
-          response?.data?.data?.length > 0 &&
-          response?.data?.data[0].endpoints?.length > 0
-        ) {
+        if (apiData.length > 0 && apiData[0].endpoints?.length > 0) {
           setActiveEndpointId(apiData[0].endpoints[0].id);
         }
       } catch (error) {

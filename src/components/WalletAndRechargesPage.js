@@ -46,7 +46,7 @@ const WalletAndRechargesPage = () => {
           { withCredentials: true }
         );
         const data = response.data.data;
-
+        console.log(response.data);
         // 1. Set Wallet Balance & Plan
         const totalCredits =
           (data.user_details.outstanding_apikey_count || 0) +
@@ -62,6 +62,7 @@ const WalletAndRechargesPage = () => {
             description: `Plan: ${c.price_name}`,
             amount: `+${c.price_name === "Free" ? "Free Credits" : "Credits"}`,
             cost: `₹${c.price}`,
+            api_calls: `${c.api_calls_count}`,
             status: c.transaction_status ? "Success" : "Failed",
             rawDate: new Date(c.credited_on),
           }))
@@ -351,7 +352,7 @@ const WalletAndRechargesPage = () => {
                   <th className="px-6 py-4">Plan</th>
                   <th className="px-6 py-4">Amount</th>
                   <th className="px-6 py-4">Cost</th>
-                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Api calls credited</th>
                   <th className="px-6 py-4 text-center">Invoice</th>
                 </tr>
               </thead>
@@ -381,13 +382,7 @@ const WalletAndRechargesPage = () => {
                         {txn.amount}
                       </td>
                       <td className="px-6 py-4">{txn.cost}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-bold bg-emerald-900/30 text-emerald-400 border border-emerald-500/20`}
-                        >
-                          {txn.status}
-                        </span>
-                      </td>
+                      <td className="px-6 py-4">{txn.api_calls}</td>
                       <td className="px-6 py-4 text-center">
                         <button
                           onClick={() => downloadInvoice(txn)}
