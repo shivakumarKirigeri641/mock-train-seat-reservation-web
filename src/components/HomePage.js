@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Footer from "./Footer";
 import { useNavigate } from "react-router";
 import axios from "axios";
+// Adjust this path to where your SVG file is located
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -33,9 +35,17 @@ const HomePage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white">
-              ServerPe<span className="text-indigo-500">.in</span>
+            {/* Logo Section */}
+            <div
+              onClick={() => navigate("/")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+            >
+              {/* Logo Image */}
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}
@@ -50,7 +60,6 @@ const HomePage = () => {
                 API Pricing
               </a>
 
-              {/* API Documentation Link */}
               <button
                 onClick={() => navigate("/general-api-documentation")}
                 className="hover:text-indigo-400 transition-colors focus:outline-none"
@@ -82,7 +91,7 @@ const HomePage = () => {
               </button>
             </div>
 
-            {/* Mobile menu button (Hamburger) */}
+            {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -206,8 +215,7 @@ const HomePage = () => {
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
               Access a vast database of mock postal information. Query by
-              region, district, or PIN code to test address auto-completion
-              forms and location-based logic in your applications.
+              region, district, or PIN code to test address auto-completion.
             </p>
             <div className="mt-6">
               <span
@@ -289,12 +297,11 @@ const HomePage = () => {
               Mock Train Reservation APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              End-to-end simulation of a booking engine. Includes seat
-              availability, PNR status, and cancellation logic.
-              <span className="block mt-2 text-indigo-300 font-medium text-sm">
-                ✨ Feature: Mock booking SMS will be triggered to your provided
-                mobile number upon successful API call.
-              </span>
+              End-to-end simulation of a booking engine with a powerful back-end
+              simulator that ensures dynamic, realistic responses (not static)
+              across all mock trains. Includes seat availability, PNR status,
+              cancellation logic, and triggers mock SMS notifications upon
+              successful booking based on request body properties.
             </p>
             <div className="mt-6">
               <span
@@ -312,7 +319,7 @@ const HomePage = () => {
       <section className="bg-gray-800/50 border-y border-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
-            What Developers says...
+            Loved by Developers
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">

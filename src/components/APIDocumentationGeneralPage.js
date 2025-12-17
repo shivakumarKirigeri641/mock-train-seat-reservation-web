@@ -127,7 +127,7 @@ const APIDocumentationGeneralPage = () => {
           response?.data?.data?.length > 0 &&
           response?.data?.data[0].endpoints?.length > 0
         ) {
-          setActiveEndpointId(response[0].endpoints[0].id);
+          setActiveEndpointId(response?.data?.data[0].endpoints[0].id);
         }
       } catch (error) {
         console.error("Error fetching API documentation:", error);
@@ -166,15 +166,15 @@ const APIDocumentationGeneralPage = () => {
   useEffect(() => {
     if (activeEndpoint) {
       setTryBody(
-        activeEndpoint?.body
-          ? JSON.stringify(activeEndpoint?.body, null, 2)
+        activeEndpoint?.sample_request
+          ? JSON.stringify(activeEndpoint?.sample_request, null, 2)
           : ""
       );
-      setTryResponse(null);
     }
   }, [activeEndpointId, activeEndpoint]);
 
   const toggleCategory = (index) => {
+    console.log("test click");
     setOpenCategories((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
@@ -194,12 +194,13 @@ const APIDocumentationGeneralPage = () => {
           "x-api-key": apiKey,
           "x-secret-key": secretKey,
         },
-        body: activeEndpoint.body ? tryBody : null,
+        url: url,
+        data: activeEndpoint?.sample_request ? tryBody : null,
       };
 
-      if (activeEndpoint.method === "GET") delete options.body;
+      if (activeEndpoint.method === "GET") delete options.data;
 
-      const res = await axios.get(url, options);
+      const res = await axios(options);
       const text = await res?.data?.data;
       let parsed;
       try {
@@ -440,6 +441,7 @@ const APIDocumentationGeneralPage = () => {
                             key={ep.id}
                             onClick={() => {
                               setActiveEndpointId(ep.id);
+                              setTryResponse(null);
                               setIsDocsSidebarOpen(false);
                               window.scrollTo(0, 0);
                             }}
@@ -687,7 +689,7 @@ const APIDocumentationGeneralPage = () => {
                       className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
 
-                    {activeEndpoint.body && (
+                    {activeEndpoint.sample_request && (
                       <div>
                         <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
                           Request Body

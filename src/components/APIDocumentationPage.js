@@ -164,11 +164,10 @@ const APIDocumentationGeneralPage = () => {
   const allEndpoints = apiData?.flatMap((cat) =>
     cat?.endpoints?.map((ep) => ({ ...ep, category: cat.category }))
   );
-
   const activeEndpoint =
     allEndpoints?.find((ep) => ep?.id === activeEndpointId) ||
     (allEndpoints?.length > 0 ? allEndpoints[0] : null);
-
+  console.log("activeEndpoint:", activeEndpoint);
   useEffect(() => {
     if (!activeEndpoint) return;
     const catIndex = apiData.findIndex((c) =>
@@ -189,11 +188,10 @@ const APIDocumentationGeneralPage = () => {
   useEffect(() => {
     if (activeEndpoint) {
       setTryBody(
-        activeEndpoint?.body
-          ? JSON.stringify(activeEndpoint?.body, null, 2)
+        activeEndpoint?.sample_request
+          ? JSON.stringify(activeEndpoint?.sample_request, null, 2)
           : ""
       );
-      setTryResponse(null);
     }
   }, [activeEndpointId, activeEndpoint]);
 
@@ -209,25 +207,20 @@ const APIDocumentationGeneralPage = () => {
       if (!apiKey || !secretKey)
         throw new Error("Please enter both API Key and Secret Key.");
       const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint?.endpoint}`;
-
+      console.log(url);
       const options = {
         method: activeEndpoint.method,
+        url: url,
         headers: {
           "Content-Type": "application/json",
           "x-api-key": apiKey,
           "x-secret-key": secretKey,
         },
-        body: activeEndpoint.body ? tryBody : null,
+        data: activeEndpoint?.sample_request ? tryBody : null,
       };
+      if (activeEndpoint.method === "GET") delete options.data;
 
-      if (activeEndpoint.method === "GET") delete options.body;
-
-      const res = await axios.get(url, options); // Note: axios.get with body is non-standard, usually axios(options)
-      // Since Try It functionality is generic, better to use axios(options) if METHOD varies
-      // But keeping your structure for minimal diff if you prefer axios.get/post based on method check
-      // Correct generic approach:
-      // const res = await axios({ url, ...options });
-
+      const res = await axios(options);
       const text = await res?.data?.data; // Adjust based on your actual mock response structure
       let parsed;
       try {
@@ -527,6 +520,7 @@ const APIDocumentationGeneralPage = () => {
                             key={ep.id}
                             onClick={() => {
                               setActiveEndpointId(ep.id);
+                              setTryResponse(null);
                               setIsDocsSidebarOpen(false);
                               window.scrollTo(0, 0);
                             }}
@@ -774,7 +768,7 @@ const APIDocumentationGeneralPage = () => {
                       className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
 
-                    {activeEndpoint.body && (
+                    {activeEndpoint?.sample_request && (
                       <div>
                         <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
                           Request Body
