@@ -156,8 +156,12 @@ const APIDocumentationGeneralPage = () => {
 
   // State for Try It Panel
   const [searchQuery, setSearchQuery] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [secretKey, setSecretKey] = useState("");
+  const [apiKey, setApiKey] = useState(
+    "SPK_live_IN-11_8bde95af555e377f5d1d8885fa166dcf"
+  );
+  const [secretKey, setSecretKey] = useState(
+    "c5f72e0c738bdc1b5cbd17f5e84f76e538295c91c9ea6b858aacaf3701984396"
+  );
   const [baseUrl, setBaseUrl] = useState("http://localhost:8888");
   const [tryBody, setTryBody] = useState("");
   const [tryResponse, setTryResponse] = useState(null);
@@ -165,11 +169,11 @@ const APIDocumentationGeneralPage = () => {
 
   useEffect(() => {
     if (activeEndpoint) {
-      setTryBody(
+      /*setTryBody(
         activeEndpoint?.sample_request
           ? JSON.stringify(activeEndpoint?.sample_request, null, 2)
           : ""
-      );
+      );*/
     }
   }, [activeEndpointId, activeEndpoint]);
 
@@ -210,7 +214,11 @@ const APIDocumentationGeneralPage = () => {
       }
       setTryResponse(parsed);
     } catch (err) {
-      setTryResponse({ error: err.message });
+      console.log(err?.response?.data?.data?.message);
+      setTryResponse({
+        error: err.message,
+        user_message: err?.response?.data?.data?.message,
+      });
     } finally {
       setTryLoading(false);
     }
@@ -442,6 +450,7 @@ const APIDocumentationGeneralPage = () => {
                             onClick={() => {
                               setActiveEndpointId(ep.id);
                               setTryResponse(null);
+                              setTryBody("");
                               setIsDocsSidebarOpen(false);
                               window.scrollTo(0, 0);
                             }}
