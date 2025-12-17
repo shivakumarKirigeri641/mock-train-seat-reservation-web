@@ -141,6 +141,54 @@ const APIDocumentationGeneralPage = () => {
     fetchApiDocumentation();
   }, []);
 
+  // ---------------- DOWNLOAD HANDLER ----------------
+  const handleDownload = async (category_details, ispostman = false) => {
+    try {
+      console.log(category_details);
+      // 1. Call the API with the ID
+      let response = null;
+      if (ispostman) {
+        response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/postmancollection/${category_details.endpoints[0].id}`,
+          {
+            withCredentials: true,
+            responseType: "blob", // Important for handling file downloads
+          }
+        );
+        console.log(response);
+      } else {
+        response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/apidoc/${category_details.endpoints[0].id}`,
+          {
+            withCredentials: true,
+            responseType: "blob", // Important for handling file downloads
+          }
+        );
+        console.log(response);
+      }
+
+      // 2. Create a blob link and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      // Set the file name (you can adjust extension based on response type)
+      if (ispostman) {
+        link.setAttribute("download", `${category_details.category}.json`);
+      } else {
+        link.setAttribute("download", `${category_details.category}.pdf`);
+      }
+      document.body.appendChild(link);
+      link.click();
+
+      // 3. Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      alert("Failed to download documentation.");
+    }
+  };
+
   const allEndpoints = apiData?.flatMap((cat) =>
     cat?.endpoints?.map((ep) => ({ ...ep, category: cat.category }))
   );
@@ -378,6 +426,51 @@ const APIDocumentationGeneralPage = () => {
 
                     {(openCategories[idx] || searchQuery) && (
                       <div className="mt-1 space-y-0.5">
+                        {/* --- ADDED: Download Buttons per Category --- */}
+                        <div className="flex gap-2 px-3 py-2 mb-2">
+                          <button
+                            onClick={() => handleDownload(cat)}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
+                            title="Download API Documentation"
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                            Docs ⏬
+                          </button>
+                          <button
+                            onClick={() => handleDownload(cat, true)}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-orange-700 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
+                            title="Download API Documentation"
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                            Postman ⏬
+                          </button>
+                        </div>
+                        {/* ------------------------------------------- */}
+
                         {(searchQuery
                           ? filteredEndpoints
                           : cat?.endpoints
@@ -386,7 +479,6 @@ const APIDocumentationGeneralPage = () => {
                             key={ep.id}
                             onClick={() => {
                               setActiveEndpointId(ep.id);
-                              // Reset logic removed as try panel is gone
                               setIsDocsSidebarOpen(false);
                               window.scrollTo(0, 0);
                             }}
@@ -438,9 +530,11 @@ const APIDocumentationGeneralPage = () => {
                 </svg>
               </div>
               <div>
-                <h4 className="text-sm font-bold text-orange-400">
-                  Development Mock Environment
-                </h4>
+                <div className="flex justify-between items-stretch">
+                  <h4 className="text-sm font-bold text-orange-400">
+                    Development Mock Environment
+                  </h4>
+                </div>
                 <p className="text-xs text-orange-200/70 mt-1 leading-relaxed">
                   These APIs are strictly for testing, training, and UI
                   development. No real bookings, transactions, or hardware
