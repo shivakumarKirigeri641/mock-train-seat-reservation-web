@@ -5,7 +5,6 @@ const stationslistslice = createSlice({
   initialState: [],
   reducers: {
     addstations: (state, action) => {
-      console.log("inside redux:", action.payload);
       return action.payload;
     },
     removestations: (state, action) => {
