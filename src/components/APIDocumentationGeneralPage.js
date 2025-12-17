@@ -110,6 +110,9 @@ const APIDocumentationGeneralPage = () => {
   const [activeEndpointId, setActiveEndpointId] = useState(null);
   const [openCategories, setOpenCategories] = useState({ 0: true });
 
+  // State for Sidebar Filter
+  const [searchQuery, setSearchQuery] = useState("");
+
   // ---------------- FETCH LOGIC (Simulated) ----------------
   useEffect(() => {
     const fetchApiDocumentation = async () => {
@@ -154,74 +157,8 @@ const APIDocumentationGeneralPage = () => {
     if (catIndex !== -1) setActiveCategoryIndex(catIndex);
   }, [activeEndpointId, apiData]);
 
-  // State for Try It Panel
-  const [searchQuery, setSearchQuery] = useState("");
-  const [apiKey, setApiKey] = useState(
-    "SPK_live_IN-11_8bde95af555e377f5d1d8885fa166dcf"
-  );
-  const [secretKey, setSecretKey] = useState(
-    "c5f72e0c738bdc1b5cbd17f5e84f76e538295c91c9ea6b858aacaf3701984396"
-  );
-  const [baseUrl, setBaseUrl] = useState("http://localhost:8888");
-  const [tryBody, setTryBody] = useState("");
-  const [tryResponse, setTryResponse] = useState(null);
-  const [tryLoading, setTryLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeEndpoint) {
-      /*setTryBody(
-        activeEndpoint?.sample_request
-          ? JSON.stringify(activeEndpoint?.sample_request, null, 2)
-          : ""
-      );*/
-    }
-  }, [activeEndpointId, activeEndpoint]);
-
   const toggleCategory = (index) => {
-    console.log("test click");
     setOpenCategories((prev) => ({ ...prev, [index]: !prev[index] }));
-  };
-
-  const sendTryRequest = async () => {
-    setTryLoading(true);
-    setTryResponse(null);
-
-    try {
-      if (!apiKey || !secretKey)
-        throw new Error("Please enter both API Key and Secret Key.");
-      const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint?.endpoint}`;
-
-      const options = {
-        method: activeEndpoint.method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "x-secret-key": secretKey,
-        },
-        url: url,
-        data: activeEndpoint?.sample_request ? tryBody : null,
-      };
-
-      if (activeEndpoint.method === "GET") delete options.data;
-
-      const res = await axios(options);
-      const text = await res?.data?.data;
-      let parsed;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        parsed = { raw: text, status: res.status };
-      }
-      setTryResponse(parsed);
-    } catch (err) {
-      console.log(err?.response?.data?.data?.message);
-      setTryResponse({
-        error: err.message,
-        user_message: err?.response?.data?.data?.message,
-      });
-    } finally {
-      setTryLoading(false);
-    }
   };
 
   // ---------------- LOADING SCREEN ----------------
@@ -449,8 +386,7 @@ const APIDocumentationGeneralPage = () => {
                             key={ep.id}
                             onClick={() => {
                               setActiveEndpointId(ep.id);
-                              setTryResponse(null);
-                              setTryBody("");
+                              // Reset logic removed as try panel is gone
                               setIsDocsSidebarOpen(false);
                               window.scrollTo(0, 0);
                             }}
@@ -572,7 +508,6 @@ const APIDocumentationGeneralPage = () => {
                       <p className="text-sm text-gray-500">
                         Content-Type: application/json
                       </p>
-                      {/* Replaced manual div with JsonViewer to enforce max-height */}
                       <JsonViewer
                         data={activeEndpoint.sample_request}
                         title="Example Body"
@@ -603,14 +538,13 @@ const APIDocumentationGeneralPage = () => {
                     </svg>
                     Response Structure
                   </h3>
-                  {/* Replaced manual div with JsonViewer to enforce max-height */}
                   <JsonViewer
                     data={activeEndpoint.sample_response.data}
-                    title="200 OK"
+                    title="200 OK (Sample)"
                   />
                 </div>
 
-                {/* Try It Panel */}
+                {/* Try It Panel - MODIFIED: Removed form, kept Postman redirect */}
                 <div className="mt-10 pt-8 border-t border-gray-800">
                   <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                     <svg
@@ -629,11 +563,11 @@ const APIDocumentationGeneralPage = () => {
                     Test Endpoint
                   </h3>
                   <p className="text-sm text-gray-500 mb-6">
-                    Send a live request to the mock server using your
-                    credentials.
+                    Live testing is not available in the browser. Please call
+                    the endpoint in Postman to see the actual & live responses.
                   </p>
 
-                  {/* --- NEW POSTMAN SUGGESTION BLOCK --- */}
+                  {/* --- POSTMAN SUGGESTION BLOCK --- */}
                   <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center gap-4">
                     <div className="p-3 bg-gray-800 rounded-full border border-gray-700 shrink-0">
                       <svg
@@ -652,12 +586,12 @@ const APIDocumentationGeneralPage = () => {
                     </div>
                     <div className="flex-1 text-center sm:text-left">
                       <h4 className="text-sm font-bold text-white">
-                        Recommended: Test in Postman
+                        Run in Postman
                       </h4>
                       <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                        To avoid exposing your <strong>Secret Key</strong> in
-                        the browser, we recommend testing secure endpoints using
-                        Postman.
+                        To see actual live responses and avoid exposing
+                        credentials, please test this endpoint using the Postman
+                        App.
                       </p>
                     </div>
                     <a
@@ -668,74 +602,6 @@ const APIDocumentationGeneralPage = () => {
                     >
                       Download Postman ↗
                     </a>
-                  </div>
-                  {/* ------------------------------------ */}
-
-                  <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-6 space-y-4">
-                    {/* Header Inputs */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="x-api-key"
-                        className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                      <input
-                        type="text"
-                        value={secretKey}
-                        onChange={(e) => setSecretKey(e.target.value)}
-                        placeholder="x-secret-key"
-                        className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                    </div>
-
-                    <input
-                      type="text"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="Base URL"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-
-                    {activeEndpoint.sample_request && (
-                      <div>
-                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
-                          Request Body
-                        </label>
-                        <textarea
-                          rows={6}
-                          value={tryBody}
-                          onChange={(e) => setTryBody(e.target.value)}
-                          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg font-mono text-sm text-gray-200 focus:ring-1 focus:ring-indigo-500 outline-none"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
-                      <button
-                        onClick={sendTryRequest}
-                        disabled={tryLoading}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-wait text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20"
-                      >
-                        {tryLoading ? "Sending..." : "Send Request"}
-                      </button>
-                      <div className="text-xs text-gray-500 font-mono hidden sm:block">
-                        {activeEndpoint.method} {activeEndpoint.endpoint}
-                      </div>
-                    </div>
-
-                    {tryResponse && (
-                      <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
-                          Live Response
-                        </label>
-                        <JsonViewer
-                          data={tryResponse}
-                          title="Status: Received"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
