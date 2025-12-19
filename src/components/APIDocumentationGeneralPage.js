@@ -1,4 +1,5 @@
 import axios from "axios";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -214,12 +215,16 @@ const APIDocumentationGeneralPage = () => {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
         <div className="flex flex-col items-center gap-6">
-          {/* Animated Spinner/Logo */}
-          <div className="relative w-20 h-20">
-            <div className="absolute inset-0 bg-indigo-500 rounded-xl blur-xl opacity-50 animate-pulse"></div>
-            <div className="relative w-full h-full bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center shadow-2xl animate-bounce">
-              <span className="text-4xl">⚡</span>
-            </div>
+          {/* Logo Section */}
+          <div
+            onClick={() => navigate("/")}
+            className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+          >
+            <img
+              src={ServerPeLogo}
+              alt="ServerPe Logo"
+              className="w-35 h-16 group-hover:scale-105 transition-transform"
+            />
           </div>
 
           <div className="text-center space-y-2">
@@ -246,9 +251,16 @@ const APIDocumentationGeneralPage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white">
-              ServerPe<span className="text-indigo-500">.in</span>
+            {/* Logo Section */}
+            <div
+              onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+            >
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}
