@@ -40,7 +40,6 @@ const HomePage = () => {
               onClick={() => navigate("/")}
               className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              {/* Logo Image */}
               <img
                 src={ServerPeLogo}
                 alt="ServerPe Logo"
@@ -105,17 +104,17 @@ const HomePage = () => {
 
         {/* --- Mobile Menu Dropdown --- */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300 absolute w-full left-0 z-50">
+          <div className="md:hidden bg-gray-800 border-b border-gray-700 absolute w-full left-0 z-50">
             <div className="px-4 py-4 flex flex-col space-y-3 shadow-2xl">
               <a
                 href="/"
-                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg"
               >
                 Home
               </a>
               <a
                 href="/general-api-pricing"
-                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg"
               >
                 API Pricing
               </a>
@@ -124,19 +123,19 @@ const HomePage = () => {
                   navigate("/general-api-documentation");
                   setIsMobileMenuOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+                className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg"
               >
                 API Documentation
               </button>
               <a
                 href="/about-me"
-                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg"
               >
                 About Me
               </a>
               <a
                 href="/contact-me"
-                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors"
+                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg"
               >
                 Contact Me
               </a>
@@ -146,7 +145,7 @@ const HomePage = () => {
                     navigate("/user-login");
                     setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg transition-colors"
+                  className="w-full text-left block px-4 py-2 text-indigo-400 font-semibold hover:bg-gray-700 rounded-lg"
                 >
                   Start using mock APIs
                 </button>
@@ -169,15 +168,13 @@ const HomePage = () => {
         <p className="text-lg text-gray-400 mt-6 max-w-3xl mx-auto leading-relaxed">
           Accelerate your frontend development and testing with our diverse
           catalog of mock services. From massive automotive databases to complex
-          train reservation flows with simulated SMS.
+          train reservation flows.
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-4">
           <button
             className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-1"
-            onClick={() => {
-              navigate("/user-login");
-            }}
+            onClick={() => navigate("/user-login")}
           >
             Start using mock APIs
           </button>
@@ -186,15 +183,13 @@ const HomePage = () => {
             <p className="text-red-300 font-medium bg-red-900/10 px-6 py-3 rounded-lg border border-red-900/30">
               <strong>Disclaimer:</strong> These mock APIs are strictly for
               learning, practicing Web-UI, training, and testing purposes only.
-              No real-world scenarios, real bookings, or live databases are
-              connected here.
             </p>
           </div>
         </div>
       </section>
 
-      {/* API Categories / Highlights */}
-      <section className="max-w-7xl mx-auto px-6 pb-24">
+      {/* Available API Categories */}
+      <section className="max-w-7xl mx-auto px-6 pb-12">
         <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
           Available API Categories
         </h2>
@@ -206,7 +201,7 @@ const HomePage = () => {
               <span className="text-9xl">📮</span>
             </div>
             <div className="mb-6">
-              <div className="w-14 h-14 bg-orange-900/30 text-orange-400 border border-orange-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-orange-900/30 text-orange-400 border border-orange-500/20 flex items-center justify-center rounded-xl">
                 <span className="text-3xl">📍</span>
               </div>
             </div>
@@ -214,18 +209,8 @@ const HomePage = () => {
               Post Office PIN Code APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Access a database of <strong>1.5 Lakh+ distinct PIN codes</strong>
-              . Query by region, district, or PIN code to test address
-              auto-completion and detailed location information.
+              Access 1.5 Lakh+ distinct PIN codes with location details.
             </p>
-            <div className="mt-6">
-              <span
-                className="text-sm text-orange-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/general-api-documentation")}
-              >
-                View Documentation &rarr;
-              </span>
-            </div>
           </div>
 
           {/* Card 2: Car Specs */}
@@ -234,7 +219,7 @@ const HomePage = () => {
               <span className="text-9xl">🏎️</span>
             </div>
             <div className="mb-6">
-              <div className="w-14 h-14 bg-blue-900/30 text-blue-400 border border-blue-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-blue-900/30 text-blue-400 border border-blue-500/20 flex items-center justify-center rounded-xl">
                 <span className="text-3xl">🚗</span>
               </div>
             </div>
@@ -242,19 +227,8 @@ const HomePage = () => {
               Car Technical Specs APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Data for <strong>54,000+ distinct cars</strong>, each featuring{" "}
-              <strong>200+ technical specification values</strong>. Build
-              high-performance comparison tools with detailed engine, dimension,
-              and fuel type data.
+              Data for 54,000+ cars with over 200 technical specs each.
             </p>
-            <div className="mt-6">
-              <span
-                className="text-sm text-blue-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/general-api-documentation")}
-              >
-                View Documentation &rarr;
-              </span>
-            </div>
           </div>
 
           {/* Card 3: Bike Specs */}
@@ -263,7 +237,7 @@ const HomePage = () => {
               <span className="text-9xl">🏍️</span>
             </div>
             <div className="mb-6">
-              <div className="w-14 h-14 bg-green-900/30 text-green-400 border border-green-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-green-900/30 text-green-400 border border-green-500/20 flex items-center justify-center rounded-xl">
                 <span className="text-3xl">🛵</span>
               </div>
             </div>
@@ -271,19 +245,8 @@ const HomePage = () => {
               Bike Technical Specs APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Comprehensive data for <strong>42,500+ distinct bikes</strong>{" "}
-              with <strong>90+ specifications per vehicle</strong>. Ideal for
-              e-commerce projects requiring mileage, power, torque, and chassis
-              details.
+              Data for 42,500+ bikes featuring 90+ specifications.
             </p>
-            <div className="mt-6">
-              <span
-                className="text-sm text-green-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/general-api-documentation")}
-              >
-                View Documentation &rarr;
-              </span>
-            </div>
           </div>
 
           {/* Card 4: Train Reservation */}
@@ -292,7 +255,7 @@ const HomePage = () => {
               <span className="text-9xl">🚄</span>
             </div>
             <div className="mb-6">
-              <div className="w-14 h-14 bg-purple-900/30 text-purple-400 border border-purple-500/20 flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-purple-900/30 text-purple-400 border border-purple-500/20 flex items-center justify-center rounded-xl">
                 <span className="text-3xl">🎫</span>
               </div>
             </div>
@@ -300,24 +263,61 @@ const HomePage = () => {
               Mock Train Reservation APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Simulation covering <strong>9,000+ trains</strong> and{" "}
-              <strong>1.5 Lakh schedule sets</strong>. Supports PNR status, seat
-              availability, cancellation logic, and dynamic mock SMS
-              notifications for UI testing.
+              Covers 9,000+ trains with PNR, availability, and SMS simulation.
             </p>
-            <div className="mt-6">
-              <span
-                className="text-sm text-purple-400 font-medium cursor-pointer hover:underline"
-                onClick={() => navigate("/general-api-documentation")}
-              >
-                View Documentation &rarr;
-              </span>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* --- NEW: Testimonials Section --- */}
+      {/* --- NEW: Upcoming API Categories Section --- */}
+      <section className="max-w-7xl mx-auto px-6 pb-24">
+        <div className="flex items-center gap-3 mb-10">
+          <h2 className="text-2xl font-bold text-white border-l-4 border-yellow-500 pl-4">
+            Upcoming API Categories
+          </h2>
+          <span className="bg-yellow-500/10 text-yellow-500 text-[10px] uppercase px-2 py-1 rounded border border-yellow-500/20 font-bold animate-pulse">
+            Coming Soon
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Upcoming 1: IFSC */}
+          <div className="bg-gray-800/40 border border-dashed border-gray-700 rounded-2xl p-6 relative">
+            <div className="text-3xl mb-4">🏦</div>
+            <h3 className="text-lg font-bold text-gray-200">
+              IFSC Details API
+            </h3>
+            <p className="text-gray-500 text-sm mt-2">
+              Fetch complete bank details including name, branch, district, and
+              state using a single IFSC code.
+            </p>
+          </div>
+
+          {/* Upcoming 2: Vahan */}
+          <div className="bg-gray-800/40 border border-dashed border-gray-700 rounded-2xl p-6 relative">
+            <div className="text-3xl mb-4">📋</div>
+            <h3 className="text-lg font-bold text-gray-200">Mock Vahan APIs</h3>
+            <p className="text-gray-500 text-sm mt-2">
+              Get mock vehicle registration, owner info, insurance validity, and
+              PUC status via vehicle number.
+            </p>
+          </div>
+
+          {/* Upcoming 3: Bus */}
+          <div className="bg-gray-800/40 border border-dashed border-gray-700 rounded-2xl p-6 relative">
+            <div className="text-3xl mb-4">🚌</div>
+            <h3 className="text-lg font-bold text-gray-200">
+              Mock Bus Reservation
+            </h3>
+            <p className="text-gray-500 text-sm mt-2">
+              Advanced simulation for seat selection, bus schedules, and full
+              reservation workflow testing.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
       <section className="bg-gray-800/50 border-y border-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
@@ -351,9 +351,9 @@ const HomePage = () => {
           <div className="text-center">
             <button
               onClick={() => navigate("/testimonials")}
-              className="text-indigo-400 hover:text-indigo-300 font-medium text-sm flex items-center justify-center gap-1 mx-auto transition-colors group"
+              className="text-indigo-400 hover:text-indigo-300 font-medium text-sm flex items-center justify-center gap-1 mx-auto group"
             >
-              Load More Testimonials
+              Load More Testimonials{" "}
               <span className="group-hover:translate-x-1 transition-transform">
                 &rarr;
               </span>
@@ -362,7 +362,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Footer / Bottom CTA */}
+      {/* Footer */}
       <footer className="border-t border-gray-800 bg-gray-900 pt-12 pb-8 text-center mt-auto">
         <Footer />
       </footer>

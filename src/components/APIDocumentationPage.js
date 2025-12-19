@@ -198,7 +198,7 @@ const APIDocumentationGeneralPage = () => {
       if (ispostman) {
         link.setAttribute("download", `${category_details.category}.json`);
       } else {
-        link.setAttribute("download", `${category_details.category}.pdf`);
+        link.setAttribute("download", `${category_details.category}.zip`);
       }
       document.body.appendChild(link);
       link.click();
