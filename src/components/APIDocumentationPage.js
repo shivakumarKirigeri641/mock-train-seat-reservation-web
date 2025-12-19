@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 import { useDispatch } from "react-redux";
-
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 // ---------------- SUB-COMPONENTS ----------------
 
 const NavItem = ({ to, label, active = false }) => (
@@ -305,17 +305,16 @@ const APIDocumentationGeneralPage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Static Menu */}
@@ -507,48 +506,46 @@ const APIDocumentationGeneralPage = () => {
 
                     {(openCategories[idx] || searchQuery) && (
                       <div className="mt-1 space-y-0.5">
-                        {/* --- ADDED: Download Buttons per Category --- */}
-                        <div className="flex gap-2 px-3 py-2 mb-2">
-                          <button
-                            onClick={() => handleDownload(cat)}
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
-                            title="Download API Documentation"
-                          >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                        {/* --- ENHANCED: Download Buttons per Category --- */}
+                        <div className="px-3 pb-3 space-y-2 border-b border-gray-800 mb-2">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleDownload(cat)}
+                              className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
+                              title="Download API Documentation"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                            Docs ⏬
-                          </button>
-                          <button
-                            onClick={() => handleDownload(cat, true)}
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-orange-700 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
-                            title="Download API Documentation"
-                          >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                              Docs ⏬
+                            </button>
+                            <button
+                              onClick={() => handleDownload(cat, true)}
+                              className="flex-1 flex items-center justify-center gap-1.5 bg-orange-700 hover:bg-orange-600 text-white text-[10px] font-medium py-1.5 rounded border border-orange-600/20 transition-colors"
+                              title="Download Postman Collection"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                            Postman ⏬
-                          </button>
+                              Postman ⏬
+                            </button>
+                          </div>
+
+                          {/* Info Box for Docs Download */}
+                          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded p-2">
+                            <p className="text-[12px] italic text-gray-400 leading-tight">
+                              <span className="text-indigo-400 font-bold block mb-1">
+                                About Docs (.zip):
+                              </span>
+                              Includes offline documentation in{" "}
+                              <span className="text-gray-300">.md</span>,{" "}
+                              <span className="text-gray-300">.pdf</span>, and{" "}
+                              <span className="text-gray-300">.html</span>{" "}
+                              formats.
+                            </p>
+                            <a
+                              href="https://www.win-rar.com/download.html"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] text-indigo-400 hover:underline mt-1 inline-block font-medium"
+                            >
+                              Download Zip Software (WinRAR) ↗
+                            </a>
+                          </div>
                         </div>
                         {/* ------------------------------------------- */}
 

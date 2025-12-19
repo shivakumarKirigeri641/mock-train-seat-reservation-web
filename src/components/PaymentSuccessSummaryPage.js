@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -253,8 +254,16 @@ const PaymentSuccessSummaryPage = () => {
               <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
                 <span className="text-xl">⚡</span>
               </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
+              {/* Logo Section */}
+              <div
+                onClick={() => navigate("/user-home")}
+                className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+              >
+                <img
+                  src={ServerPeLogo}
+                  alt="ServerPe Logo"
+                  className="w-35 h-16 group-hover:scale-105 transition-transform"
+                />
               </div>
             </div>
 

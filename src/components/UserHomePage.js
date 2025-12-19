@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 import ConfettiSparkles from "./ConfettiSparkles";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 const UserHomePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -233,16 +234,16 @@ const UserHomePage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-lg">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             <div className="hidden lg:flex items-center space-x-2">

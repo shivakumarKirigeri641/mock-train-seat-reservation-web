@@ -1,4 +1,5 @@
 import React from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link } from "react-router";
 
 const Footer = () => {
@@ -15,10 +16,18 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Brand Column */}
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4 text-white">
-              <span className="text-2xl font-bold tracking-tighter">
+            {/* Logo Section */}
+            {/* Logo */}
+            <div
+              className="flex items-center gap-3 cursor-pointer group"
+              onClick={() => navigate("/user-home")}
+            >
+              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <span className="text-xl">⚡</span>
+              </div>
+              <div className="font-bold text-xl tracking-tighter text-white">
                 ServerPe<span className="text-indigo-500">.in</span>
-              </span>
+              </div>
             </div>
             <p className="text-sm leading-relaxed text-gray-500 mb-4">
               Comprehensive mock APIs for developers. Simulate real-world
