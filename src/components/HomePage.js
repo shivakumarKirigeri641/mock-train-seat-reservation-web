@@ -321,7 +321,7 @@ const HomePage = () => {
       <section className="bg-gray-800/50 border-y border-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
-            Loved by Developers
+            What Developers Says...
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">

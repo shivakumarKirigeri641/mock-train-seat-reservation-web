@@ -635,7 +635,7 @@ const APIDocumentationGeneralPage = () => {
                   </div>
 
                   <p className="text-gray-400 text-base md:text-lg leading-relaxed">
-                    {activeEndpoint.category_description}
+                    {activeEndpoint.description}
                   </p>
 
                   <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 break-all shadow-inner overflow-x-auto">
