@@ -168,7 +168,7 @@ const HomePage = () => {
 
         <p className="text-lg text-gray-400 mt-6 max-w-3xl mx-auto leading-relaxed">
           Accelerate your frontend development and testing with our diverse
-          catalog of mock services. From automotive specifications to complex
+          catalog of mock services. From massive automotive databases to complex
           train reservation flows with simulated SMS.
         </p>
 
@@ -214,8 +214,9 @@ const HomePage = () => {
               Post Office PIN Code APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Access a vast database of mock postal information. Query by
-              region, district, or PIN code to test address auto-completion.
+              Access a database of <strong>1.5 Lakh+ distinct PIN codes</strong>
+              . Query by region, district, or PIN code to test address
+              auto-completion and detailed location information.
             </p>
             <div className="mt-6">
               <span
@@ -241,9 +242,10 @@ const HomePage = () => {
               Car Technical Specs APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Detailed technical data for various automobile manufacturers and
-              models. Fetch engine specs, dimensions, fuel types, and feature
-              lists to build automotive comparison tools or catalogs.
+              Data for <strong>54,000+ distinct cars</strong>, each featuring{" "}
+              <strong>200+ technical specification values</strong>. Build
+              high-performance comparison tools with detailed engine, dimension,
+              and fuel type data.
             </p>
             <div className="mt-6">
               <span
@@ -269,9 +271,10 @@ const HomePage = () => {
               Bike Technical Specs APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              Comprehensive specifications for two-wheelers. Includes mock data
-              for mileage, power, torque, and chassis details. Ideal for
-              e-commerce or review aggregator projects.
+              Comprehensive data for <strong>42,500+ distinct bikes</strong>{" "}
+              with <strong>90+ specifications per vehicle</strong>. Ideal for
+              e-commerce projects requiring mileage, power, torque, and chassis
+              details.
             </p>
             <div className="mt-6">
               <span
@@ -297,11 +300,10 @@ const HomePage = () => {
               Mock Train Reservation APIs
             </h3>
             <p className="text-gray-400 mt-3 leading-relaxed">
-              End-to-end simulation of a booking engine with a powerful back-end
-              simulator that ensures dynamic, realistic responses (not static)
-              across all mock trains. Includes seat availability, PNR status,
-              cancellation logic, and triggers mock SMS notifications upon
-              successful booking based on request body properties.
+              Simulation covering <strong>9,000+ trains</strong> and{" "}
+              <strong>1.5 Lakh schedule sets</strong>. Supports PNR status, seat
+              availability, cancellation logic, and dynamic mock SMS
+              notifications for UI testing.
             </p>
             <div className="mt-6">
               <span
