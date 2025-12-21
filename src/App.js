@@ -71,8 +71,8 @@ const RailwayReservation = () => {
     },
   ]);
   const [children, setChildren] = useState([]);
-  const [mobileNumber, setMobileNumber] = useState(""); //
-  const [isSmsTicked, setIsSmsTicked] = useState(false); //
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [isSmsTicked, setIsSmsTicked] = useState(false);
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -105,6 +105,24 @@ const RailwayReservation = () => {
     }
   };
 
+  const updatePassenger = (i, f, v) => {
+    const n = [...passengers];
+    n[i][f] = v;
+    if (f === "passenger_age" || f === "passenger_gender") {
+      const age = parseInt(n[i].passenger_age) || 0;
+      n[i].passenger_issenior =
+        (n[i].passenger_gender === "M" && age >= 60) ||
+        (n[i].passenger_gender === "F" && age >= 50);
+    }
+    setPassengers(n);
+  };
+
+  const updateChild = (i, f, v) => {
+    const n = [...children];
+    n[i][f] = v;
+    setChildren(n);
+  };
+
   const handleProceedBooking = async () => {
     if (children.length > 0 && passengers.length === 0) {
       setErrorMsg("At least one adult passenger must be present.");
@@ -119,8 +137,7 @@ const RailwayReservation = () => {
           source_code: searchForm.source_code,
           destination_code: searchForm.destination_code,
           doj: searchForm.doj,
-          passenger_details:
-            children?.length > 0 ? passengers.concat(children) : passengers,
+          passenger_details: [...passengers, ...children],
           coach_type: selectedClass,
           reservation_type: selectedQuota,
           mobile_number: isSmsTicked
@@ -129,7 +146,8 @@ const RailwayReservation = () => {
         },
         API_CONFIG
       );
-      setBookingId(res.data.data.booking_id);
+      console.log(res.data.data);
+      setBookingId(res.data.data.booked_details.id);
       setModalState({ type: "summary", open: true });
     } catch (err) {
       setErrorMsg("Booking initialization failed.");
@@ -142,10 +160,11 @@ const RailwayReservation = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/confirm-booking`,
-        { booking_id: bookingId },
+        `${API_BASE_URL}/confirm-ticket`,
+        { booking_id: bookingId, can_send_mock_ticket_sms: isSmsTicked },
         API_CONFIG
       );
+      console.log(res.data.data);
       setBookingSummary(res.data.data);
       setModalState({ type: "success", open: true });
     } finally {
@@ -163,22 +182,10 @@ const RailwayReservation = () => {
     ).toFixed(2);
   };
 
-  const updatePassenger = (index, field, value) => {
-    const newPass = [...passengers];
-    newPass[index][field] = value;
-    if (field === "age" || field === "gender") {
-      const age = parseInt(newPass[index].age) || 0;
-      const gen = newPass[index].gender;
-      newPass[index].senior =
-        (gen === "M" && age >= 60) || (gen === "F" && age >= 50);
-    }
-    setPassengers(newPass);
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
       <div className="max-w-6xl mx-auto bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden">
-        {/* Tabs */}
+        {/* Navigation Tabs */}
         <div className="grid grid-cols-3 md:grid-cols-6 bg-slate-950/50 p-2 gap-2 border-b border-slate-800">
           {[
             "Book Tickets",
@@ -264,7 +271,7 @@ const RailwayReservation = () => {
                   </div>
 
                   {trainResults.length > 0 && (
-                    <div className="space-y-4 animate-in slide-in-from-bottom-4">
+                    <div className="space-y-4">
                       <QuotaSelector
                         current={selectedQuota}
                         onChange={setSelectedQuota}
@@ -272,7 +279,7 @@ const RailwayReservation = () => {
                       {trainResults.map((t, i) => (
                         <div
                           key={i}
-                          className="bg-slate-800/40 p-6 rounded-[2rem] border border-slate-800 relative group"
+                          className="bg-slate-800/40 p-6 rounded-[2rem] border border-slate-800"
                         >
                           <h4 className="font-black text-white uppercase italic mb-4">
                             {t.train_name} ({t.train_number})
@@ -323,24 +330,18 @@ const RailwayReservation = () => {
               ) : (
                 <div className="space-y-8 animate-in zoom-in-95">
                   <div className="flex justify-between items-center bg-orange-500/10 p-5 rounded-3xl border border-orange-500/20">
-                    <div>
-                      <h4 className="font-black text-white uppercase italic">
-                        {selectedTrain.train_name}
-                      </h4>
-                      <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">
-                        {selectedClass.toUpperCase()} Class |{" "}
-                        {selectedQuota.toUpperCase()} Quota
-                      </p>
-                    </div>
+                    <h4 className="font-black text-white uppercase italic">
+                      {selectedTrain.train_name}
+                    </h4>
                     <button
                       onClick={() => setSelectedTrain(null)}
-                      className="text-[10px] font-black uppercase text-slate-500 underline hover:text-white transition-colors"
+                      className="text-[10px] font-black uppercase text-slate-500 underline"
                     >
                       Change Train
                     </button>
                   </div>
 
-                  {/* Adult Entry */}
+                  {/* Adult Entry Section */}
                   <div className="space-y-4">
                     <p className="text-xs font-black text-orange-500 uppercase tracking-widest ml-1">
                       Adult Entry (Max 6)
@@ -350,84 +351,58 @@ const RailwayReservation = () => {
                         key={i}
                         className="bg-slate-950/40 p-6 rounded-3xl border border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-center"
                       >
-                        <div className="flex flex-col gap-1">
-                          <label className="text-[9px] font-black text-slate-600 uppercase ml-1">
-                            Name
-                          </label>
+                        <input
+                          placeholder="Name"
+                          className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500"
+                          value={p.passenger_name}
+                          onChange={(e) =>
+                            updatePassenger(i, "passenger_name", e.target.value)
+                          }
+                        />
+                        <input
+                          placeholder="Age"
+                          type="number"
+                          className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500"
+                          value={p.passenger_age}
+                          onChange={(e) =>
+                            updatePassenger(i, "passenger_age", e.target.value)
+                          }
+                        />
+                        <select
+                          className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500"
+                          value={p.passenger_gender}
+                          onChange={(e) =>
+                            updatePassenger(
+                              i,
+                              "passenger_gender",
+                              e.target.value
+                            )
+                          }
+                        >
+                          <option value="M">Male</option>
+                          <option value="F">Female</option>
+                        </select>
+                        <label className="flex items-center gap-2 text-[10px] font-black text-slate-500">
                           <input
-                            placeholder="Enter Name"
-                            className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500 transition-all"
-                            value={p.name}
-                            onChange={(e) =>
-                              updatePassenger(i, "name", e.target.value)
+                            type="checkbox"
+                            checked={p.passenger_issenior}
+                            disabled
+                            className="w-4 h-4 accent-orange-500"
+                          />{" "}
+                          SENIOR
+                        </label>
+                        {i > 0 && (
+                          <button
+                            onClick={() =>
+                              setPassengers(
+                                passengers.filter((_, idx) => idx !== i)
+                              )
                             }
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-[9px] font-black text-slate-600 uppercase ml-1">
-                            Age
-                          </label>
-                          <input
-                            placeholder="Age"
-                            type="number"
-                            className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500 transition-all"
-                            value={p.age}
-                            onChange={(e) =>
-                              updatePassenger(i, "age", e.target.value)
-                            }
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-[9px] font-black text-slate-600 uppercase ml-1">
-                            Gender
-                          </label>
-                          <select
-                            className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer"
-                            value={p.gender}
-                            onChange={(e) =>
-                              updatePassenger(i, "gender", e.target.value)
-                            }
+                            className="text-red-500"
                           >
-                            <option value="M">Male</option>
-                            <option value="F">Female</option>
-                          </select>
-                        </div>
-                        <div className="flex gap-4 items-center pt-4">
-                          <label className="flex items-center gap-2 text-[10px] font-black text-slate-500">
-                            <input
-                              type="checkbox"
-                              checked={p.senior}
-                              disabled
-                              className="w-4 h-4 accent-orange-500 rounded-lg"
-                            />{" "}
-                            SENIOR
-                          </label>
-                          <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={p.pwd}
-                              onChange={(e) =>
-                                updatePassenger(i, "pwd", e.target.checked)
-                              }
-                              className="w-4 h-4 accent-orange-500 rounded-lg"
-                            />{" "}
-                            PWD
-                          </label>
-                        </div>
-                        <div className="pt-4 flex justify-end">
-                          {i > 0 && (
-                            <button
-                              onClick={() =>
-                                setPassengers(
-                                  passengers.filter((_, idx) => idx !== i)
-                                )
-                              }
-                              className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
-                        </div>
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     ))}
                     <button
@@ -436,65 +411,129 @@ const RailwayReservation = () => {
                         setPassengers([
                           ...passengers,
                           {
-                            name: "",
-                            age: "",
-                            gender: "M",
-                            senior: false,
-                            pwd: false,
+                            passenger_name: "",
+                            passenger_age: "",
+                            passenger_gender: "M",
+                            passenger_issenior: false,
+                            passenger_ischild: false,
                           },
                         ])
                       }
-                      className="p-4 w-full border-2 border-dashed border-slate-800 rounded-3xl text-slate-500 text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:border-orange-500 hover:text-orange-500 transition-all"
+                      className="p-3 bg-slate-800 rounded-xl text-[10px] font-black uppercase text-slate-400 flex items-center justify-center gap-2"
                     >
-                      <UserPlus size={16} /> Add Adult Passenger
+                      <UserPlus size={14} /> Add Adult
                     </button>
                   </div>
 
-                  {/* Mobile Number Entry Section */}
+                  {/* Child Entry Section */}
+                  <div className="space-y-4">
+                    <p className="text-xs font-black text-orange-500 uppercase tracking-widest ml-1">
+                      Child Entry (Age 1-6)
+                    </p>
+                    {children.map((c, i) => (
+                      <div
+                        key={i}
+                        className="bg-slate-950/40 p-6 rounded-3xl border border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
+                      >
+                        <input
+                          placeholder="Child Name"
+                          className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500"
+                          value={c.passenger_name}
+                          onChange={(e) =>
+                            updateChild(i, "passenger_name", e.target.value)
+                          }
+                        />
+                        <input
+                          placeholder="Age"
+                          type="number"
+                          min="1"
+                          max="6"
+                          className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500"
+                          value={c.passenger_age}
+                          onChange={(e) =>
+                            updateChild(i, "passenger_age", e.target.value)
+                          }
+                        />
+                        <select
+                          className="bg-slate-900 border-2 border-slate-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-orange-500"
+                          value={c.passenger_gender}
+                          onChange={(e) =>
+                            updateChild(i, "passenger_gender", e.target.value)
+                          }
+                        >
+                          <option value="M">Male</option>
+                          <option value="F">Female</option>
+                        </select>
+                        <button
+                          onClick={() =>
+                            setChildren(children.filter((_, idx) => idx !== i))
+                          }
+                          className="text-red-500"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() =>
+                        children.length < 6 &&
+                        setChildren([
+                          ...children,
+                          {
+                            passenger_name: "",
+                            passenger_age: "",
+                            passenger_gender: "M",
+                            passenger_issenior: false,
+                            passenger_ischild: true,
+                          },
+                        ])
+                      }
+                      className="p-3 bg-slate-800 rounded-xl text-[10px] font-black uppercase text-slate-400 flex items-center justify-center gap-2"
+                    >
+                      <UserPlus size={14} /> Add Child
+                    </button>
+                  </div>
+
+                  {/* Contact/SMS Section */}
                   <div className="bg-slate-950/60 p-6 rounded-[2.5rem] border border-slate-800 space-y-4">
                     <div className="flex items-start gap-4">
-                      <div className="pt-1">
-                        <input
-                          type="checkbox"
-                          checked={isSmsTicked}
-                          onChange={(e) => setIsSmsTicked(e.target.checked)}
-                          className="w-5 h-5 accent-orange-500 cursor-pointer"
-                        />
-                      </div>
+                      <input
+                        type="checkbox"
+                        checked={isSmsTicked}
+                        onChange={(e) => setIsSmsTicked(e.target.checked)}
+                        className="mt-1 w-5 h-5 accent-orange-500"
+                      />
                       <div>
                         <p className="text-xs font-black text-slate-200 uppercase tracking-widest">
                           Enable SMS Confirmation
                         </p>
-                        <p className="text-[10px] text-slate-500 mt-1 italic leading-relaxed">
-                          Required only to send mock ticket confirmation sms,
-                          tick if you want mock sms details.
+                        <p className="text-[10px] text-slate-500 mt-1 italic">
+                          Tick to receive mock ticket confirmation sms details.
                         </p>
                       </div>
                     </div>
                     {isSmsTicked && (
-                      <div className="flex flex-col gap-2 pl-9 animate-in slide-in-from-top-2 duration-300">
-                        <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                      <div className="flex flex-col gap-2 pl-9">
+                        <label className="text-[10px] font-black text-orange-500 uppercase">
                           Mobile Number:
                         </label>
-                        <div className="relative max-w-sm">
-                          <input
-                            type="tel"
-                            maxLength={10}
-                            placeholder="10-digit number"
-                            className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-black text-white outline-none focus:border-orange-500 transition-all"
-                            value={mobileNumber}
-                            onChange={(e) =>
-                              setMobileNumber(e.target.value.replace(/\D/g, ""))
-                            }
-                          />
-                        </div>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          placeholder="Enter 10 digit number"
+                          className="bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-black text-white outline-none focus:border-orange-500 max-w-xs"
+                          value={mobileNumber}
+                          onChange={(e) =>
+                            setMobileNumber(e.target.value.replace(/\D/g, ""))
+                          }
+                        />
                       </div>
                     )}
                   </div>
 
                   <button
                     onClick={handleProceedBooking}
-                    className="w-full py-6 bg-orange-500 text-white rounded-[2rem] font-black uppercase text-sm tracking-[0.3em] shadow-2xl shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-[0.98]"
+                    className="w-full py-6 bg-orange-500 text-white rounded-[2rem] font-black uppercase text-sm tracking-[0.3em] shadow-2xl shadow-orange-500/20 hover:bg-orange-600 transition-all"
                   >
                     {loading ? (
                       <Loader2 className="animate-spin mx-auto" />
@@ -511,91 +550,73 @@ const RailwayReservation = () => {
 
       {/* Booking Summary Modal */}
       {modalState.open && modalState.type === "summary" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-slate-900 w-full max-w-4xl rounded-[3rem] border border-slate-800 p-10 space-y-8 animate-in zoom-in-95 shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-6">
-              <h2 className="text-2xl font-black text-white uppercase italic flex items-center gap-4">
-                <Layers className="text-orange-500" /> Booking Dossier
-              </h2>
-              <div className="px-4 py-2 bg-orange-500/10 border border-orange-500/50 rounded-xl text-[10px] font-black text-orange-500 uppercase tracking-widest">
-                ID: {bookingId}
-              </div>
-            </div>
-
+            <h2 className="text-2xl font-black text-white uppercase italic border-b border-slate-800 pb-4">
+              Booking Dossier - Summary
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-slate-800 space-y-4">
+              <div className="bg-slate-950/50 p-6 rounded-[2rem] border border-slate-800 space-y-4">
                 <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
                   Train Information
                 </p>
-                <h4 className="text-lg font-black text-white uppercase italic">
-                  {selectedTrain.train_name}
+                <h4 className="text-lg font-black text-white">
+                  {selectedTrain.train_name} (#{selectedTrain.train_number})
                 </h4>
+                <p className="text-xs font-bold text-slate-500">
+                  {selectedTrain.station_from} → {selectedTrain.station_to}
+                </p>
                 <p className="text-[11px] font-bold text-slate-400">
-                  Class: {selectedClass.toUpperCase()} | Quota:{" "}
-                  {selectedQuota.toUpperCase()}
+                  Class: {selectedClass.toUpperCase()} | DOJ: {searchForm.doj}
                 </p>
-                <div className="pt-4 border-t border-slate-800">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase">
-                    Route
-                  </p>
-                  <p className="text-xs font-black text-white uppercase">
-                    {selectedTrain.station_from} → {selectedTrain.station_to}
-                  </p>
-                </div>
               </div>
-
-              <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-slate-800 flex flex-col justify-center items-center text-center space-y-4">
-                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
-                  Fare Summary
+              <div className="bg-slate-950/50 p-6 rounded-[2rem] border border-slate-800 flex flex-col justify-center items-center">
+                <p className="text-[10px] font-black text-orange-500 uppercase mb-4">
+                  Total Fare
                 </p>
-                <div>
-                  <p className="text-4xl font-black text-white">
-                    ₹ {calculateTotalFare()}
-                  </p>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase mt-2">
-                    Total Payable Amount
-                  </p>
-                </div>
+                <p className="text-4xl font-black text-white tracking-tighter">
+                  ₹ {calculateTotalFare()}
+                </p>
+                <p className="text-[10px] font-bold text-slate-600 mt-2 uppercase tracking-widest">
+                  Booking ID: {bookingId}
+                </p>
               </div>
             </div>
-
-            <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-slate-800">
-              <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-6">
-                Passenger Entry Details
+            <div className="bg-slate-950/50 p-6 rounded-[2rem] border border-slate-800 space-y-4">
+              <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                Passenger Manifest
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                {passengers.map((p, idx) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[...passengers, ...children].map((p, idx) => (
                   <div
                     key={idx}
-                    className="flex justify-between items-center border-b border-slate-800 pb-3"
+                    className="flex justify-between border-b border-slate-800 pb-2 text-[11px] font-bold uppercase"
                   >
-                    <span className="text-xs font-black text-slate-200 uppercase">
-                      {p.name || "Unnamed"}
+                    <span className="text-slate-300">
+                      {p.passenger_name} ({p.passenger_gender})
                     </span>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">
-                      Age {p.age} | {p.senior ? "Senior" : "Adult"}
+                    <span className="text-slate-500 italic">
+                      {p.passenger_ischild
+                        ? "Child"
+                        : p.passenger_issenior
+                        ? "Senior"
+                        : "Adult"}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className="flex gap-6 pt-6">
+            <div className="flex gap-4 pt-4">
               <button
                 onClick={() => setModalState({ open: false, type: null })}
-                className="flex-1 py-5 bg-slate-800 text-slate-400 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-slate-700 transition-all"
+                className="flex-1 py-4 bg-slate-800 rounded-2xl font-bold uppercase text-[10px] text-slate-400"
               >
                 Go Back
               </button>
               <button
                 onClick={handleConfirmBooking}
-                className="flex-1 py-5 bg-orange-500 text-white rounded-3xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-3 shadow-2xl shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-[0.98]"
+                className="flex-1 py-4 bg-orange-500 rounded-2xl font-black uppercase text-[10px] shadow-lg shadow-orange-500/20"
               >
-                {loading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <CreditCard size={18} />
-                )}{" "}
                 Confirm & Pay
               </button>
             </div>
@@ -603,12 +624,50 @@ const RailwayReservation = () => {
         </div>
       )}
 
-      {/* Confirmation/Success modal logic remains same as per confirmation ticket view logic */}
+      {/* Confirmation/Success Modal */}
+      {modalState.open && modalState.type === "success" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-800 p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+            <CheckCircle2 size={64} className="text-green-500 mx-auto" />
+            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
+              Booking Successful!
+            </h2>
+            <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-left space-y-3">
+              <p className="text-xs font-bold text-slate-500">
+                PNR:{" "}
+                <span className="text-orange-500 ml-2 tracking-widest">
+                  {bookingSummary?.pnr || "MOCK4210"}
+                </span>
+              </p>
+              <p className="text-xs font-bold text-slate-200 uppercase">
+                {selectedTrain.train_name}
+              </p>
+              <div className="border-t border-slate-800 pt-2 space-y-2">
+                {[...passengers, ...children].map((p, idx) => (
+                  <p
+                    key={idx}
+                    className="text-[10px] text-slate-400 uppercase font-bold"
+                  >
+                    {p.passenger_name} - Confirmed
+                  </p>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full py-4 bg-orange-500 rounded-2xl font-black uppercase text-[10px]"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-// ... Sub-components same as provided context ...
+// Autocomplete and QuotaSelector components remain as before
 const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -659,11 +718,11 @@ const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
           setShowResults(true);
           setSelectedIndex(0);
         }}
-        className="bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-black text-white outline-none focus:border-orange-500 w-full transition-all"
+        className="bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 w-full transition-all"
         placeholder={`Search ${label}...`}
       />
       {showResults && filtered.length > 0 && (
-        <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden z-20 shadow-2xl max-h-[300px] overflow-y-auto custom-scrollbar">
+        <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden z-20 shadow-2xl max-h-[250px] overflow-y-auto">
           {filtered.map((s, i) => (
             <div
               key={i}
@@ -677,14 +736,7 @@ const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
                 onSelect(s.code);
               }}
             >
-              {s.station_name}{" "}
-              <span
-                className={
-                  i === selectedIndex ? "text-white/80" : "text-orange-500"
-                }
-              >
-                ({s.code})
-              </span>
+              {s.station_name} ({s.code})
             </div>
           ))}
         </div>
@@ -701,7 +753,7 @@ const QuotaSelector = ({ current, onChange }) => (
         onClick={() => onChange(q)}
         className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase border-2 transition-all whitespace-nowrap ${
           current === q
-            ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20"
+            ? "bg-orange-500 border-orange-500 text-white"
             : "border-slate-800 text-slate-500 hover:border-slate-700"
         }`}
       >
@@ -712,7 +764,7 @@ const QuotaSelector = ({ current, onChange }) => (
           : q === "ptl"
           ? "Premium Tatkal"
           : q === "pwd"
-          ? "Physically Challenged"
+          ? "PWD"
           : "Senior Citizen"}
       </button>
     ))}
