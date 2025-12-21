@@ -17,6 +17,7 @@ import {
   Clock,
   MapPin,
   CreditCard,
+  Calendar,
 } from "lucide-react";
 import axios from "axios";
 
@@ -73,7 +74,9 @@ const RailwayReservation = () => {
   const [children, setChildren] = useState([]);
   const [mobileNumber, setMobileNumber] = useState("");
   const [isSmsTicked, setIsSmsTicked] = useState(false);
-
+  // --- Add these to your states within RailwayReservation component ---
+  const [pnrInput, setPnrInput] = useState("");
+  const [pnrStatusData, setPnrStatusData] = useState(null);
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
@@ -181,7 +184,25 @@ const RailwayReservation = () => {
       children.length * (baseFare / 2)
     ).toFixed(2);
   };
-
+  // --- Add this function to handle the API call ---
+  const fetchPnrStatus = async () => {
+    if (!pnrInput) return;
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/pnr-status`,
+        { pnr: pnrInput },
+        API_CONFIG
+      );
+      setPnrStatusData(res.data.data);
+      setErrorMsg("");
+    } catch (err) {
+      setErrorMsg("Invalid PNR or Status not found.");
+      setPnrStatusData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
       <div className="max-w-6xl mx-auto bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden">
@@ -541,6 +562,160 @@ const RailwayReservation = () => {
                       "Proceed to Summary"
                     )}
                   </button>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === 1 && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-top-4 duration-500">
+              {/* PNR Input Field */}
+              <div className="bg-slate-900/50 p-8 rounded-[2.5rem] border border-slate-800 shadow-xl flex flex-col items-center gap-6">
+                <div className="text-center">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">
+                    Check PNR Status
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                    Enter your 10-digit PNR number
+                  </p>
+                </div>
+                <div className="flex w-full max-w-md gap-3">
+                  <input
+                    className="flex-1 p-5 bg-slate-950 border-2 border-slate-800 rounded-2xl font-black text-center text-xl tracking-[0.3em] uppercase text-orange-500 outline-none focus:border-orange-500 transition-all placeholder:text-slate-800"
+                    placeholder="PNR NUMBER"
+                    maxLength={10}
+                    value={pnrInput}
+                    onChange={(e) => setPnrInput(e.target.value)}
+                  />
+                  <button
+                    onClick={fetchPnrStatus}
+                    className="bg-orange-500 px-8 rounded-2xl font-black uppercase text-xs hover:bg-orange-600 transition-all flex items-center justify-center shadow-lg shadow-orange-500/20"
+                  >
+                    {loading ? <Loader2 className="animate-spin" /> : "Check"}
+                  </button>
+                </div>
+              </div>
+
+              {/* PNR Results View */}
+              {pnrStatusData && (
+                <div className="bg-slate-900 border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                  <div className="bg-slate-800/40 p-6 border-b border-slate-800 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-orange-500 rounded-xl text-white">
+                        <Ticket size={24} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          Train Information
+                        </p>
+                        <h4 className="font-black text-white uppercase italic text-lg">
+                          SOLAPUR EXP (#{pnrStatusData.train_number})
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-black px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full uppercase">
+                        Active Ticket
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Column 1: Journey Details */}
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                        Journey
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-xl font-black text-white">
+                            {pnrStatusData.source_code}
+                          </p>
+                          <p className="text-[9px] font-bold text-slate-500 uppercase">
+                            Source
+                          </p>
+                        </div>
+                        <Navigation
+                          className="text-slate-800 rotate-90"
+                          size={16}
+                        />
+                        <div className="text-center">
+                          <p className="text-xl font-black text-white">
+                            {pnrStatusData.destination_code}
+                          </p>
+                          <p className="text-[9px] font-bold text-slate-500 uppercase">
+                            Destination
+                          </p>
+                        </div>
+                      </div>
+                      <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
+                        <Calendar size={14} className="text-slate-600" />
+                        <p className="text-xs font-bold text-slate-300 uppercase">
+                          {pnrStatusData.date_of_journey}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Column 2: Passenger Details */}
+                    <div className="space-y-4 border-x border-slate-800/50 px-8">
+                      <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                        Passenger
+                      </p>
+                      <div>
+                        <p className="text-lg font-black text-white uppercase">
+                          {pnrStatusData.p_name}
+                        </p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase">
+                          {pnrStatusData.p_gender} | Age: {pnrStatusData.p_age}{" "}
+                          | {pnrStatusData.is_senior ? "Senior" : "Adult"}
+                        </p>
+                      </div>
+                      <div className="pt-4 border-t border-slate-800 flex justify-between">
+                        <div>
+                          <p className="text-[9px] font-bold text-slate-600 uppercase">
+                            Class
+                          </p>
+                          <p className="text-xs font-black text-slate-300">
+                            {pnrStatusData.coach_code}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] font-bold text-slate-600 uppercase">
+                            Quota
+                          </p>
+                          <p className="text-xs font-black text-slate-300">
+                            {pnrStatusData.type_code}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Column 3: Seat Allotment */}
+                    <div className="bg-slate-950 p-6 rounded-3xl flex flex-col justify-center items-center text-center space-y-2 border border-slate-800">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        Current Status
+                      </p>
+                      <p className="text-3xl font-black text-green-500 tracking-tighter">
+                        {pnrStatusData.current_seat_status}
+                      </p>
+                      <div className="pt-2">
+                        <p className="text-[9px] font-bold text-slate-600 uppercase">
+                          Base Fare Paid
+                        </p>
+                        <p className="text-sm font-bold text-white italic">
+                          ₹ {pnrStatusData.base_fare}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-800/20 p-4 border-t border-slate-800 flex justify-center gap-4">
+                    <button
+                      onClick={() => window.print()}
+                      className="text-[10px] font-black text-slate-500 hover:text-white uppercase flex items-center gap-2 transition-all"
+                    >
+                      <Download size={14} /> Download E-Ticket
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
