@@ -60,7 +60,9 @@ const RailwayReservation = () => {
     destination_code: "",
     doj: today,
   });
-
+  const [cancelPnr, setCancelPnr] = useState("");
+  const [cancelBookingData, setCancelBookingData] = useState(null);
+  const [selectedPassengers, setSelectedPassengers] = useState([]); // Array of passenger IDs
   // --- Passenger & Contact States ---
   const [passengers, setPassengers] = useState([
     {
@@ -216,6 +218,55 @@ const RailwayReservation = () => {
       setLoading(false);
     }
   };
+  const fetchBookingForCancel = async () => {
+    if (!cancelPnr) return;
+    setLoading(true);
+    try {
+      // Reusing PNR status or a specific booking fetch endpoint
+      const res = await axios.post(
+        `${API_BASE_URL}/pnr-status`,
+        { pnr: cancelPnr },
+        API_CONFIG
+      );
+      setCancelBookingData(res.data.data);
+      setSelectedPassengers([]); // Reset selection
+      setErrorMsg("");
+    } catch (err) {
+      setErrorMsg("Booking not found for this PNR.");
+      setCancelBookingData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelTicket = async () => {
+    if (selectedPassengers.length === 0) {
+      setErrorMsg("Please select at least one passenger to cancel.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/cancel-ticket`,
+        {
+          pnr: cancelPnr,
+          passengerids: selectedPassengers,
+        },
+        API_CONFIG
+      );
+      console.log(res.data);
+      // Update view with new data returned from API
+      setCancelBookingData(res.data.data);
+      setSelectedPassengers([]);
+      setErrorMsg("");
+      alert("Cancellation Successful");
+      activeTab = 0;
+    } catch (err) {
+      setErrorMsg("Cancellation failed.", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6 font-sans">
       <div className="max-w-6xl mx-auto bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden">
@@ -224,7 +275,7 @@ const RailwayReservation = () => {
           {[
             "Book Tickets",
             "PNR Status",
-            "Cancel",
+            "Cancel ticket",
             "Schedule",
             "Live Status",
             "Live Station",
@@ -740,6 +791,145 @@ const RailwayReservation = () => {
                     >
                       <Download size={14} /> Download E-Ticket
                     </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === 2 && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-top-4 duration-500">
+              {/* PNR Search for Cancellation */}
+              <div className="bg-slate-900/50 p-8 rounded-[2.5rem] border border-slate-800 shadow-xl flex flex-col items-center gap-6">
+                <div className="text-center">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">
+                    Cancel Ticket
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                    Enter PNR to fetch passenger details
+                  </p>
+                </div>
+                <div className="flex w-full max-w-md gap-3">
+                  <input
+                    className="flex-1 p-5 bg-slate-950 border-2 border-slate-800 rounded-2xl font-black text-center text-xl tracking-[0.3em] uppercase text-red-500 outline-none focus:border-red-500 transition-all placeholder:text-slate-800"
+                    placeholder="PNR NUMBER"
+                    maxLength={10}
+                    value={cancelPnr}
+                    onChange={(e) => setCancelPnr(e.target.value)}
+                  />
+                  <button
+                    onClick={fetchBookingForCancel}
+                    className="bg-red-600 px-8 rounded-2xl font-black uppercase text-xs hover:bg-red-700 transition-all flex items-center justify-center shadow-lg shadow-red-500/20"
+                  >
+                    {loading ? <Loader2 className="animate-spin" /> : "Fetch"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Booking Details & Passenger Selection */}
+              {cancelBookingData && (
+                <div className="bg-slate-900 border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95">
+                  <div className="bg-red-500/10 p-6 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] font-black text-red-500 uppercase">
+                        Manage Cancellation
+                      </p>
+                      <h4 className="font-black text-white uppercase italic text-lg">
+                        {cancelBookingData.train_name || "Train Details"} (#
+                        {cancelBookingData.train_number})
+                      </h4>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab(0)}
+                      className="p-3 bg-slate-800 text-slate-400 rounded-2xl hover:text-white transition-all"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div className="p-8 space-y-6">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                      Select Passengers to Cancel
+                    </p>
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Citing fix: result_udpated_passengerdetails from provided JSON structure */}
+                      {(
+                        cancelBookingData.result_udpated_passengerdetails || [
+                          cancelBookingData,
+                        ]
+                      ).map((p, idx) => (
+                        <div
+                          key={p.id || idx}
+                          className={`flex justify-between items-center p-5 rounded-2xl border transition-all ${
+                            p.cancellation_status
+                              ? "bg-slate-950 border-slate-800 opacity-50"
+                              : "bg-slate-900 border-slate-800 hover:border-red-500/50"
+                          }`}
+                        >
+                          <div className="flex gap-4 items-center">
+                            {!p.cancellation_status && (
+                              <input
+                                type="checkbox"
+                                className="w-5 h-5 accent-red-500 rounded border-slate-700 bg-slate-800"
+                                checked={selectedPassengers.includes(p.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked)
+                                    setSelectedPassengers([
+                                      ...selectedPassengers,
+                                      p.id,
+                                    ]);
+                                  else
+                                    setSelectedPassengers(
+                                      selectedPassengers.filter(
+                                        (id) => id !== p.id
+                                      )
+                                    );
+                                }}
+                              />
+                            )}
+                            <div>
+                              <p className="text-xs font-black text-slate-200 uppercase">
+                                {p.p_name || p.passenger_name}
+                              </p>
+                              <p className="text-[9px] text-slate-500 font-bold uppercase">
+                                Seat: {p.current_seat_status} | Status:{" "}
+                                {p.seat_status || "CNF"}
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            {p.cancellation_status ? (
+                              <span className="text-[9px] font-black px-3 py-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded uppercase">
+                                Cancelled
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-black px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded uppercase">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-4 pt-4 border-t border-slate-800">
+                      <button
+                        onClick={() => setActiveTab(0)}
+                        className="flex-1 py-4 bg-slate-800 text-slate-400 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-700 transition-all"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={handleCancelTicket}
+                        disabled={selectedPassengers.length === 0}
+                        className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-lg shadow-red-500/20 hover:bg-red-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        {loading ? (
+                          <Loader2 className="animate-spin mx-auto" />
+                        ) : (
+                          "Cancel Selected Tickets"
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
