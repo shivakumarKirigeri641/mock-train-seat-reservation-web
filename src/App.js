@@ -33,7 +33,6 @@ const API_CONFIG = {
 const RailwayReservation = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
-  const loadingRef = useRef(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const sourceRef = useRef(null);
@@ -41,16 +40,16 @@ const RailwayReservation = () => {
   const dateRef = useRef(null);
 
   const [stations, setStations] = useState([]);
-  const [resTypes, setResTypes] = useState([]);
-  const [coachTypes, setCoachTypes] = useState([]);
-
   const [trainResults, setTrainResults] = useState([]);
   const [selectedTrain, setSelectedTrain] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [selectedQuota, setSelectedQuota] = useState("gen"); // gen, ttl, ptl, pwd, senior
+  const [selectedQuota, setSelectedQuota] = useState("gen");
 
-  const [modalState, setModalState] = useState({ type: null, open: false });
-  const [bookingSummary, setBookingSummary] = useState(null);
+  const [modalState, setModalState] = useState({
+    type: null,
+    open: false,
+    data: null, // This will now hold { train_details, train_schedule_details }
+  });
 
   const today = new Date().toISOString().split("T")[0];
   const [searchForm, setSearchForm] = useState({
@@ -58,23 +57,12 @@ const RailwayReservation = () => {
     destination_code: "",
     doj: today,
   });
-  const [passengers, setPassengers] = useState([
-    { name: "", age: "", gender: "M", senior: false, pwd: false },
-  ]);
-  const [children, setChildren] = useState([]);
-  const [pnrInput, setPnrInput] = useState("");
 
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const [stRes, resRes, coachRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/stations`, API_CONFIG),
-          axios.get(`${API_BASE_URL}/reservation-type`, API_CONFIG),
-          axios.get(`${API_BASE_URL}/coach-type`, API_CONFIG),
-        ]);
+        const stRes = await axios.get(`${API_BASE_URL}/stations`, API_CONFIG);
         setStations(stRes.data.data || []);
-        setResTypes(resRes.data.data || []);
-        setCoachTypes(coachRes.data.data || []);
       } catch (err) {
         console.error("Metadata load failed");
       }
@@ -94,59 +82,33 @@ const RailwayReservation = () => {
         searchForm,
         API_CONFIG
       );
-
-      setTrainResults(res.data.data?.trains_list);
-      console.log(res.data.data.trains_list);
+      setTrainResults(res.data.data?.trains_list || []);
       setErrorMsg("");
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateTotalFare = () => {
-    if (!selectedTrain || !selectedClass) return 0;
-    const baseFare =
-      parseFloat(selectedTrain[`fare_${selectedQuota}_${selectedClass}`]) || 0;
-    return (passengers.length * baseFare).toFixed(2);
-  };
-
-  const handleConfirmBooking = async () => {
+  // Modified to handle the new object-based response
+  const fetchSchedule = async (trainNo) => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/confirm-booking`,
-        {
-          train_no: selectedTrain.train_number,
-          class: selectedClass,
-          quota: selectedQuota,
-          passengers,
-          children,
-        },
+        `${API_BASE_URL}/train-schedule`,
+        { train_number: trainNo },
         API_CONFIG
       );
-      setBookingSummary(res.data.data);
-      setModalState({ type: "success", open: true });
+      // Store the entire data object containing train_details and train_schedule_details
+      setModalState({ type: "schedule", open: true, data: res.data.data });
     } finally {
       setLoading(false);
     }
   };
 
-  const updatePassenger = (index, field, value) => {
-    const newPass = [...passengers];
-    newPass[index][field] = value;
-    if (field === "age" || field === "gender") {
-      const age = parseInt(newPass[index].age) || 0;
-      const gen = newPass[index].gender;
-      newPass[index].senior =
-        (gen === "M" && age >= 60) || (gen === "F" && age >= 50);
-    }
-    setPassengers(newPass);
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-6">
       <div className="max-w-6xl mx-auto bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-800 overflow-hidden">
-        {/* Tabs */}
+        {/* Navigation Tabs */}
         <div className="grid grid-cols-3 md:grid-cols-6 bg-slate-950/50 p-2 gap-2 border-b border-slate-800">
           {[
             "Book Tickets",
@@ -163,7 +125,7 @@ const RailwayReservation = () => {
                 setTrainResults([]);
                 setSelectedTrain(null);
               }}
-              className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all ${
                 activeTab === idx
                   ? "bg-orange-500 text-white"
                   : "text-slate-500 hover:bg-slate-800"
@@ -177,7 +139,7 @@ const RailwayReservation = () => {
         <div className="p-8">
           {activeTab === 0 && (
             <div className="space-y-8">
-              {/* Search Section */}
+              {/* Search Bar */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end bg-slate-950/30 p-6 rounded-3xl border border-slate-800">
                 <AutocompleteInput
                   label="From"
@@ -213,7 +175,7 @@ const RailwayReservation = () => {
                 </div>
                 <button
                   onClick={fetchTrains}
-                  className="bg-orange-500 h-14 rounded-2xl font-black uppercase text-xs hover:bg-orange-600 flex items-center justify-center gap-2"
+                  className="bg-orange-500 h-14 rounded-2xl font-black text-xs uppercase hover:bg-orange-600 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <Loader2 className="animate-spin" />
@@ -224,37 +186,25 @@ const RailwayReservation = () => {
                 </button>
               </div>
 
-              {/* Train Selection with Quota/Class Grid */}
+              {/* Train List View */}
               {trainResults.length > 0 && !selectedTrain && (
-                <div className="space-y-4 animate-in slide-in-from-bottom-4">
-                  <div className="flex gap-4 mb-4 overflow-x-auto pb-2">
-                    {["gen", "ttl", "ptl", "pwd", "senior"].map((q) => (
-                      <button
-                        key={q}
-                        onClick={() => setSelectedQuota(q)}
-                        className={`px-6 py-2 rounded-full text-[10px] font-black uppercase border-2 transition-all ${
-                          selectedQuota === q
-                            ? "bg-orange-500 border-orange-500 text-white"
-                            : "border-slate-800 text-slate-500"
-                        }`}
-                      >
-                        {q === "gen"
-                          ? "General"
-                          : q === "ttl"
-                          ? "Tatkal"
-                          : q === "ptl"
-                          ? "Premium Tatkal"
-                          : q === "pwd"
-                          ? "PWD"
-                          : "Senior"}
-                      </button>
-                    ))}
-                  </div>
+                <div className="space-y-4">
+                  <QuotaSelector
+                    current={selectedQuota}
+                    onChange={setSelectedQuota}
+                  />
                   {trainResults.map((t, i) => (
                     <div
                       key={i}
-                      className="bg-slate-800/40 p-6 rounded-[2rem] border border-slate-800"
+                      className="bg-slate-800/40 p-6 rounded-[2rem] border border-slate-800 relative group"
                     >
+                      <button
+                        onClick={() => fetchSchedule(t.train_number)}
+                        className="absolute top-4 right-4 p-2 bg-slate-900 rounded-xl text-orange-500 hover:bg-orange-500 hover:text-white transition-all shadow-lg"
+                        title="View Schedule"
+                      >
+                        <MapPin size={18} />
+                      </button>
                       <div className="flex justify-between items-start mb-6">
                         <div className="flex gap-4">
                           <div className="p-4 bg-slate-900 rounded-2xl text-orange-500">
@@ -265,21 +215,11 @@ const RailwayReservation = () => {
                               {t.train_name} ({t.train_number})
                             </h4>
                             <p className="text-[10px] font-bold text-slate-500">
-                              {t.scheduled_departure} → {t.estimated_arrival} |{" "}
-                              {t.journey_duration}
+                              {t.scheduled_departure} → {t.estimated_arrival}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-bold text-slate-500 uppercase">
-                            {t.running_days}
-                          </p>
-                          <p className="text-[10px] font-bold text-orange-500">
-                            {t.train_type}
-                          </p>
-                        </div>
                       </div>
-
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {[
                           "sl",
@@ -321,209 +261,92 @@ const RailwayReservation = () => {
                   ))}
                 </div>
               )}
-
-              {/* Passenger Entry Section */}
-              {selectedTrain && (
-                <div className="space-y-6 animate-in zoom-in-95">
-                  <div className="flex justify-between items-center bg-orange-500/10 p-4 rounded-2xl border border-orange-500/20">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase text-orange-500">
-                        Selected
-                      </p>
-                      <h4 className="font-black text-white">
-                        {selectedTrain.train_name} |{" "}
-                        {selectedClass.toUpperCase()} |{" "}
-                        {selectedQuota.toUpperCase()}
-                      </h4>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSelectedTrain(null);
-                        setSelectedClass(null);
-                      }}
-                      className="text-[10px] font-black uppercase text-slate-500 underline"
-                    >
-                      Change
-                    </button>
-                  </div>
-
-                  {passengers.map((p, i) => (
-                    <div
-                      key={i}
-                      className="bg-slate-950/40 p-6 rounded-3xl border border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-4 items-center"
-                    >
-                      <input
-                        placeholder="Name"
-                        className="bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs text-white"
-                        value={p.name}
-                        onChange={(e) =>
-                          updatePassenger(i, "name", e.target.value)
-                        }
-                      />
-                      <input
-                        placeholder="Age"
-                        type="number"
-                        className="bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs text-white"
-                        value={p.age}
-                        onChange={(e) =>
-                          updatePassenger(i, "age", e.target.value)
-                        }
-                      />
-                      <select
-                        className="bg-slate-900 border border-slate-800 p-3 rounded-xl text-xs text-white"
-                        value={p.gender}
-                        onChange={(e) =>
-                          updatePassenger(i, "gender", e.target.value)
-                        }
-                      >
-                        <option value="M">Male</option>
-                        <option value="F">Female</option>
-                        <option value="O">Other</option>
-                      </select>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={p.senior}
-                          disabled
-                          className="accent-orange-500"
-                        />
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">
-                          Senior
-                        </span>
-                      </label>
-                      {i > 0 && (
-                        <button
-                          onClick={() =>
-                            setPassengers(
-                              passengers.filter((_, idx) => idx !== i)
-                            )
-                          }
-                          className="text-red-500"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <div className="flex justify-between items-center">
-                    <button
-                      onClick={() =>
-                        setPassengers([
-                          ...passengers,
-                          {
-                            name: "",
-                            age: "",
-                            gender: "M",
-                            senior: false,
-                            pwd: false,
-                          },
-                        ])
-                      }
-                      className="text-orange-500 text-[10px] font-black uppercase flex items-center gap-2"
-                    >
-                      <UserPlus size={16} /> Add Adult
-                    </button>
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase">
-                        Total Fare
-                      </p>
-                      <h3 className="text-2xl font-black text-white">
-                        ₹ {calculateTotalFare()}
-                      </h3>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() =>
-                      setModalState({ type: "booking", open: true })
-                    }
-                    className="w-full py-5 bg-orange-500 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-lg shadow-orange-500/20"
-                  >
-                    Proceed to Payment
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
-        <Disclaimer />
       </div>
 
-      {/* Payment Modal */}
-      {modalState.open && modalState.type === "booking" && (
+      {/* Schedule Modal - Modified to show train_details and train_schedule_details */}
+      {modalState.open && modalState.type === "schedule" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-slate-900 w-full max-w-xl rounded-[2.5rem] border border-slate-800 p-8 space-y-6">
-            <h2 className="text-xl font-black text-white uppercase italic border-b border-slate-800 pb-4 flex items-center gap-3">
-              <CreditCard className="text-orange-500" /> Payment Verification
-            </h2>
-            <div className="space-y-4">
-              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
-                <div>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase">
-                    Payable Amount
-                  </p>
-                  <p className="text-2xl font-black text-white">
-                    ₹ {calculateTotalFare()}
-                  </p>
+          <div className="bg-slate-900 w-full max-w-2xl max-h-[85vh] rounded-[2.5rem] border border-slate-800 flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-950/50">
+              <div>
+                <h2 className="text-xl font-black text-white uppercase italic flex items-center gap-3">
+                  <MapPin className="text-orange-500" />{" "}
+                  {modalState.data?.train_details?.train_name}
+                </h2>
+                <div className="flex gap-3 mt-1">
+                  <span className="text-[10px] font-black px-2 py-0.5 bg-orange-500/10 text-orange-500 rounded uppercase">
+                    #{modalState.data?.train_details?.train_number}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">
+                    {modalState.data?.train_details?.train_type} | Zone:{" "}
+                    {modalState.data?.train_details?.zone}
+                  </span>
                 </div>
-                <Ticket className="text-orange-500" size={32} />
               </div>
-              <div className="grid grid-cols-2 gap-4 italic text-[10px] text-slate-500">
-                <p>Train: {selectedTrain.train_number}</p>
-                <p>Journey Date: {searchForm.doj}</p>
-              </div>
-            </div>
-            <div className="flex gap-4 pt-4">
               <button
-                onClick={() => setModalState({ open: false, type: null })}
-                className="flex-1 py-4 bg-slate-800 rounded-2xl font-bold uppercase text-[10px]"
+                onClick={() =>
+                  setModalState({ open: false, type: null, data: null })
+                }
+                className="p-2 hover:bg-slate-800 rounded-full text-slate-400"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmBooking}
-                className="flex-1 py-4 bg-orange-500 rounded-2xl font-black uppercase text-[10px]"
-              >
-                Confirm & Pay
+                <X />
               </button>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Success Modal */}
-      {modalState.open && modalState.type === "success" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-800 p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
-            <div className="flex justify-center">
-              <CheckCircle2 size={64} className="text-green-500" />
+            {/* Train Info Banner */}
+            <div className="px-6 py-4 bg-slate-800/30 flex justify-between items-center border-b border-slate-800">
+              <div className="text-center">
+                <p className="text-[9px] font-black text-slate-500 uppercase">
+                  From
+                </p>
+                <p className="text-xs font-bold text-white uppercase">
+                  {modalState.data?.train_details?.station_from}
+                </p>
+              </div>
+              <ArrowRightIcon className="text-slate-600" />
+              <div className="text-center">
+                <p className="text-[9px] font-black text-slate-500 uppercase">
+                  To
+                </p>
+                <p className="text-xs font-bold text-white uppercase">
+                  {modalState.data?.train_details?.station_to}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
-                Ticket Confirmed
-              </h2>
-              <p className="text-slate-500 text-xs mt-2 italic">
-                PNR Generated:{" "}
-                <span className="text-orange-500 font-bold tracking-[0.2em]">
-                  {bookingSummary?.pnr ||
-                    "MOCK" +
-                      Math.random().toString(36).substr(2, 6).toUpperCase()}
-                </span>
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => window.print()}
-                className="flex-1 py-4 bg-slate-800 rounded-2xl font-bold uppercase text-[10px] flex items-center justify-center gap-2"
-              >
-                <Download size={14} /> Download
-              </button>
-              <button
-                onClick={() => window.location.reload()}
-                className="flex-1 py-4 bg-orange-500 rounded-2xl font-black uppercase text-[10px]"
-              >
-                Close
-              </button>
+
+            {/* Schedule List */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+              {modalState.data?.train_schedule_details?.map((stop, idx) => (
+                <div
+                  key={idx}
+                  className="flex gap-4 items-center border-l-2 border-orange-500 ml-4 pl-6 relative"
+                >
+                  <div className="absolute -left-[9px] w-4 h-4 bg-orange-500 rounded-full border-4 border-slate-900"></div>
+                  <div className="flex-1 bg-slate-950/50 p-4 rounded-2xl border border-slate-800 flex justify-between hover:border-slate-700 transition-colors">
+                    <div>
+                      <p className="text-xs font-black text-white uppercase">
+                        {stop.station_name} ({stop.station_code})
+                      </p>
+                      <p className="text-[9px] text-slate-500 uppercase font-bold">
+                        Seq: {stop.station_sequence} | Day {stop.running_day} |{" "}
+                        {stop.kilometer} KM
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-black text-orange-500">
+                        {stop.arrival ? stop.arrival : "Starts"}
+                      </p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">
+                        Arr | Dep: {stop.departure}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -532,21 +355,41 @@ const RailwayReservation = () => {
   );
 };
 
+// Helper Icon for Modal
+const ArrowRightIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="currentColor"
+    className={className}
+    viewBox="0 0 16 16"
+  >
+    <path
+      fillRule="evenodd"
+      d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"
+    />
+  </svg>
+);
+
+// Autocomplete and QuotaSelector components remain the same...
 const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const filtered = list
-    .filter(
-      (s) =>
-        s.station_name.toLowerCase().includes(query.toLowerCase()) ||
-        s.code.toLowerCase().includes(query.toLowerCase())
-    )
-    .slice(0, 5);
+  const filtered = query
+    ? list
+        .filter(
+          (s) =>
+            s.station_name.toLowerCase().includes(query.toLowerCase()) ||
+            s.code.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, 50)
+    : list;
 
   const handleKeyDown = (e) => {
-    if (!showResults || filtered.length === 0) return;
+    if (!showResults) return;
     if (e.key === "Enter" || e.key === "Tab") {
       const selected = filtered[selectedIndex];
       if (selected) {
@@ -573,22 +416,25 @@ const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
         ref={inputRef}
         value={query}
         onKeyDown={handleKeyDown}
-        onFocus={() => setShowResults(true)}
+        onFocus={() => {
+          setShowResults(true);
+          setSelectedIndex(0);
+        }}
         onBlur={() => setTimeout(() => setShowResults(false), 200)}
         onChange={(e) => {
           setQuery(e.target.value);
           setShowResults(true);
           setSelectedIndex(0);
         }}
-        className="bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 w-full"
+        className="bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-orange-500 w-full transition-all"
         placeholder={`Search ${label}...`}
       />
-      {showResults && query && filtered.length > 0 && (
-        <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden z-20 shadow-xl">
+      {showResults && filtered.length > 0 && (
+        <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden z-20 shadow-2xl max-h-[300px] overflow-y-auto custom-scrollbar">
           {filtered.map((s, i) => (
             <div
               key={i}
-              className={`p-4 cursor-pointer text-xs font-bold border-b border-slate-700 last:border-0 transition-colors ${
+              className={`p-4 cursor-pointer text-[10px] font-bold border-b border-slate-700 last:border-0 transition-colors ${
                 i === selectedIndex
                   ? "bg-orange-500 text-white"
                   : "hover:bg-slate-700 text-slate-300"
@@ -614,16 +460,39 @@ const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
   );
 };
 
+const QuotaSelector = ({ current, onChange }) => (
+  <div className="flex gap-2 overflow-x-auto pb-4 custom-scrollbar">
+    {["gen", "ttl", "ptl", "pwd", "senior"].map((q) => (
+      <button
+        key={q}
+        onClick={() => onChange(q)}
+        className={`px-5 py-2.5 rounded-full text-[9px] font-black uppercase border-2 transition-all whitespace-nowrap ${
+          current === q
+            ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/20"
+            : "border-slate-800 text-slate-500 hover:border-slate-700"
+        }`}
+      >
+        {q === "gen"
+          ? "General"
+          : q === "ttl"
+          ? "Tatkal"
+          : q === "ptl"
+          ? "Premium Tatkal"
+          : q === "pwd"
+          ? "Physically Challenged"
+          : "Senior Citizen"}
+      </button>
+    ))}
+  </div>
+);
+
 const Disclaimer = () => (
-  <div className="bg-orange-500/5 p-6 border-t border-slate-800 flex gap-4 text-[11px] text-orange-200/60 font-medium leading-relaxed">
-    <AlertTriangle className="text-orange-500 shrink-0" size={18} />
-    <div>
-      <p className="font-bold uppercase mb-1 tracking-wider">
-        Usage Disclaimer
-      </p>
-      Strictly for referring purpose only. Multiple API calls at a time lead to
-      'Too Many Requests' error. Serverpe.in is not responsible for errors.
-    </div>
+  <div className="bg-orange-500/5 p-6 border-t border-slate-800 flex gap-4 text-[10px] text-orange-200/60 font-medium italic">
+    <AlertTriangle className="text-orange-500 shrink-0" size={16} />
+    <p>
+      Usage Disclaimer: This is a mock portal. Avoid parallel API requests to
+      prevent server throttling.
+    </p>
   </div>
 );
 
