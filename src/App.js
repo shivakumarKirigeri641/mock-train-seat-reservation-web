@@ -53,7 +53,8 @@ const RailwayReservation = () => {
   });
   const [bookingId, setBookingId] = useState(null);
   const [bookingSummary, setBookingSummary] = useState(null);
-
+  const [scheduleInput, setScheduleInput] = useState("");
+  const [fullScheduleData, setFullScheduleData] = useState(null);
   const today = new Date().toISOString().split("T")[0];
   const [searchForm, setSearchForm] = useState({
     source_code: "",
@@ -109,7 +110,9 @@ const RailwayReservation = () => {
       setLoading(false);
     }
   };
-  const fetchSchedule = async (trainNo) => {
+  const fetchSchedule = async (trainNo, istab = true) => {
+    setErrorMsg("");
+    setFullScheduleData(null);
     setLoading(true);
     try {
       const res = await axios.post(
@@ -117,7 +120,14 @@ const RailwayReservation = () => {
         { train_number: trainNo },
         API_CONFIG
       );
-      setModalState({ type: "schedule", open: true, data: res.data.data });
+      if (false === istab) {
+        setModalState({ type: "schedule", open: true, data: res.data.data });
+      } else {
+        setFullScheduleData(res.data.data);
+      }
+    } catch (err) {
+      console.log(err.message);
+      setErrorMsg("Train not found!");
     } finally {
       setLoading(false);
     }
@@ -930,6 +940,121 @@ const RailwayReservation = () => {
                         )}
                       </button>
                     </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === 3 && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-top-4 duration-500">
+              {/* Search Header */}
+              <div className="bg-slate-900/50 p-8 rounded-[2.5rem] border border-slate-800 shadow-xl flex flex-col items-center gap-6">
+                <div className="text-center">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter italic flex items-center gap-3 justify-center">
+                    <Clock className="text-orange-500" /> Live Train Schedule
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                    Enter train number to view full route
+                  </p>
+                </div>
+                <div className="flex w-full max-w-md gap-3">
+                  <input
+                    className="flex-1 p-5 bg-slate-950 border-2 border-slate-800 rounded-2xl font-black text-center text-xl tracking-[0.3em] uppercase text-orange-500 outline-none focus:border-orange-500 transition-all placeholder:text-slate-800"
+                    placeholder="TRAIN NO"
+                    maxLength={5}
+                    value={scheduleInput}
+                    onChange={(e) =>
+                      setScheduleInput(e.target.value.replace(/\D/g, ""))
+                    }
+                  />
+                  <button
+                    onClick={() => {
+                      fetchSchedule(scheduleInput);
+                    }}
+                    className="bg-orange-500 px-8 rounded-2xl font-black uppercase text-xs hover:bg-orange-600 transition-all flex items-center justify-center shadow-lg shadow-orange-500/20"
+                  >
+                    {loading ? <Loader2 className="animate-spin" /> : "Fetch"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Schedule Results View */}
+              {fullScheduleData && (
+                <div className="bg-slate-900 border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                  {/* Train Summary Header */}
+                  <div className="bg-slate-800/40 p-6 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                      <h4 className="font-black text-white uppercase italic text-lg">
+                        {fullScheduleData.train_details?.train_name} (#
+                        {fullScheduleData.train_details?.train_number})
+                      </h4>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                        {fullScheduleData.train_details?.train_type} | Zone:{" "}
+                        {fullScheduleData.train_details?.zone}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(
+                        (day) => (
+                          <span
+                            key={day}
+                            className={`text-[8px] font-black w-6 h-6 flex items-center justify-center rounded-lg border ${
+                              fullScheduleData.train_details?.[
+                                `train_runs_on_${day}`
+                              ] === "Y"
+                                ? "bg-orange-500/20 border-orange-500/50 text-orange-500"
+                                : "bg-slate-950 border-slate-800 text-slate-700"
+                            } uppercase`}
+                          >
+                            {day[0]}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Route Timeline */}
+                  <div className="p-8">
+                    <div className="space-y-4">
+                      {fullScheduleData.train_schedule_details?.map(
+                        (stop, idx) => (
+                          <div
+                            key={idx}
+                            className="flex gap-6 items-center border-l-2 border-orange-500/30 ml-4 pl-8 relative group"
+                          >
+                            <div className="absolute -left-[9px] w-4 h-4 bg-slate-900 border-2 border-orange-500 rounded-full group-hover:bg-orange-500 transition-colors"></div>
+                            <div className="flex-1 bg-slate-950/50 p-5 rounded-[1.5rem] border border-slate-800 flex justify-between items-center group-hover:border-orange-500/50 transition-all">
+                              <div>
+                                <p className="text-xs font-black text-white uppercase tracking-tighter">
+                                  {stop.station_name} ({stop.station_code})
+                                </p>
+                                <p className="text-[9px] font-bold text-slate-600 uppercase mt-1">
+                                  Seq: {stop.station_sequence} | Day{" "}
+                                  {stop.running_day} | {stop.kilometer} KM
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-black text-orange-500">
+                                  {stop.arrival || "STARTS"}
+                                </p>
+                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                                  Dep: {stop.departure || "ENDS"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-800/20 p-4 border-t border-slate-800 flex justify-center">
+                    <button
+                      onClick={() => window.print()}
+                      className="text-[10px] font-black text-slate-500 hover:text-white uppercase flex items-center gap-2 transition-all"
+                    >
+                      <Download size={14} /> Download Full Route
+                    </button>
                   </div>
                 </div>
               )}
