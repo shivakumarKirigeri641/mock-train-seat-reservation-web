@@ -36,7 +36,9 @@ const RailwayReservation = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
+  const [liveStationInput, setLiveStationInput] = useState("");
+  const [liveStationTime, setLiveStationTime] = useState(2); // Default to 2 hours
+  const [liveStationData, setLiveStationData] = useState([]);
   const sourceRef = useRef(null);
   const destinationRef = useRef(null);
   const dateRef = useRef(null);
@@ -83,6 +85,29 @@ const RailwayReservation = () => {
   const [pnrStatusData, setPnrStatusData] = useState(null);
   const [liveTrainInput, setLiveTrainInput] = useState("");
   const [liveStatusData, setLiveStatusData] = useState(null);
+  const fetchLiveStationStatus = async (stationCode) => {
+    const code = stationCode || liveStationInput;
+    if (!code) return;
+
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/live-station`,
+        {
+          station_code: code,
+          next_hours: liveStationTime,
+        },
+        API_CONFIG
+      );
+      setLiveStationData(res.data.data.trains_list);
+      setErrorMsg("");
+    } catch (err) {
+      setErrorMsg("Live station details not found.");
+      setLiveStationData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   const fetchLiveTrainStatus = async () => {
     if (!liveTrainInput) return;
     setLoading(true);
@@ -1239,6 +1264,147 @@ const RailwayReservation = () => {
                               </p>
                             </div>
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === 5 && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-top-4 duration-500">
+              {/* Search & Config Header */}
+              <div className="bg-slate-900/50 p-8 rounded-[2.5rem] border border-slate-800 shadow-xl space-y-6">
+                <div className="flex flex-col md:flex-row gap-6 items-end">
+                  <div className="flex-1 w-full">
+                    <AutocompleteInput
+                      label="Station Name/Code"
+                      list={stations}
+                      onSelect={(v) => {
+                        setLiveStationInput(v);
+                        fetchLiveStationStatus(v);
+                      }}
+                    />
+                  </div>
+
+                  {/* Time Window Radio Buttons */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                      Time Window
+                    </label>
+                    <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800 gap-1">
+                      {[2, 4, 8].map((hr) => (
+                        <label
+                          key={hr}
+                          className={`flex-1 px-6 py-2.5 rounded-xl text-[10px] font-black cursor-pointer transition-all ${
+                            liveStationTime === hr
+                              ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                              : "text-slate-500 hover:bg-slate-900"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            className="hidden"
+                            name="timeWindow"
+                            value={hr}
+                            checked={liveStationTime === hr}
+                            onChange={() => setLiveStationTime(hr)}
+                          />
+                          {hr} HRS
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => fetchLiveStationStatus()}
+                    className="h-14 bg-orange-500 px-8 rounded-2xl font-black uppercase text-xs hover:bg-orange-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
+                  >
+                    {loading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Activity size={18} />
+                    )}{" "}
+                    Fetch
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Trains List */}
+              {liveStationData.length > 0 && (
+                <div className="space-y-4 animate-in zoom-in-95 duration-300">
+                  <div className="flex justify-between items-center px-4">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                      Upcoming Trains at {liveStationData[0]?.station_name}
+                    </p>
+                    <span className="text-[9px] font-black px-2 py-0.5 bg-green-500/10 text-green-500 rounded uppercase">
+                      Live Feed
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {liveStationData.map((t, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] hover:border-slate-600 transition-all group flex flex-col md:flex-row justify-between gap-6"
+                      >
+                        <div className="flex gap-4">
+                          <div className="p-4 bg-slate-950 rounded-2xl text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all">
+                            <TrainFront size={24} />
+                          </div>
+                          <div>
+                            <h4 className="font-black text-white uppercase italic text-lg">
+                              {t.train_name}
+                            </h4>
+                            <div className="flex gap-3 items-center mt-1">
+                              <span className="text-[10px] font-black text-orange-500">
+                                #{t.train_number}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                                {t.station_from} → {t.station_to}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-1 justify-around items-center border-x border-slate-800/50 px-4">
+                          <div className="text-center">
+                            <p className="text-[9px] font-bold text-slate-600 uppercase">
+                              Arrival
+                            </p>
+                            <p className="text-sm font-black text-white">
+                              {t.arrival_time
+                                ? t.arrival_time.split("T")[1].substring(0, 5)
+                                : "Starts"}
+                            </p>
+                          </div>
+                          <Clock className="text-slate-800" size={16} />
+                          <div className="text-center">
+                            <p className="text-[9px] font-bold text-slate-600 uppercase">
+                              Departure
+                            </p>
+                            <p className="text-sm font-black text-orange-500">
+                              {t.departure_time
+                                ? t.departure_time.split("T")[1].substring(0, 5)
+                                : "Ends"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-center items-end min-w-[120px]">
+                          <div
+                            className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              t.status === "Departed"
+                                ? "bg-red-500/10 text-red-500"
+                                : "bg-green-500/10 text-green-500"
+                            }`}
+                          >
+                            {t.status}
+                          </div>
+                          <p className="text-[10px] font-bold text-slate-500 mt-2">
+                            ETA: {t.eta_hhmm}
+                          </p>
                         </div>
                       </div>
                     ))}
