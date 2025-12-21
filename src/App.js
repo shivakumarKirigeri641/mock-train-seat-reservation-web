@@ -18,6 +18,7 @@ import {
   MapPin,
   CreditCard,
   Calendar,
+  TrainTrack,
 } from "lucide-react";
 import axios from "axios";
 
@@ -80,6 +81,27 @@ const RailwayReservation = () => {
   // --- Add these to your states within RailwayReservation component ---
   const [pnrInput, setPnrInput] = useState("");
   const [pnrStatusData, setPnrStatusData] = useState(null);
+  const [liveTrainInput, setLiveTrainInput] = useState("");
+  const [liveStatusData, setLiveStatusData] = useState(null);
+  const fetchLiveTrainStatus = async () => {
+    if (!liveTrainInput) return;
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/train-live-running-status`,
+        { train_number: liveTrainInput },
+        API_CONFIG
+      );
+      console.log(res.data.data);
+      setLiveStatusData(res.data.data);
+      setErrorMsg("");
+    } catch (err) {
+      setErrorMsg("Live status not available for this train.");
+      setLiveStatusData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
@@ -293,6 +315,8 @@ const RailwayReservation = () => {
             <button
               key={idx}
               onClick={() => {
+                setErrorMsg("");
+                setPnrInput("");
                 setActiveTab(idx);
                 setTrainResults([]);
                 setSelectedTrain(null);
@@ -1055,6 +1079,169 @@ const RailwayReservation = () => {
                     >
                       <Download size={14} /> Download Full Route
                     </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === 4 && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-top-4 duration-500">
+              {/* Search Input */}
+              <div className="bg-slate-900/50 p-8 rounded-[2.5rem] border border-slate-800 shadow-xl flex flex-col items-center gap-6">
+                <div className="text-center">
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter italic flex items-center gap-3 justify-center">
+                    <Activity className="text-orange-500" /> Live Train Status
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                    Track train location and delays in real-time
+                  </p>
+                </div>
+                <div className="flex w-full max-w-md gap-3">
+                  <input
+                    className="flex-1 p-5 bg-slate-950 border-2 border-slate-800 rounded-2xl font-black text-center text-xl tracking-[0.3em] uppercase text-orange-500 outline-none focus:border-orange-500 transition-all placeholder:text-slate-800"
+                    placeholder="TRAIN NO"
+                    maxLength={5}
+                    value={liveTrainInput}
+                    onChange={(e) =>
+                      setLiveTrainInput(e.target.value.replace(/\D/g, ""))
+                    }
+                  />
+                  <button
+                    onClick={() => fetchLiveTrainStatus()}
+                    className="bg-orange-500 px-8 rounded-2xl font-black uppercase text-xs hover:bg-orange-600 transition-all flex items-center justify-center shadow-lg shadow-orange-500/20"
+                  >
+                    {loading ? <Loader2 className="animate-spin" /> : "Track"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Status Timeline */}
+              {liveStatusData && (
+                <div className="bg-slate-900 border border-slate-800 rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95">
+                  <div>
+                    <div className="bg-slate-800/40 p-6 border-b border-slate-800 flex justify-between items-center">
+                      <h4 className="font-black text-white uppercase italic text-lg flex items-center gap-3">
+                        <TrainFront size={20} className="text-orange-500" />#
+                        {liveStatusData?.train_details?.train_number}
+                      </h4>
+                      <h3 className="font-black text-white uppercase italic text-lg flex items-center gap-3">
+                        <TrainFront size={20} className="text-orange-500" />
+                        {liveStatusData?.train_details?.train_name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">
+                          Live Updates Active
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-slate-800/40 p-6 border-b border-slate-800 flex justify-between items-center">
+                      <h4 className="font-black text-white uppercase italic text-sm flex items-center gap-3">
+                        <TrainFront size={20} className="text-orange-500" />#
+                        {liveStatusData?.train_details?.train_type} /{" "}
+                        {liveStatusData?.train_details?.zone}
+                      </h4>
+                      <h3 className="font-black text-white uppercase italic text-sm flex items-center gap-3">
+                        <TrainFront size={20} className="text-orange-500" />
+                        Origin: {liveStatusData?.train_details?.station_from}
+                      </h3>
+                      <h3 className="font-black text-white uppercase italic text-sm flex items-center gap-3">
+                        <TrainFront size={20} className="text-orange-500" />
+                        Destination: {liveStatusData?.train_details?.station_to}
+                      </h3>
+                    </div>
+                    <div className="bg-slate-800/40 p-6 border-b border-slate-800 flex items-center">
+                      <h4 className="font-black text-white uppercase italic text-xs flex items-center gap-3">
+                        <TrainFront size={20} className="text-orange-500" />
+                        Runs on:
+                        {liveStatusData?.train_details?.train_runs_on_sun}{" "}
+                        {liveStatusData?.train_details?.train_runs_on_mon}{" "}
+                        {liveStatusData?.train_details?.train_runs_on_tue}{" "}
+                        {liveStatusData?.train_details?.train_runs_on_wed}{" "}
+                        {liveStatusData?.train_details?.train_runs_on_thu}{" "}
+                        {liveStatusData?.train_details?.train_runs_on_fri}{" "}
+                        {liveStatusData?.train_details?.train_runs_on_sat}{" "}
+                      </h4>
+                    </div>
+                  </div>
+                  <div className="p-8 space-y-2">
+                    {liveStatusData?.live_list.map((station, idx) => (
+                      <div
+                        key={idx}
+                        className="flex gap-6 items-start relative group"
+                      >
+                        {/* Vertical Line Logic */}
+                        {idx !== liveStatusData.length - 1 && (
+                          <div className="absolute left-[19px] top-10 bottom-0 w-0.5 bg-slate-800 group-hover:bg-orange-500/30 transition-colors"></div>
+                        )}
+
+                        {/* Status Icon */}
+                        <div className="relative z-10 pt-2">
+                          <div
+                            className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${
+                              station.train_status_at_station === "Departed"
+                                ? "bg-orange-500 border-orange-400 text-white shadow-lg shadow-orange-500/20"
+                                : station.train_status_at_station === "Arrived"
+                                ? "bg-green-500 border-green-400 text-white"
+                                : "bg-slate-950 border-slate-800 text-slate-700"
+                            }`}
+                          >
+                            {station.train_status_at_station === "Departed" ? (
+                              <Navigation size={18} />
+                            ) : (
+                              <MapPin size={18} />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Station Card */}
+                        <div className="flex-1 bg-slate-950/50 p-5 rounded-[1.5rem] border border-slate-800 mb-6 flex justify-between items-center group-hover:border-slate-600 transition-all">
+                          <div className="space-y-1">
+                            <p className="text-sm font-black text-white uppercase tracking-tight">
+                              {station.station_name} ({station.station_code})
+                            </p>
+                            <div className="flex gap-3 items-center">
+                              <span
+                                className={`text-[9px] font-black px-2 py-0.5 rounded uppercase ${
+                                  station.train_status_at_station === "Departed"
+                                    ? "bg-orange-500/10 text-orange-500"
+                                    : "bg-slate-800 text-slate-500"
+                                }`}
+                              >
+                                {station.train_status_at_station}
+                              </span>
+                              <p className="text-[9px] font-bold text-slate-600 uppercase">
+                                Seq: {station.station_sequence} |{" "}
+                                {station.kilometer} KM
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right space-y-1">
+                            <div className="flex flex-col">
+                              <p className="text-[9px] font-bold text-slate-500 uppercase">
+                                Arrival
+                              </p>
+                              <p className="text-xs font-black text-white">
+                                {station.arrival_time
+                                  ? station.arrival_time.split(" ")[1]
+                                  : "---"}
+                              </p>
+                            </div>
+                            <div className="flex flex-col">
+                              <p className="text-[9px] font-bold text-slate-500 uppercase">
+                                Departure
+                              </p>
+                              <p className="text-xs font-black text-orange-500">
+                                {station.departure_time
+                                  ? station.departure_time.split(" ")[1]
+                                  : "---"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
