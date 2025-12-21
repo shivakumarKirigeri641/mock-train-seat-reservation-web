@@ -19,7 +19,7 @@
   "homepage": "https://github.com/shivakumarKirigeri641/mock-train-seat-reservation-web#readme",
   "dependencies": {
     "@reduxjs/toolkit": "^2.10.1",
-    "axios": "^1.7.7",
+    "axios": "^1.13.2",
     "framer-motion": "^12.23.24",
     "jsbarcode": "^3.12.1",
     "jspdf": "^3.0.4",
