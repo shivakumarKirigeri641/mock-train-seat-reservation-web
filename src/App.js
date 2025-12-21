@@ -107,6 +107,19 @@ const RailwayReservation = () => {
       setLoading(false);
     }
   };
+  const fetchSchedule = async (trainNo) => {
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/train-schedule`,
+        { train_number: trainNo },
+        API_CONFIG
+      );
+      setModalState({ type: "schedule", open: true, data: res.data.data });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updatePassenger = (i, f, v) => {
     const n = [...passengers];
@@ -302,9 +315,21 @@ const RailwayReservation = () => {
                           key={i}
                           className="bg-slate-800/40 p-6 rounded-[2rem] border border-slate-800"
                         >
-                          <h4 className="font-black text-white uppercase italic mb-4">
-                            {t.train_name} ({t.train_number})
-                          </h4>
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-black text-white uppercase italic mb-4">
+                              {t.train_name} ({t.train_number})
+                            </h4>
+                            {/* Location Button */}
+                            <button
+                              onClick={() => fetchSchedule(t.train_number)}
+                              className="top-6 right-6 p-2.5 bg-slate-900 text-orange-500 rounded-xl border border-slate-700 hover:bg-orange-500 hover:text-white transition-all shadow-xl group/loc"
+                            >
+                              <MapPin
+                                size={20}
+                                className="group-hover/loc:scale-110 transition-transform"
+                              />
+                            </button>
+                          </div>
                           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                             {[
                               "sl",
@@ -982,6 +1007,65 @@ const RailwayReservation = () => {
               >
                 Book Another
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Schedule Modal */}
+      {modalState.open && modalState.type === "schedule" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="bg-slate-900 w-full max-w-3xl max-h-[85vh] rounded-[3rem] border border-slate-800 p-8 space-y-6 flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex justify-between items-start border-b border-slate-800 pb-6">
+              <div>
+                <h2 className="text-2xl font-black text-white uppercase italic flex items-center gap-4">
+                  <MapPin className="text-orange-500" />{" "}
+                  {modalState.data?.train_details?.train_name}
+                </h2>
+                <div className="flex gap-4 mt-2">
+                  <span className="text-[10px] font-black bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full uppercase">
+                    #{modalState.data?.train_details?.train_number}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">
+                    Zone: {modalState.data?.train_details?.zone}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() =>
+                  setModalState({ open: false, type: null, data: null })
+                }
+                className="p-3 bg-slate-800 text-slate-400 rounded-2xl"
+              >
+                <X />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2">
+              {modalState.data?.train_schedule_details?.map((stop, idx) => (
+                <div
+                  key={idx}
+                  className="flex gap-6 items-center border-l-2 border-orange-500/30 ml-4 pl-8 relative group"
+                >
+                  <div className="absolute -left-[9px] w-4 h-4 bg-slate-900 border-2 border-orange-500 rounded-full group-hover:bg-orange-500 transition-colors"></div>
+                  <div className="flex-1 bg-slate-950/50 p-5 rounded-[1.5rem] border border-slate-800 flex justify-between items-center group-hover:border-orange-500 transition-all">
+                    <div>
+                      <p className="text-xs font-black text-white uppercase">
+                        {stop.station_name} ({stop.station_code})
+                      </p>
+                      <p className="text-[9px] font-bold text-slate-600 uppercase mt-1">
+                        Seq: {stop.station_sequence} | {stop.kilometer} KM
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-black text-orange-500">
+                        {stop.arrival || "STARTS"}
+                      </p>
+                      <p className="text-[9px] font-bold text-slate-500 uppercase">
+                        Dep: {stop.departure || "ENDS"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
