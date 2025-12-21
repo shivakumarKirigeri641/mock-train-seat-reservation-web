@@ -547,7 +547,6 @@ const RailwayReservation = () => {
           )}
         </div>
       </div>
-
       {/* Booking Summary Modal */}
       {modalState.open && modalState.type === "summary" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -623,43 +622,192 @@ const RailwayReservation = () => {
           </div>
         </div>
       )}
-
       {/* Confirmation/Success Modal */}
       {modalState.open && modalState.type === "success" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-slate-900 w-full max-w-md rounded-[2.5rem] border border-slate-800 p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl">
+          <div className="bg-slate-900 w-full max-w-4xl max-h-[90vh] rounded-[3rem] border border-slate-800 p-10 space-y-8 shadow-2xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
-            <CheckCircle2 size={64} className="text-green-500 mx-auto" />
-            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
-              Booking Successful!
-            </h2>
-            <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-left space-y-3">
-              <p className="text-xs font-bold text-slate-500">
-                PNR:{" "}
-                <span className="text-orange-500 ml-2 tracking-widest">
-                  {bookingSummary?.pnr || "MOCK4210"}
+
+            {/* Header with PNR Details */}
+            <div className="text-center shrink-0">
+              <CheckCircle2 size={64} className="text-green-500 mx-auto mb-4" />
+              <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
+                Reservation Confirmed
+              </h2>
+              <div className="mt-2 inline-flex items-center gap-3 px-4 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full">
+                <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">
+                  PNR Number:
                 </span>
-              </p>
-              <p className="text-xs font-bold text-slate-200 uppercase">
-                {selectedTrain.train_name}
-              </p>
-              <div className="border-t border-slate-800 pt-2 space-y-2">
-                {[...passengers, ...children].map((p, idx) => (
-                  <p
-                    key={idx}
-                    className="text-[10px] text-slate-400 uppercase font-bold"
-                  >
-                    {p.passenger_name} - Confirmed
-                  </p>
-                ))}
+                <span className="text-lg font-black text-white tracking-[0.2em]">
+                  {bookingSummary?.result_updated_bookingdetails?.pnr ||
+                    "MOCK4210"}
+                </span>
               </div>
             </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full py-4 bg-orange-500 rounded-2xl font-black uppercase text-[10px]"
-            >
-              Close
-            </button>
+
+            <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Train & Journey Details */}
+                <div className="bg-slate-950/50 p-6 rounded-[2rem] border border-slate-800 space-y-3">
+                  <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                    <TrainFront className="text-orange-500" size={18} />
+                    <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                      Journey Details
+                    </p>
+                  </div>
+                  <h4 className="text-lg font-black text-white uppercase italic">
+                    {bookingSummary?.result_updated_bookingdetails?.train_name}
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase">
+                        Train No.
+                      </p>
+                      <p className="text-xs font-bold text-slate-200">
+                        #
+                        {
+                          bookingSummary?.result_updated_bookingdetails
+                            ?.train_number
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase">
+                        Class | Quota
+                      </p>
+                      <p className="text-xs font-bold text-slate-200">
+                        {
+                          bookingSummary?.result_updated_bookingdetails
+                            ?.coach_code
+                        }{" "}
+                        |{" "}
+                        {
+                          bookingSummary?.result_updated_bookingdetails
+                            ?.type_code
+                        }
+                      </p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-[9px] text-slate-500 font-bold uppercase">
+                        Route
+                      </p>
+                      <p className="text-xs font-bold text-slate-200">
+                        {
+                          bookingSummary?.result_updated_bookingdetails
+                            ?.source_name
+                        }{" "}
+                        (
+                        {
+                          bookingSummary?.result_updated_bookingdetails
+                            ?.scheduled_departure
+                        }
+                        ) →{" "}
+                        {
+                          bookingSummary?.result_updated_bookingdetails
+                            ?.destination_name
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financial Breakdown */}
+                <div className="bg-slate-950/50 p-6 rounded-[2rem] border border-slate-800 space-y-3">
+                  <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                    <CreditCard className="text-orange-500" size={18} />
+                    <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                      Payment Breakdown
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-bold text-slate-400">
+                      <span>Base Fare</span>
+                      <span className="text-slate-200">
+                        ₹ {bookingSummary?.fare_details?.base_fare}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-slate-400">
+                      <span>GST (18%)</span>
+                      <span className="text-slate-200">
+                        ₹ {bookingSummary?.fare_details?.GST}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-slate-400">
+                      <span>Convenience Fee</span>
+                      <span className="text-slate-200">
+                        ₹ {bookingSummary?.fare_details?.convience}
+                      </span>
+                    </div>
+                    <div className="pt-3 border-t border-slate-800 flex justify-between items-end">
+                      <p className="text-[10px] font-black text-slate-500 uppercase">
+                        Gross Fare Paid
+                      </p>
+                      <p className="text-2xl font-black text-green-500">
+                        ₹ {bookingSummary?.fare_details?.gross_fare}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Passenger Status */}
+              <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-slate-800">
+                <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
+                  <UserPlus className="text-orange-500" size={18} />
+                  <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                    Passenger Manifest & Seat Allotment
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {bookingSummary?.result_udpated_passengerdetails?.map(
+                    (p, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center border-b border-slate-800/50 pb-3"
+                      >
+                        <div className="flex gap-4 items-center">
+                          <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] font-black text-orange-500">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <p className="text-xs font-black text-slate-200 uppercase">
+                              {p.p_name}
+                            </p>
+                            <p className="text-[9px] text-slate-500 font-bold uppercase">
+                              {p.p_gender} | Age: {p.p_age}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[11px] font-black text-green-500 uppercase">
+                            {p.current_seat_status}
+                          </p>
+                          <span className="text-[8px] font-black px-1.5 py-0.5 bg-green-500/10 text-green-500 border border-green-500/20 rounded uppercase">
+                            {p.seat_status}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 shrink-0 pt-4 border-t border-slate-800">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 py-4 bg-slate-800 text-slate-400 rounded-3xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-slate-700 transition-all"
+              >
+                <Download size={16} /> Save E-Ticket
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex-1 py-4 bg-orange-500 text-white rounded-3xl font-black uppercase text-xs tracking-widest shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all"
+              >
+                Book Another
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -722,7 +870,7 @@ const AutocompleteInput = ({ label, list, onSelect, inputRef }) => {
         placeholder={`Search ${label}...`}
       />
       {showResults && filtered.length > 0 && (
-        <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden z-20 shadow-2xl max-h-[250px] overflow-y-auto">
+        <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden z-20 shadow-2xl max-h-[500px] overflow-y-auto">
           {filtered.map((s, i) => (
             <div
               key={i}
