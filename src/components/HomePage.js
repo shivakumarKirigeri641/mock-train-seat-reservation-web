@@ -325,7 +325,7 @@ const HomePage = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            {testimonials.map((t) => (
+            {testimonials?.map((t) => (
               <div
                 key={t.id}
                 className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-lg"
