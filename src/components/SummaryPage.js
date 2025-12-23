@@ -152,6 +152,22 @@ const SummaryPage = () => {
 
     try {
       console.log("loading razorpay");
+      console.log(formData);
+      //before this, call api to update address & email
+      const response_profile = await axios.put(
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/user-invoice-profile-update`,
+        {
+          user_name: formData.user_name,
+          address: formData.address,
+          myemail: formData.myemail,
+          mobile_number: formData.mobile_number,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response_profile?.data);
+
       const res = await loadRazorpay();
       console.log("loading razorpayj....");
       if (!res) {
@@ -206,7 +222,10 @@ const SummaryPage = () => {
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
     } catch (error) {
-      setErrorMsg("Failed to initiate payment. Please try again later.");
+      setErrorMsg(
+        `Failed to initiate payment. Possible error: Error code:${error?.response?.status}, message:${error?.response?.data?.message}`
+      );
+      console.log(error);
     } finally {
       setIsProcessing(false);
     }

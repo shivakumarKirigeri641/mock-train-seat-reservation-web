@@ -144,7 +144,7 @@ const PaymentSuccessSummaryPage = () => {
     if (!orderDetails || !taxDetails || !userProfile) return;
 
     const invoiceText = `
-      INVOICE - ServerPe.in
+      INVOICE - serverpe.in
       ------------------------------------------------
       Transaction ID: ${orderDetails.transaction_id}
       Date: ${orderDetails.date}
