@@ -38,8 +38,9 @@ const PaymentSuccessSummaryPage = () => {
   const userdetails = useSelector((store) => store.loggedInUser);
 
   // Get payment ID from navigation state (preferred) or URL params
-  const paymentId =
-    location.state?.payment_id || searchParams.get("payment_id");
+  const paymentId = searchParams.get("payment_id");
+  const summaryFormData = location?.state;
+  console.log(summaryFormData);
 
   // --- REFACTORED: Fetch Logic wrapped in useCallback ---
   const fetchPaymentDetails = useCallback(async () => {
@@ -47,6 +48,7 @@ const PaymentSuccessSummaryPage = () => {
     setError(null);
 
     try {
+      //update thet
       // 1. Fetch User Profile for State Info
       const profileResponse = await axios.get(
         `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
@@ -61,9 +63,13 @@ const PaymentSuccessSummaryPage = () => {
 
       // 2. Fetch Payment Details
       if (paymentId) {
+        console.log("formdata:", summaryFormData);
         const response = await axios.post(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
-          { razorpay_payment_id: paymentId },
+          {
+            razorpay_payment_id: paymentId,
+            summaryFormData: summaryFormData,
+          },
           { withCredentials: true }
         );
         if (response.data?.data?.successstatus) {
@@ -141,6 +147,9 @@ const PaymentSuccessSummaryPage = () => {
   const taxDetails = calculateTax();
 
   const handleDownloadInvoice = () => {
+    console.log(orderDetails);
+    console.log(taxDetails);
+    console.log(userProfile);
     if (!orderDetails || !taxDetails || !userProfile) return;
 
     const invoiceText = `
@@ -150,10 +159,14 @@ const PaymentSuccessSummaryPage = () => {
       Date: ${orderDetails.date}
       Status: ${orderDetails.status}
       
-      Billed To:
+      User details:
       Name: ${userProfile.user_name}
       Email: ${!userProfile.myemail ? "Not provided" : userProfile.myemail}
       State: ${userProfile.state_name}
+
+      Billing information:
+      Name: ${userProfile.invoice_user_name}
+      Email: ${!userProfile.invoice_myemail}
       ------------------------------------------------
       Plan Item:                  ${orderDetails.plan_name}
       Base Amount:                ₹${taxDetails.baseAmount}
