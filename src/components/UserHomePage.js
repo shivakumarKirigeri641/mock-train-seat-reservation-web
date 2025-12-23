@@ -41,6 +41,7 @@ const UserHomePage = () => {
 
       if (dashboardResponse.data.successstatus) {
         const data = dashboardResponse.data.data;
+        console.log(data);
         setUserData(data);
 
         // --- NEW: Check for first-time subscription status ---
