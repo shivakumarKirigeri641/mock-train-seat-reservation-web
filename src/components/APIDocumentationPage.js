@@ -167,7 +167,6 @@ const APIDocumentationGeneralPage = () => {
   // ---------------- DOWNLOAD HANDLER ----------------
   const handleDownload = async (category_details, ispostman = false) => {
     try {
-      console.log(category_details);
       // 1. Call the API with the ID
       let response = null;
       if (ispostman) {
@@ -178,7 +177,6 @@ const APIDocumentationGeneralPage = () => {
             responseType: "blob", // Important for handling file downloads
           }
         );
-        console.log(response);
       } else {
         response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/apidoc/${category_details.endpoints[0].id}`,
@@ -187,7 +185,6 @@ const APIDocumentationGeneralPage = () => {
             responseType: "blob", // Important for handling file downloads
           }
         );
-        console.log(response);
       }
 
       // 2. Create a blob link and trigger download

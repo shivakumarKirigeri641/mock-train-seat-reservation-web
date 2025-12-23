@@ -29,7 +29,6 @@ const ContactMe = () => {
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
           { withCredentials: true }
         );
-        console.log("categories:", response.data.data);
         if (response.data && response.data.data.length > 0) {
           setCategories(response.data.data);
           // Optional: Set default subject to the first item from API

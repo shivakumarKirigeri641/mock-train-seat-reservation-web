@@ -41,7 +41,6 @@ const PaymentSuccessSummaryPage = () => {
   // Get payment ID from navigation state (preferred) or URL params
   const paymentId = searchParams.get("payment_id");
   const summaryFormData = location?.state;
-  console.log(summaryFormData);
 
   // --- REFACTORED: Fetch Logic wrapped in useCallback ---
   const fetchPaymentDetails = useCallback(async () => {
@@ -72,10 +71,10 @@ const PaymentSuccessSummaryPage = () => {
           },
           { withCredentials: true }
         );
+        console.log(response.data?.data);
         if (response.data?.data?.successstatus) {
           const data = response.data.data;
           setresultFullOrders(data);
-          console.log("data:", data);
           setOrderDetails({
             transaction_id: data.result_transaction.razorpay_order_id,
             amount: (data.result_transaction.amount / 100).toFixed(2),
@@ -164,7 +163,7 @@ const PaymentSuccessSummaryPage = () => {
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = `ServerPe_Invoice_${txn?.id}.pdf`;
+      a.download = `ServerPe_Invoice_${resultFullOrders?.result_credit?.id}.pdf`;
       document.body.appendChild(a);
       a.click();
 
@@ -421,15 +420,26 @@ const PaymentSuccessSummaryPage = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Date</span>
+                <span className="text-gray-400 text-sm">Date & time</span>
                 <span className="text-gray-300 text-sm">
-                  {orderDetails.date}
+                  {new Date(
+                    resultFullOrders?.result_credit?.created_at
+                  ).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true,
+                  })}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400 text-sm">Email</span>
                 <span className="text-gray-300 text-sm">
-                  {orderDetails.email}
+                  {resultFullOrders?.result_credit?.myemail}
                 </span>
               </div>
 

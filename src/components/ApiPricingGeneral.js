@@ -20,7 +20,6 @@ const ApiPricingGeneral = () => {
           { withCredentials: true }
         );
         setPlans(response?.data?.data);
-        console.log(plans);
       } catch (error) {
         console.error("Failed to load pricing plans", error);
       } finally {
