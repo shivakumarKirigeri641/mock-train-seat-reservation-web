@@ -33,6 +33,7 @@ const PaymentSuccessSummaryPage = () => {
 
   const [userState, setUserState] = useState("");
   const [userProfile, setUserProfile] = useState(null);
+  const [resultFullOrders, setresultFullOrders] = useState(null);
 
   // Retrieve user details from Redux
   const userdetails = useSelector((store) => store.loggedInUser);
@@ -63,7 +64,6 @@ const PaymentSuccessSummaryPage = () => {
 
       // 2. Fetch Payment Details
       if (paymentId) {
-        console.log("formdata:", summaryFormData);
         const response = await axios.post(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
           {
@@ -74,6 +74,8 @@ const PaymentSuccessSummaryPage = () => {
         );
         if (response.data?.data?.successstatus) {
           const data = response.data.data;
+          setresultFullOrders(data);
+          console.log("data:", data);
           setOrderDetails({
             transaction_id: data.result_transaction.razorpay_order_id,
             amount: (data.result_transaction.amount / 100).toFixed(2),
@@ -146,51 +148,30 @@ const PaymentSuccessSummaryPage = () => {
 
   const taxDetails = calculateTax();
 
-  const handleDownloadInvoice = () => {
-    console.log(orderDetails);
-    console.log(taxDetails);
-    console.log(userProfile);
-    if (!orderDetails || !taxDetails || !userProfile) return;
+  const handleDownloadInvoice = async () => {
+    setError(null);
+    try {
+      response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
+        { responseType: "blob", withCredentials: true }
+      );
 
-    const invoiceText = `
-      INVOICE - serverpe.in
-      ------------------------------------------------
-      Transaction ID: ${orderDetails.transaction_id}
-      Date: ${orderDetails.date}
-      Status: ${orderDetails.status}
-      
-      User details:
-      Name: ${userProfile.user_name}
-      Email: ${!userProfile.myemail ? "Not provided" : userProfile.myemail}
-      State: ${userProfile.state_name}
+      const blob = new Blob([response.data], {
+        type: "application/pdf",
+      });
 
-      Billing information:
-      Name: ${userProfile.invoice_user_name}
-      Email: ${!userProfile.invoice_myemail}
-      ------------------------------------------------
-      Plan Item:                  ${orderDetails.plan_name}
-      Base Amount:                ₹${taxDetails.baseAmount}
-      
-      Tax Details (18% GST):
-      ${
-        taxDetails.isKarnataka
-          ? `CGST (9%):                  ₹${taxDetails.cgst}\n      SGST (9%):                  ₹${taxDetails.sgst}`
-          : `IGST (18%):                 ₹${taxDetails.igst}`
-      }
-      
-      ------------------------------------------------
-      TOTAL PAID:                 ₹${orderDetails.amount}
-      ------------------------------------------------
-      `;
+      const url = window.URL.createObjectURL(blob);
 
-    const blob = new Blob([invoiceText], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `Invoice_${orderDetails.transaction_id}.txt`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ServerPe_Invoice_${txn?.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // ---------------- LOADING STATE ----------------

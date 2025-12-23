@@ -128,21 +128,25 @@ const WalletAndRechargesPage = () => {
   };
 
   // Mock Download Function
-  const downloadInvoice = (txn) => {
-    const invoiceContent = `
-      INVOICE #INV-${txn.id}
-      ----------------------
-      Date: ${txn.date}
-      Item: ${txn.description}
-      Amount: ${txn.cost}
-      Status: Paid
-    `;
-    const blob = new Blob([invoiceContent], { type: "text/plain" });
+  const downloadInvoice = async (txn) => {
+    response = await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${txn?.id}`,
+      { responseType: "blob", withCredentials: true }
+    );
+
+    const blob = new Blob([response.data], {
+      type: "application/pdf",
+    });
+
     const url = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Invoice_${txn.id}.txt`;
+    a.download = `ServerPe_Invoice_${txn?.id}.pdf`;
+    document.body.appendChild(a);
     a.click();
+
+    a.remove();
   };
 
   // ---------------- LOADING STATE ----------------
