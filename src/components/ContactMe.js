@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useNavigate } from "react-router";
 import axios from "axios";
 
@@ -12,6 +13,7 @@ const ContactMe = () => {
   const [formData, setFormData] = useState({
     user_name: "",
     email: "",
+    rating: 5,
     category_name: "", // Default value
     message: "",
   });
@@ -25,10 +27,9 @@ const ContactMe = () => {
       try {
         // Replace with your actual endpoint
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
+          `/mockapis/serverpeuser/feedback-categories`,
           { withCredentials: true }
         );
-        console.log("categories:", response.data.data);
         if (response.data && response.data.data.length > 0) {
           setCategories(response.data.data);
           // Optional: Set default subject to the first item from API
@@ -52,11 +53,9 @@ const ContactMe = () => {
     setIsSubmitting(true);
     try {
       // Send formData directly (not wrapped in an object unless your backend specifically requires { formData: ... })
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/contact-me`,
-        formData,
-        { withCredentials: true }
-      );
+      await axios.post(`/mockapis/serverpeuser/contact-me`, formData, {
+        withCredentials: true,
+      });
       setSubmitted(true);
       setFormData({
         name: "",
@@ -78,12 +77,16 @@ const ContactMe = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
               onClick={() => navigate("/")}
-              className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              ServerPe<span className="text-indigo-500">.in</span>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}
@@ -192,7 +195,9 @@ const ContactMe = () => {
       {/* --- Main Content --- */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Get in Touch</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">
+            How is ServerPe?
+          </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
             Have a suggestion, found a bug, or just want to say hi? Use the form
             below or email directly at{" "}
@@ -290,6 +295,27 @@ const ContactMe = () => {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Rate your experience
+                </label>
+                <div className="flex gap-4 bg-gray-900 border border-gray-600 rounded-lg px-4 py-3">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, rating: star })}
+                      className={`text-2xl focus:outline-none transition-transform hover:scale-110 ${
+                        star <= formData.rating
+                          ? "text-yellow-400"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   Message

@@ -1,92 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
-
-// --- Confetti Component ---
-const ConfettiSparkles = () => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let animationFrameId;
-    let particles = [];
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-
-    const colors = [
-      "#FFD700",
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#96CEB4",
-      "#FFEEAD",
-    ];
-
-    const createParticle = () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      size: Math.random() * 5 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      speedY: Math.random() * 3 + 1,
-      speedX: Math.random() * 2 - 1,
-      rotation: Math.random() * 360,
-      rotationSpeed: Math.random() * 5 - 2.5,
-    });
-
-    // Initialize particles
-    for (let i = 0; i < 150; i++) {
-      particles.push(createParticle());
-    }
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((p, index) => {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        p.rotation += p.rotationSpeed;
-
-        if (p.y > canvas.height) {
-          particles[index] = createParticle();
-          particles[index].y = -10; // Reset to top
-        }
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        ctx.restore();
-      });
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full pointer-events-none z-50"
-    />
-  );
-};
-
+import ConfettiSparkles from "./ConfettiSparkles";
 // --- NavItem Component Definition ---
 const NavItem = ({ to, label, active = false }) => (
   <Link
@@ -115,13 +33,14 @@ const PaymentSuccessSummaryPage = () => {
 
   const [userState, setUserState] = useState("");
   const [userProfile, setUserProfile] = useState(null);
+  const [resultFullOrders, setresultFullOrders] = useState(null);
 
   // Retrieve user details from Redux
   const userdetails = useSelector((store) => store.loggedInUser);
 
   // Get payment ID from navigation state (preferred) or URL params
-  const paymentId =
-    location.state?.payment_id || searchParams.get("payment_id");
+  const paymentId = searchParams.get("payment_id");
+  const summaryFormData = location?.state;
 
   // --- REFACTORED: Fetch Logic wrapped in useCallback ---
   const fetchPaymentDetails = useCallback(async () => {
@@ -129,9 +48,10 @@ const PaymentSuccessSummaryPage = () => {
     setError(null);
 
     try {
+      //update thet
       // 1. Fetch User Profile for State Info
       const profileResponse = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+        `/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
 
@@ -144,12 +64,17 @@ const PaymentSuccessSummaryPage = () => {
       // 2. Fetch Payment Details
       if (paymentId) {
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
-          { razorpay_payment_id: paymentId },
+          `/mockapis/serverpeuser/loggedinuser/razorpay/status`,
+          {
+            razorpay_payment_id: paymentId,
+            summaryFormData: summaryFormData,
+          },
           { withCredentials: true }
         );
+        console.log(response.data?.data);
         if (response.data?.data?.successstatus) {
           const data = response.data.data;
+          setresultFullOrders(data);
           setOrderDetails({
             transaction_id: data.result_transaction.razorpay_order_id,
             amount: (data.result_transaction.amount / 100).toFixed(2),
@@ -222,44 +147,30 @@ const PaymentSuccessSummaryPage = () => {
 
   const taxDetails = calculateTax();
 
-  const handleDownloadInvoice = () => {
-    if (!orderDetails || !taxDetails || !userProfile) return;
+  const handleDownloadInvoice = async () => {
+    setError(null);
+    try {
+      response = await axios.get(
+        `/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
+        { responseType: "blob", withCredentials: true }
+      );
 
-    const invoiceText = `
-      INVOICE - ServerPe.in
-      ------------------------------------------------
-      Transaction ID: ${orderDetails.transaction_id}
-      Date: ${orderDetails.date}
-      Status: ${orderDetails.status}
-      
-      Billed To:
-      Name: ${userProfile.user_name}
-      Email: ${!userProfile.myemail ? "Not provided" : userProfile.myemail}
-      State: ${userProfile.state_name}
-      ------------------------------------------------
-      Plan Item:                  ${orderDetails.plan_name}
-      Base Amount:                ₹${taxDetails.baseAmount}
-      
-      Tax Details (18% GST):
-      ${
-        taxDetails.isKarnataka
-          ? `CGST (9%):                  ₹${taxDetails.cgst}\n      SGST (9%):                  ₹${taxDetails.sgst}`
-          : `IGST (18%):                 ₹${taxDetails.igst}`
-      }
-      
-      ------------------------------------------------
-      TOTAL PAID:                 ₹${orderDetails.amount}
-      ------------------------------------------------
-      `;
+      const blob = new Blob([response.data], {
+        type: "application/pdf",
+      });
 
-    const blob = new Blob([invoiceText], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `Invoice_${orderDetails.transaction_id}.txt`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ServerPe_Invoice_${resultFullOrders?.result_credit?.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // ---------------- LOADING STATE ----------------
@@ -336,8 +247,16 @@ const PaymentSuccessSummaryPage = () => {
               <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
                 <span className="text-xl">⚡</span>
               </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
+              {/* Logo Section */}
+              <div
+                onClick={() => navigate("/user-home")}
+                className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+              >
+                <img
+                  src={ServerPeLogo}
+                  alt="ServerPe Logo"
+                  className="w-35 h-16 group-hover:scale-105 transition-transform"
+                />
               </div>
             </div>
 
@@ -501,15 +420,26 @@ const PaymentSuccessSummaryPage = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Date</span>
+                <span className="text-gray-400 text-sm">Date & time</span>
                 <span className="text-gray-300 text-sm">
-                  {orderDetails.date}
+                  {new Date(
+                    resultFullOrders?.result_credit?.created_at
+                  ).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true,
+                  })}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400 text-sm">Email</span>
                 <span className="text-gray-300 text-sm">
-                  {orderDetails.email}
+                  {resultFullOrders?.result_credit?.myemail}
                 </span>
               </div>
 

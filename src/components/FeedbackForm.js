@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { Link } from "react-router";
@@ -36,7 +37,7 @@ const FeedbackForm = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
+        `/mockapis/serverpeuser/feedback-categories`,
         { withCredentials: true }
       );
 
@@ -85,7 +86,7 @@ const FeedbackForm = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/feedback`,
+        `/mockapis/serverpeuser/loggedinuser/feedback`,
         {
           category: feedbackData.category,
           rating: feedbackData.rating,
@@ -210,17 +211,16 @@ const FeedbackForm = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}

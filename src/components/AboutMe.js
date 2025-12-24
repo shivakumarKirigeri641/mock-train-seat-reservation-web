@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useNavigate } from "react-router";
 
 const AboutMe = () => {
@@ -11,12 +12,16 @@ const AboutMe = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
               onClick={() => navigate("/")}
-              className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              ServerPe<span className="text-indigo-500">.in</span>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}

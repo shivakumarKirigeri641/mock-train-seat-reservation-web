@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
@@ -47,7 +48,7 @@ const WalletAndRechargesPage = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
+        `/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
         { withCredentials: true }
       );
       const data = response.data.data;
@@ -127,21 +128,25 @@ const WalletAndRechargesPage = () => {
   };
 
   // Mock Download Function
-  const downloadInvoice = (txn) => {
-    const invoiceContent = `
-      INVOICE #INV-${txn.id}
-      ----------------------
-      Date: ${txn.date}
-      Item: ${txn.description}
-      Amount: ${txn.cost}
-      Status: Paid
-    `;
-    const blob = new Blob([invoiceContent], { type: "text/plain" });
+  const downloadInvoice = async (txn) => {
+    response = await axios.get(
+      `/mockapis/serverpeuser/loggedinuser/invoices/download/${txn?.id}`,
+      { responseType: "blob", withCredentials: true }
+    );
+
+    const blob = new Blob([response.data], {
+      type: "application/pdf",
+    });
+
     const url = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Invoice_${txn.id}.txt`;
+    a.download = `ServerPe_Invoice_${txn?.id}.pdf`;
+    document.body.appendChild(a);
     a.click();
+
+    a.remove();
   };
 
   // ---------------- LOADING STATE ----------------
@@ -213,17 +218,16 @@ const WalletAndRechargesPage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}
@@ -462,25 +466,29 @@ const WalletAndRechargesPage = () => {
                       <td className="px-6 py-4">{txn.cost}</td>
                       <td className="px-6 py-4">{txn.api_calls}</td>
                       <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => downloadInvoice(txn)}
-                          className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all"
-                          title="Download Invoice"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        {txn?.description.toLowerCase().includes("free") ? (
+                          <div></div>
+                        ) : (
+                          <button
+                            onClick={() => downloadInvoice(txn)}
+                            className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all"
+                            title="Download Invoice"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                              />
+                            </svg>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))

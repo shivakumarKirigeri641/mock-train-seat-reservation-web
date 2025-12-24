@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
@@ -42,11 +43,10 @@ const ProfilePage = () => {
     try {
       // Fetch Profile and States in parallel
       const [profileResponse, statesResponse] = await Promise.all([
-        axios.get(
-          `${BASE_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
-          { withCredentials: true }
-        ),
-        axios.get(`${BASE_URL}/mockapis/serverpeuser/states`, {
+        axios.get(`/mockapis/serverpeuser/loggedinuser/user-profile`, {
+          withCredentials: true,
+        }),
+        axios.get(`/mockapis/serverpeuser/states`, {
           withCredentials: true,
         }),
       ]);
@@ -72,7 +72,7 @@ const ProfilePage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [BASE_URL, dispatch, navigate]);
+  }, [dispatch, navigate]);
 
   // Initial Fetch
   useEffect(() => {
@@ -100,7 +100,7 @@ const ProfilePage = () => {
 
     try {
       await axios.post(
-        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
+        `/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
         { email: profile?.myemail },
         { withCredentials: true }
       );
@@ -118,7 +118,7 @@ const ProfilePage = () => {
 
     try {
       await axios.put(
-        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/update-profile`,
+        `/mockapis/serverpeuser/loggedinuser/update-profile`,
         {
           name: profile.user_name,
           state: profile.state,
@@ -216,17 +216,16 @@ const ProfilePage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}

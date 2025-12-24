@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 import { useDispatch } from "react-redux";
-
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 // ---------------- SUB-COMPONENTS ----------------
 
 const NavItem = ({ to, label, active = false }) => (
@@ -116,6 +116,9 @@ const APIDocumentationGeneralPage = () => {
   const [activeEndpointId, setActiveEndpointId] = useState(null);
   const [openCategories, setOpenCategories] = useState({ 0: true });
 
+  // Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+
   // ---------------- FETCH LOGIC (Wrapped in useCallback) ----------------
   const fetchApiDocumentation = useCallback(async () => {
     setIsLoading(true);
@@ -161,10 +164,54 @@ const APIDocumentationGeneralPage = () => {
     fetchApiDocumentation();
   }, [fetchApiDocumentation]);
 
+  // ---------------- DOWNLOAD HANDLER ----------------
+  const handleDownload = async (category_details, ispostman = false) => {
+    try {
+      // 1. Call the API with the ID
+      let response = null;
+      if (ispostman) {
+        response = await axios.get(
+          `/mockapis/serverpeuser/download/postmancollection/${category_details.endpoints[0].id}`,
+          {
+            withCredentials: true,
+            responseType: "blob", // Important for handling file downloads
+          }
+        );
+      } else {
+        response = await axios.get(
+          `/mockapis/serverpeuser/download/apidoc/${category_details.endpoints[0].id}`,
+          {
+            withCredentials: true,
+            responseType: "blob", // Important for handling file downloads
+          }
+        );
+      }
+
+      // 2. Create a blob link and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      // Set the file name (you can adjust extension based on response type)
+      if (ispostman) {
+        link.setAttribute("download", `${category_details.category}.json`);
+      } else {
+        link.setAttribute("download", `${category_details.category}.zip`);
+      }
+      document.body.appendChild(link);
+      link.click();
+
+      // 3. Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      alert("Failed to download documentation.");
+    }
+  };
+
   const allEndpoints = apiData?.flatMap((cat) =>
     cat?.endpoints?.map((ep) => ({ ...ep, category: cat.category }))
   );
-
   const activeEndpoint =
     allEndpoints?.find((ep) => ep?.id === activeEndpointId) ||
     (allEndpoints?.length > 0 ? allEndpoints[0] : null);
@@ -177,70 +224,8 @@ const APIDocumentationGeneralPage = () => {
     if (catIndex !== -1) setActiveCategoryIndex(catIndex);
   }, [activeEndpointId, apiData]);
 
-  // State for Try It Panel
-  const [searchQuery, setSearchQuery] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [secretKey, setSecretKey] = useState("");
-  const [baseUrl, setBaseUrl] = useState("http://localhost:8888");
-  const [tryBody, setTryBody] = useState("");
-  const [tryResponse, setTryResponse] = useState(null);
-  const [tryLoading, setTryLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeEndpoint) {
-      setTryBody(
-        activeEndpoint?.body
-          ? JSON.stringify(activeEndpoint?.body, null, 2)
-          : ""
-      );
-      setTryResponse(null);
-    }
-  }, [activeEndpointId, activeEndpoint]);
-
   const toggleCategory = (index) => {
     setOpenCategories((prev) => ({ ...prev, [index]: !prev[index] }));
-  };
-
-  const sendTryRequest = async () => {
-    setTryLoading(true);
-    setTryResponse(null);
-
-    try {
-      if (!apiKey || !secretKey)
-        throw new Error("Please enter both API Key and Secret Key.");
-      const url = `${baseUrl.replace(/\/$/, "")}${activeEndpoint?.endpoint}`;
-
-      const options = {
-        method: activeEndpoint.method,
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "x-secret-key": secretKey,
-        },
-        body: activeEndpoint.body ? tryBody : null,
-      };
-
-      if (activeEndpoint.method === "GET") delete options.body;
-
-      const res = await axios.get(url, options); // Note: axios.get with body is non-standard, usually axios(options)
-      // Since Try It functionality is generic, better to use axios(options) if METHOD varies
-      // But keeping your structure for minimal diff if you prefer axios.get/post based on method check
-      // Correct generic approach:
-      // const res = await axios({ url, ...options });
-
-      const text = await res?.data?.data; // Adjust based on your actual mock response structure
-      let parsed;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        parsed = { raw: text, status: res.status };
-      }
-      setTryResponse(parsed);
-    } catch (err) {
-      setTryResponse({ error: err.message });
-    } finally {
-      setTryLoading(false);
-    }
   };
 
   // ---------------- LOADING SCREEN ----------------
@@ -317,17 +302,16 @@ const APIDocumentationGeneralPage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Static Menu */}
@@ -519,6 +503,49 @@ const APIDocumentationGeneralPage = () => {
 
                     {(openCategories[idx] || searchQuery) && (
                       <div className="mt-1 space-y-0.5">
+                        {/* --- ENHANCED: Download Buttons per Category --- */}
+                        <div className="px-3 pb-3 space-y-2 border-b border-gray-800 mb-2">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleDownload(cat)}
+                              className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
+                              title="Download API Documentation"
+                            >
+                              Docs ⏬
+                            </button>
+                            <button
+                              onClick={() => handleDownload(cat, true)}
+                              className="flex-1 flex items-center justify-center gap-1.5 bg-orange-700 hover:bg-orange-600 text-white text-[10px] font-medium py-1.5 rounded border border-orange-600/20 transition-colors"
+                              title="Download Postman Collection"
+                            >
+                              Postman ⏬
+                            </button>
+                          </div>
+
+                          {/* Info Box for Docs Download */}
+                          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded p-2">
+                            <p className="text-[12px] italic text-gray-400 leading-tight">
+                              <span className="text-indigo-400 font-bold block mb-1">
+                                About Docs (.zip):
+                              </span>
+                              Includes offline documentation in{" "}
+                              <span className="text-gray-300">.md</span>,{" "}
+                              <span className="text-gray-300">.pdf</span>, and{" "}
+                              <span className="text-gray-300">.html</span>{" "}
+                              formats.
+                            </p>
+                            <a
+                              href="https://www.win-rar.com/download.html"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] text-indigo-400 hover:underline mt-1 inline-block font-medium"
+                            >
+                              Download Zip Software (WinRAR) ↗
+                            </a>
+                          </div>
+                        </div>
+                        {/* ------------------------------------------- */}
+
                         {(searchQuery
                           ? filteredEndpoints
                           : cat?.endpoints
@@ -527,6 +554,7 @@ const APIDocumentationGeneralPage = () => {
                             key={ep.id}
                             onClick={() => {
                               setActiveEndpointId(ep.id);
+                              // Reset logic removed as try panel is gone
                               setIsDocsSidebarOpen(false);
                               window.scrollTo(0, 0);
                             }}
@@ -601,7 +629,7 @@ const APIDocumentationGeneralPage = () => {
                   </div>
 
                   <p className="text-gray-400 text-base md:text-lg leading-relaxed">
-                    {activeEndpoint.category_description}
+                    {activeEndpoint.description}
                   </p>
 
                   <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 break-all shadow-inner overflow-x-auto">
@@ -648,7 +676,6 @@ const APIDocumentationGeneralPage = () => {
                       <p className="text-sm text-gray-500">
                         Content-Type: application/json
                       </p>
-                      {/* Replaced manual div with JsonViewer to enforce max-height */}
                       <JsonViewer
                         data={activeEndpoint.sample_request}
                         title="Example Body"
@@ -679,14 +706,13 @@ const APIDocumentationGeneralPage = () => {
                     </svg>
                     Response Structure
                   </h3>
-                  {/* Replaced manual div with JsonViewer to enforce max-height */}
                   <JsonViewer
                     data={activeEndpoint.sample_response.data}
-                    title="200 OK"
+                    title="200 OK (Sample)"
                   />
                 </div>
 
-                {/* Try It Panel */}
+                {/* Try It Panel - MODIFIED: Removed form, kept Postman redirect */}
                 <div className="mt-10 pt-8 border-t border-gray-800">
                   <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                     <svg
@@ -705,11 +731,11 @@ const APIDocumentationGeneralPage = () => {
                     Test Endpoint
                   </h3>
                   <p className="text-sm text-gray-500 mb-6">
-                    Send a live request to the mock server using your
-                    credentials.
+                    Live testing is not available in the browser. Please call
+                    the endpoint in Postman to see the actual & live responses.
                   </p>
 
-                  {/* --- NEW POSTMAN SUGGESTION BLOCK --- */}
+                  {/* --- POSTMAN SUGGESTION BLOCK --- */}
                   <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center gap-4">
                     <div className="p-3 bg-gray-800 rounded-full border border-gray-700 shrink-0">
                       <svg
@@ -728,12 +754,12 @@ const APIDocumentationGeneralPage = () => {
                     </div>
                     <div className="flex-1 text-center sm:text-left">
                       <h4 className="text-sm font-bold text-white">
-                        Recommended: Test in Postman
+                        Run in Postman
                       </h4>
                       <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                        To avoid exposing your <strong>Secret Key</strong> in
-                        the browser, we recommend testing secure endpoints using
-                        Postman.
+                        To see actual live responses and avoid exposing
+                        credentials, please test this endpoint using the Postman
+                        App.
                       </p>
                     </div>
                     <a
@@ -744,74 +770,6 @@ const APIDocumentationGeneralPage = () => {
                     >
                       Download Postman ↗
                     </a>
-                  </div>
-                  {/* ------------------------------------ */}
-
-                  <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 md:p-6 space-y-4">
-                    {/* Header Inputs */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="x-api-key"
-                        className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                      <input
-                        type="text"
-                        value={secretKey}
-                        onChange={(e) => setSecretKey(e.target.value)}
-                        placeholder="x-secret-key"
-                        className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                    </div>
-
-                    <input
-                      type="text"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      placeholder="Base URL"
-                      className="w-full bg-gray-900 border border-gray-700 text-sm rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-
-                    {activeEndpoint.body && (
-                      <div>
-                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
-                          Request Body
-                        </label>
-                        <textarea
-                          rows={6}
-                          value={tryBody}
-                          onChange={(e) => setTryBody(e.target.value)}
-                          className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg font-mono text-sm text-gray-200 focus:ring-1 focus:ring-indigo-500 outline-none"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
-                      <button
-                        onClick={sendTryRequest}
-                        disabled={tryLoading}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-wait text-white rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20"
-                      >
-                        {tryLoading ? "Sending..." : "Send Request"}
-                      </button>
-                      <div className="text-xs text-gray-500 font-mono hidden sm:block">
-                        {activeEndpoint.method} {activeEndpoint.endpoint}
-                      </div>
-                    </div>
-
-                    {tryResponse && (
-                      <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                        <label className="text-xs font-semibold text-gray-400 uppercase mb-2 block">
-                          Live Response
-                        </label>
-                        <JsonViewer
-                          data={tryResponse}
-                          title="Status: Received"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

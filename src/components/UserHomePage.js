@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
-
+import ConfettiSparkles from "./ConfettiSparkles";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 const UserHomePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -13,9 +14,10 @@ const UserHomePage = () => {
   // State for user data from API
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // --- NEW: Error State ---
   const [error, setError] = useState(null);
+
+  // --- NEW: State for Welcome Snackbar ---
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
 
   // State for Testimonials
   const [testimonials, setTestimonials] = useState([]);
@@ -25,56 +27,54 @@ const UserHomePage = () => {
   const [showSecret, setShowSecret] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
 
-  // --- REFACTORED: Fetch Logic moved to useCallback for Retry capability ---
   const fetchDashboardData = useCallback(async () => {
     if (!userdetails) return;
 
     setIsLoading(true);
-    setError(null); // Reset error before fetching
+    setError(null);
 
     try {
-      // 1. Fetch User Dashboard Data (Critical)
       const dashboardResponse = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
+        `/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
         { withCredentials: true }
       );
-      console.log("dash:", dashboardResponse.data.data);
+
       if (dashboardResponse.data.successstatus) {
-        setUserData(dashboardResponse.data.data);
+        const data = dashboardResponse.data.data;
+        console.log(data);
+        setUserData(data);
+
+        // --- NEW: Check for first-time subscription status ---
+        if (data?.user_details?.firsttime_subscription_status === true) {
+          setShowWelcomeMessage(true);
+          // Auto-hide after 6 seconds
+          setTimeout(() => setShowWelcomeMessage(false), 7000);
+        }
       } else {
-        // Handle logical error from API even if status is 200
         throw new Error("Failed to retrieve dashboard data.");
       }
 
-      // 2. Fetch Testimonials (Non-Critical - Graceful Degradation)
       try {
         const testimonialResponse = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`,
+          `/mockapis/serverpeuser/testimonials`,
           { withCredentials: true }
         );
-        // Ensure data exists before setting
         if (testimonialResponse?.data?.data) {
           setTestimonials(testimonialResponse.data.data);
         }
       } catch (err) {
-        // Silently fail for testimonials, don't block dashboard
         console.warn("Testimonials failed to load:", err);
       }
     } catch (error) {
       console.error("Dashboard Error:", error);
-
-      // Handle Specific Error Types
       if (error.response && error.response.status === 401) {
-        // Auth failed - redirect to login
         dispatch(removeloggedInUser());
         navigate("/user-login");
       } else if (error.code === "ERR_NETWORK") {
-        // Network error (server down or no internet)
         setError(
           "Unable to connect to the server. Please check your internet connection."
         );
       } else {
-        // Generic Server Error (500, 404, etc.)
         setError(
           "Something went wrong while loading your dashboard. Please try again later."
         );
@@ -84,7 +84,6 @@ const UserHomePage = () => {
     }
   }, [userdetails, dispatch, navigate]);
 
-  // Initial Fetch
   useEffect(() => {
     if (!userdetails) {
       navigate("/user-login");
@@ -93,7 +92,6 @@ const UserHomePage = () => {
     }
   }, [userdetails, navigate, fetchDashboardData]);
 
-  // Testimonial Carousel Auto-Rotation
   useEffect(() => {
     if (testimonials.length === 0) return;
     const interval = setInterval(() => {
@@ -126,7 +124,6 @@ const UserHomePage = () => {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    // ... (rest of timeAgo logic is fine)
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years ago";
     interval = seconds / 2592000;
@@ -140,7 +137,6 @@ const UserHomePage = () => {
     return Math.floor(seconds) + " seconds ago";
   };
 
-  // --- VIEW: Loading State ---
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
@@ -161,7 +157,6 @@ const UserHomePage = () => {
     );
   }
 
-  // --- VIEW: Error State ---
   if (error) {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
@@ -193,7 +188,7 @@ const UserHomePage = () => {
               Try Again
             </button>
             <button
-              onClick={() => navigate("/contact-support")} // Optional: route to support
+              onClick={() => navigate("/contact-me")}
               className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 py-3 rounded-lg font-medium transition-all"
             >
               Contact Support
@@ -204,27 +199,54 @@ const UserHomePage = () => {
     );
   }
 
-  // --- VIEW: Main Dashboard ---
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
-      {/* ... (Keep your Navigation Bar exactly as is) ... */}
+      {/* --- WELCOME SNACKBAR --- */}
+      {showWelcomeMessage && <ConfettiSparkles />}
+      {showWelcomeMessage && (
+        <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5">
+          <div className="relative bg-indigo-600 border border-indigo-400 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4">
+            {/* Glitter Sparkles */}
+            <span className="absolute -top-1 -left-1 text-yellow-300 animate-glitter">
+              ✨
+            </span>
+            <span className="absolute -bottom-2 -right-2 text-white animate-glitter delay-300">
+              ⭐
+            </span>
+            <span className="absolute top-2 right-10 text-indigo-200 animate-glitter delay-700 text-xs">
+              ✨
+            </span>
+
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">
+              🎉
+            </div>
+            <div>
+              <p className="font-bold text-sm">Welcome to ServerPe!</p>
+              <p className="text-xs text-indigo-100">
+                50 Free API credits added!
+              </p>
+            </div>
+          </div>
+          <ConfettiSparkles />
+        </div>
+      )}
+
+      {/* --- NAVIGATION BAR --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
-              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => navigate("/user-home")}
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-lg">⚡</span>
-              </div>
-              <div className="font-bold text-xl tracking-tighter text-white">
-                ServerPe<span className="text-indigo-500">.in</span>
-              </div>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
-            {/* Desktop Static Menu */}
             <div className="hidden lg:flex items-center space-x-2">
               <NavItem to="/user-home" label="Home" active={true} />
               <NavItem to="/api-usage" label="API Usage" />
@@ -235,7 +257,6 @@ const UserHomePage = () => {
               <NavItem to="/profile" label="Profile" />
             </div>
 
-            {/* Logout Button */}
             <div className="hidden lg:flex items-center">
               <button
                 onClick={() => navigate("/logout")}
@@ -258,7 +279,6 @@ const UserHomePage = () => {
               </button>
             </div>
 
-            {/* Mobile Toggle */}
             <div className="lg:hidden flex items-center">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -286,7 +306,6 @@ const UserHomePage = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
             <div className="px-4 py-4 flex flex-col space-y-2">
@@ -367,9 +386,7 @@ const UserHomePage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT COLUMN: Credentials & Wallet Status */}
           <div className="lg:col-span-1 space-y-6">
-            {/* API Credentials Card */}
             <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl hover:border-gray-600 transition-colors">
               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <svg
@@ -387,8 +404,6 @@ const UserHomePage = () => {
                 </svg>
                 API Credentials
               </h3>
-
-              {/* Public Key */}
               <div className="mb-5">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
                   Client ID / API Key
@@ -439,8 +454,6 @@ const UserHomePage = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Secret Key */}
               <div>
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
                   Client Secret
@@ -469,7 +482,7 @@ const UserHomePage = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth="2"
-                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
                           />
                         </svg>
                       ) : (
@@ -534,7 +547,6 @@ const UserHomePage = () => {
                   </div>
                 </div>
               </div>
-
               <div className="mt-6 pt-4 border-t border-gray-700">
                 <p className="text-xs text-red-400 flex items-center gap-1">
                   <svg
@@ -554,8 +566,6 @@ const UserHomePage = () => {
                 </p>
               </div>
             </div>
-
-            {/* Wallet Summary */}
             <div className="bg-gradient-to-r from-gray-800 to-gray-800 border border-gray-700 rounded-2xl p-6 shadow-xl flex items-center justify-between hover:border-gray-500 transition-all cursor-pointer transform hover:-translate-y-1">
               <div>
                 <p className="text-sm font-medium text-gray-400">
@@ -565,7 +575,6 @@ const UserHomePage = () => {
                   {userData?.user_details?.api_credits || "..."}
                 </h3>
               </div>
-
               <button
                 onClick={() => navigate("/api-pricing")}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm transition-colors shadow-lg shadow-indigo-500/20"
@@ -575,7 +584,6 @@ const UserHomePage = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Recent API History */}
           <div className="lg:col-span-2">
             <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden h-full flex flex-col">
               <div className="p-6 border-b border-gray-700 flex justify-between items-center">
@@ -602,7 +610,6 @@ const UserHomePage = () => {
                   View All Logs
                 </Link>
               </div>
-
               <div className="overflow-x-auto flex-1">
                 <table className="w-full text-sm text-left text-gray-400">
                   <thead className="text-xs text-gray-500 uppercase bg-gray-900/50">
@@ -625,7 +632,6 @@ const UserHomePage = () => {
                             className="px-6 py-4 font-mono text-gray-300 truncate max-w-[200px]"
                             title={log.endpoint}
                           >
-                            {/* Truncate endpoint if too long for display */}
                             {log.endpoint.split("/mockapis")[1] || log.endpoint}
                           </td>
                           <td className="px-6 py-4">
@@ -684,7 +690,6 @@ const UserHomePage = () => {
                   </tbody>
                 </table>
               </div>
-
               <div className="p-4 border-t border-gray-700 bg-gray-900/30 text-center">
                 <p className="text-xs text-gray-500">
                   Showing last 5 requests. Logs are retained for 7 days.
@@ -694,17 +699,14 @@ const UserHomePage = () => {
           </div>
         </div>
 
-        {/* --- TESTIMONIALS CAROUSEL SECTION --- */}
         {testimonials.length > 0 && (
           <div className="mt-12">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
               <span className="text-indigo-500">❤️</span> Community Feedback
             </h3>
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-8 shadow-xl relative overflow-hidden">
-              {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
-
               <div className="relative z-10 h-40 flex items-center justify-center">
                 {testimonials.map((test, index) => (
                   <div
@@ -730,8 +732,6 @@ const UserHomePage = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Indicators */}
               <div className="flex justify-center gap-2 mt-4 relative z-10">
                 {testimonials.map((_, idx) => (
                   <button
