@@ -466,25 +466,29 @@ const WalletAndRechargesPage = () => {
                       <td className="px-6 py-4">{txn.cost}</td>
                       <td className="px-6 py-4">{txn.api_calls}</td>
                       <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => downloadInvoice(txn)}
-                          className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all"
-                          title="Download Invoice"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        {txn?.description.toLowerCase().includes("free") ? (
+                          <div></div>
+                        ) : (
+                          <button
+                            onClick={() => downloadInvoice(txn)}
+                            className="p-2 text-indigo-400 hover:text-white hover:bg-indigo-600 rounded-lg transition-all"
+                            title="Download Invoice"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                              />
+                            </svg>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
