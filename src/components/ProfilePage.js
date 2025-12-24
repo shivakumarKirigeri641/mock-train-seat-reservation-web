@@ -43,10 +43,11 @@ const ProfilePage = () => {
     try {
       // Fetch Profile and States in parallel
       const [profileResponse, statesResponse] = await Promise.all([
-        axios.get(`/mockapis/serverpeuser/loggedinuser/user-profile`, {
-          withCredentials: true,
-        }),
-        axios.get(`/mockapis/serverpeuser/states`, {
+        axios.get(
+          `${BASE_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+          { withCredentials: true }
+        ),
+        axios.get(`${BASE_URL}/mockapis/serverpeuser/states`, {
           withCredentials: true,
         }),
       ]);
@@ -72,7 +73,7 @@ const ProfilePage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, navigate]);
+  }, [BASE_URL, dispatch, navigate]);
 
   // Initial Fetch
   useEffect(() => {
@@ -100,7 +101,7 @@ const ProfilePage = () => {
 
     try {
       await axios.post(
-        `/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
         { email: profile?.myemail },
         { withCredentials: true }
       );
@@ -118,7 +119,7 @@ const ProfilePage = () => {
 
     try {
       await axios.put(
-        `/mockapis/serverpeuser/loggedinuser/update-profile`,
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/update-profile`,
         {
           name: profile.user_name,
           state: profile.state,

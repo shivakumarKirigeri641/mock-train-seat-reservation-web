@@ -35,7 +35,7 @@ const UserHomePage = () => {
 
     try {
       const dashboardResponse = await axios.get(
-        `/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-dashboard-data`,
         { withCredentials: true }
       );
 
@@ -56,7 +56,7 @@ const UserHomePage = () => {
 
       try {
         const testimonialResponse = await axios.get(
-          `/mockapis/serverpeuser/testimonials`,
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`,
           { withCredentials: true }
         );
         if (testimonialResponse?.data?.data) {
