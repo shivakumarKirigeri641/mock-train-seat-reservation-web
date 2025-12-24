@@ -15,9 +15,10 @@ const ApiPricingGeneral = () => {
     const fetchPlans = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(`/mockapis/serverpeuser/api-plans`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/api-plans`,
+          { withCredentials: true }
+        );
         setPlans(response?.data?.data);
       } catch (error) {
         console.error("Failed to load pricing plans", error);

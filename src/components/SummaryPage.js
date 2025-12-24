@@ -80,7 +80,7 @@ const SummaryPage = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `/mockapis/serverpeuser/loggedinuser/user-profile`,
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
       const data = response?.data?.data || {};
@@ -100,7 +100,7 @@ const SummaryPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, navigate]);
+  }, [BASE_URL, dispatch, navigate]);
 
   useEffect(() => {
     if (!userdetails) {
@@ -161,7 +161,7 @@ const SummaryPage = () => {
       }
 
       const orderRes = await axios.post(
-        `/mockapis/serverpeuser/loggedinuser/razorpay/order`,
+        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
         { amount: selectedPlan.price },
         { withCredentials: true }
       );
@@ -176,7 +176,7 @@ const SummaryPage = () => {
         handler: async function (response) {
           try {
             const verifyRes = await axios.post(
-              `/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
+              `${BASE_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
               { ...response, ...formData },
               { withCredentials: true }
             );

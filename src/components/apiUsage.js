@@ -37,11 +37,11 @@ const ApiUsage = () => {
 
     try {
       const response_stats_logs = await axios.get(
-        `/mockapis/serverpeuser/loggedinuser/api-usage`,
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-usage`,
         { withCredentials: true }
       );
       const response_usage_analytics = await axios.get(
-        `/mockapis/serverpeuser/loggedinuser/usage-analytics`,
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/usage-analytics`,
         { withCredentials: true }
       );
 
