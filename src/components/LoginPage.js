@@ -8,11 +8,11 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // State
-  const [username, setUsername] = useState("shiva");
-  const [mobile, setMobile] = useState("9886122415");
-  const [state, setState] = useState(11); // Default ID 11
+  const [username, setUsername] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [state, setState] = useState(-1); // Default ID 11
   //const [state, setState] = useState(); // Default ID 11
-  const [otp, setOtp] = useState("123s4");
+  const [otp, setOtp] = useState("");
   const [step, setStep] = useState("form"); // form | otp
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
