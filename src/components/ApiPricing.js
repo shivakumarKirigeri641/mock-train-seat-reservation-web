@@ -26,7 +26,7 @@ const ApiPricing = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/api-plans-premium`,
+        `/mockapis/serverpeuser/loggedinuser/api-plans-premium`,
         { withCredentials: true }
       );
       setPlans(response?.data?.data || []);

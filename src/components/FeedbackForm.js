@@ -37,7 +37,7 @@ const FeedbackForm = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
+        `/mockapis/serverpeuser/feedback-categories`,
         { withCredentials: true }
       );
 
@@ -86,7 +86,7 @@ const FeedbackForm = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/feedback`,
+        `/mockapis/serverpeuser/loggedinuser/feedback`,
         {
           category: feedbackData.category,
           rating: feedbackData.rating,
