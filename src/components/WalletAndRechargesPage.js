@@ -155,11 +155,12 @@ const WalletAndRechargesPage = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Invoice download error:", error);
-      const errorMsg = error.response?.status === 401
-        ? "Your session has expired. Please log in again."
-        : error.response?.data?.message
-        ? `Download failed: ${error.response.data.message}`
-        : "Failed to download invoice. Please try again.";
+      const errorMsg =
+        error.response?.status === 401
+          ? "Your session has expired. Please log in again."
+          : error.response?.data?.message
+          ? `Download failed: ${error.response.data.message}`
+          : "Failed to download invoice. Please try again.";
       alert(errorMsg);
     }
   };

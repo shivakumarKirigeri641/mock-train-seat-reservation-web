@@ -47,15 +47,15 @@ apiClient.interceptors.response.use(
     // Log successful responses in development
     if (process.env.NODE_ENV === "development") {
       console.log(
-        `API Response: ${response.status} ${response.config.method.toUpperCase()} ${response.config.url}`
+        `API Response: ${
+          response.status
+        } ${response.config.method.toUpperCase()} ${response.config.url}`
       );
     }
 
     // Check for API-level errors in response data
     if (response.data && response.data.successstatus === false) {
-      const error = new Error(
-        response.data.message || "API returned an error"
-      );
+      const error = new Error(response.data.message || "API returned an error");
       error.response = response;
       return Promise.reject(error);
     }

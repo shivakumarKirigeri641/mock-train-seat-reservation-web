@@ -12,10 +12,9 @@ const Error = () => {
 
   const errorStatus = error?.status || 404;
   const errorMessage =
-    error?.statusText ||
-    error?.message ||
-    "An unexpected error occurred";
-  const errorDetails = error?.data || "The page you're looking for doesn't exist.";
+    error?.statusText || error?.message || "An unexpected error occurred";
+  const errorDetails =
+    error?.data || "The page you're looking for doesn't exist.";
 
   const getErrorContent = () => {
     switch (errorStatus) {
@@ -28,7 +27,8 @@ const Error = () => {
       case 500:
         return {
           title: "Server Error",
-          description: "Something went wrong on our end. Please try again later.",
+          description:
+            "Something went wrong on our end. Please try again later.",
           icon: "⚠️",
         };
       case 401:

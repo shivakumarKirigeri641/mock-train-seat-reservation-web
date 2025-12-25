@@ -39,7 +39,8 @@ export const parseError = (error) => {
       case 400:
         errorType = ERROR_TYPES.VALIDATION_ERROR;
         userMessage =
-          apiMessage || "Invalid request. Please check your input and try again.";
+          apiMessage ||
+          "Invalid request. Please check your input and try again.";
         details = data?.errors || data?.details;
         break;
 
@@ -52,8 +53,7 @@ export const parseError = (error) => {
       case 403:
         errorType = ERROR_TYPES.FORBIDDEN;
         userMessage =
-          apiMessage ||
-          "You don't have permission to access this resource.";
+          apiMessage || "You don't have permission to access this resource.";
         break;
 
       case 404:
@@ -156,7 +156,11 @@ export const validateRazorpayResponse = (response) => {
     };
   }
 
-  const requiredFields = ["razorpay_payment_id", "razorpay_order_id", "razorpay_signature"];
+  const requiredFields = [
+    "razorpay_payment_id",
+    "razorpay_order_id",
+    "razorpay_signature",
+  ];
   const missingFields = requiredFields.filter((field) => !response[field]);
 
   if (missingFields.length > 0) {

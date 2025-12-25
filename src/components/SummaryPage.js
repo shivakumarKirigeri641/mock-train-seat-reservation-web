@@ -6,7 +6,12 @@ import axios from "axios";
 import loadRazorpay from "../utils/loadRazorPay";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 import ErrorDisplayModal from "./ErrorDisplayModal";
-import { parseError, isAuthError, validateRazorpayResponse, getErrorSummary } from "../utils/errorHandler";
+import {
+  parseError,
+  isAuthError,
+  validateRazorpayResponse,
+  getErrorSummary,
+} from "../utils/errorHandler";
 
 // --- NavItem Component ---
 const NavItem = ({ to, label, active = false }) => (
@@ -127,7 +132,8 @@ const SummaryPage = () => {
       if (!res) {
         const razorpayError = {
           type: "RAZORPAY_ERROR",
-          message: "Razorpay payment gateway failed to load. Please check your internet connection and try again.",
+          message:
+            "Razorpay payment gateway failed to load. Please check your internet connection and try again.",
           statusCode: null,
           details: null,
         };
@@ -145,7 +151,9 @@ const SummaryPage = () => {
       );
 
       if (!orderRes.data?.id) {
-        throw new Error("Failed to create payment order. Invalid response from server.");
+        throw new Error(
+          "Failed to create payment order. Invalid response from server."
+        );
       }
 
       // Step 3: Configure Razorpay Options
@@ -179,21 +187,23 @@ const SummaryPage = () => {
                 { state: formData }
               );
             } else {
-              const errorMsg = verifyRes?.data?.message || "Payment verification failed. Please contact support.";
+              const errorMsg =
+                verifyRes?.data?.message ||
+                "Payment verification failed. Please contact support.";
               setErrorMsg(errorMsg);
               console.error("Payment verification failed:", verifyRes.data);
             }
           } catch (err) {
             const parsedError = parseError(err);
             console.error("Payment verification error:", parsedError);
-            
+
             if (isAuthError(parsedError)) {
               dispatch(removeloggedInUser());
               navigate("/user-login");
             } else {
               setErrorMsg(
                 parsedError.message ||
-                "An error occurred while verifying your payment. Please contact support with your payment ID."
+                  "An error occurred while verifying your payment. Please contact support with your payment ID."
               );
             }
           }
@@ -204,12 +214,12 @@ const SummaryPage = () => {
           contact: formData.mobile_number,
         },
         theme: { color: "#4f46e5" },
-        modal: { 
+        modal: {
           ondismiss: () => {
             setIsProcessing(false);
             // User closed payment modal without paying
             console.info("Payment modal closed by user");
-          }
+          },
         },
       };
 
@@ -226,7 +236,7 @@ const SummaryPage = () => {
       } else {
         setErrorMsg(
           parsedError.message ||
-          "Failed to initiate payment. Please check your details and try again."
+            "Failed to initiate payment. Please check your details and try again."
         );
       }
     } finally {
@@ -238,7 +248,10 @@ const SummaryPage = () => {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-4">
-          <svg className="animate-spin h-12 w-12 text-indigo-500" viewBox="0 0 24 24">
+          <svg
+            className="animate-spin h-12 w-12 text-indigo-500"
+            viewBox="0 0 24 24"
+          >
             <circle
               className="opacity-25"
               cx="12"

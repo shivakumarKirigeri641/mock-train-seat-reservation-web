@@ -55,7 +55,10 @@ class HealthCheckService {
   async performHealthCheck() {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        HEALTH_CHECK_TIMEOUT
+      );
 
       const response = await axios.get(
         `${this.baseURL}/mockapis/health/check`,
