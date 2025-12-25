@@ -104,12 +104,16 @@ const APIDocumentationGeneralPage = () => {
   const [isSiteMenuOpen, setIsSiteMenuOpen] = useState(false);
   const [isDocsSidebarOpen, setIsDocsSidebarOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // State for Documentation Data
+  // State for API Data
   const [apiData, setApiData] = useState([]);
+  const api_key = "xxxx";
+  const secret_key = "secret-****";
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const [activeEndpointId, setActiveEndpointId] = useState(null);
   const [openCategories, setOpenCategories] = useState({ 0: true });
+  const [error, setError] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   // State for Sidebar Filter
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,11 +122,12 @@ const APIDocumentationGeneralPage = () => {
   useEffect(() => {
     const fetchApiDocumentation = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           process.env.REACT_APP_BACKEND_URL +
             "/mockapis/serverpeuser/all-endpoints",
-          { withCredentials: true }
+          { withCredentials: true, timeout: 10000 }
         );
         setApiData(response?.data?.data);
 
@@ -133,8 +138,9 @@ const APIDocumentationGeneralPage = () => {
         ) {
           setActiveEndpointId(response?.data?.data[0].endpoints[0].id);
         }
-      } catch (error) {
-        console.error("Error fetching API documentation:", error);
+      } catch (err) {
+        console.error("Error fetching API documentation:", err);
+        setError("Failed to load API documentation. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -144,15 +150,21 @@ const APIDocumentationGeneralPage = () => {
 
   // ---------------- DOWNLOAD HANDLER ----------------
   const handleDownload = async (category_details, ispostman = false) => {
+    if (!category_details?.endpoints?.[0]?.id) {
+      setError("Invalid category data. Please try again.");
+      return;
+    }
+
+    setDownloadingId(category_details.endpoints[0].id);
     try {
-      // 1. Call the API with the ID
       let response = null;
       if (ispostman) {
         response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/postmancollection/${category_details.endpoints[0].id}`,
           {
             withCredentials: true,
-            responseType: "blob", // Important for handling file downloads
+            responseType: "blob",
+            timeout: 15000,
           }
         );
       } else {
@@ -160,30 +172,54 @@ const APIDocumentationGeneralPage = () => {
           `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/apidoc/${category_details.endpoints[0].id}`,
           {
             withCredentials: true,
-            responseType: "blob", // Important for handling file downloads
+            responseType: "blob",
+            timeout: 15000,
           }
         );
       }
 
-      // 2. Create a blob link and trigger download
+      // Check if response is valid
+      if (!response.data || response.data.size === 0) {
+        throw new Error("Downloaded file is empty");
+      }
+
+      // Create a blob link and trigger download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      // Set the file name (you can adjust extension based on response type)
+
       if (ispostman) {
-        link.setAttribute("download", `${category_details.category}.json`);
+        link.setAttribute(
+          "download",
+          `${category_details.category}-postman.json`
+        );
       } else {
-        link.setAttribute("download", `${category_details.category}.zip`);
+        link.setAttribute(
+          "download",
+          `${category_details.category}-api-doc.zip`
+        );
       }
+
       document.body.appendChild(link);
       link.click();
 
-      // 3. Cleanup
+      // Cleanup
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      alert("Failed to download documentation.");
+
+      // Show success message
+      setError(null);
+    } catch (err) {
+      console.error("Error downloading document:", err);
+      const errorMsg =
+        err.response?.status === 401
+          ? "Your session has expired. Please log in again."
+          : err.response?.data?.message
+          ? `Download failed: ${err.response.data.message}`
+          : "Failed to download documentation. Please try again.";
+      setError(errorMsg);
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -244,6 +280,34 @@ const APIDocumentationGeneralPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Error Notification */}
+      {error && (
+        <div className="fixed top-20 right-4 z-40 max-w-sm w-full">
+          <div className="bg-red-900/80 border border-red-700 rounded-lg p-4 shadow-lg flex items-start gap-3 animate-slide-in">
+            <svg
+              className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm text-red-100">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-400 hover:text-red-200 flex-shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
@@ -439,43 +503,99 @@ const APIDocumentationGeneralPage = () => {
                         <div className="flex gap-2 px-3 py-2 mb-2">
                           <button
                             onClick={() => handleDownload(cat)}
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
+                            disabled={downloadingId === cat.endpoints[0].id}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
                             title="Download API Documentation"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                            Docs ⏬
+                            {downloadingId === cat.endpoints[0].id ? (
+                              <>
+                                <svg
+                                  className="animate-spin h-3 w-3"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Download...
+                              </>
+                            ) : (
+                              <>
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                  />
+                                </svg>
+                                Docs ⏬
+                              </>
+                            )}
                           </button>
                           <button
                             onClick={() => handleDownload(cat, true)}
-                            className="flex-1 flex items-center justify-center gap-1.5 bg-orange-700 hover:bg-gray-700 text-gray-300 text-[10px] font-medium py-1.5 rounded border border-gray-700 transition-colors"
-                            title="Download API Documentation"
+                            disabled={downloadingId === cat.endpoints[0].id}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-orange-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 text-[10px] font-medium py-1.5 rounded border border-orange-700 transition-colors"
+                            title="Download Postman Collection"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                            Postman ⏬
+                            {downloadingId === cat.endpoints[0].id ? (
+                              <>
+                                <svg
+                                  className="animate-spin h-3 w-3"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Download...
+                              </>
+                            ) : (
+                              <>
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                  />
+                                </svg>
+                                Postman ⏬
+                              </>
+                            )}
                           </button>
                         </div>
                         {/* ------------------------------------------- */}
@@ -548,6 +668,138 @@ const APIDocumentationGeneralPage = () => {
                   These APIs are strictly for testing, training, and UI
                   development. No real bookings, transactions, or hardware
                   connections are made.
+                </p>
+              </div>
+            </div>
+
+            {/* API Keys Information Section */}
+            <div className="p-6 bg-indigo-900/20 border border-indigo-500/30 rounded-xl space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-indigo-500/20 rounded-full">
+                  <svg
+                    className="w-5 h-5 text-indigo-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-indigo-300">
+                  API Authentication & Headers
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* X-API-Key */}
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <code className="text-indigo-400 font-semibold text-sm">
+                      x-api-key
+                    </code>
+                    <span className="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] font-bold rounded">
+                      REQUIRED
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Your unique API key for authentication. This key identifies
+                    your account and is required for all API requests.
+                  </p>
+                  <p className="text-[11px] text-gray-500 italic">
+                    📍 Get your API key from your Dashboard
+                  </p>
+                </div>
+
+                {/* X-Secret-Key */}
+                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <code className="text-indigo-400 font-semibold text-sm">
+                      x-secret-key
+                    </code>
+                    <span className="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] font-bold rounded">
+                      REQUIRED
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Your secret key for enhanced security. Keep this key
+                    confidential and never share it publicly or in client-side
+                    code.
+                  </p>
+                  <p className="text-[11px] text-gray-500 italic">
+                    📍 Get your secret key from your Dashboard
+                  </p>
+                </div>
+              </div>
+
+              {/* Postman Integration Info */}
+              <div className="mt-4 p-3 bg-gray-900/50 border border-gray-700 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4 text-orange-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Using with Postman?
+                </h4>
+                <ol className="text-xs text-gray-400 space-y-2 ml-6 list-decimal">
+                  <li>
+                    Download the Postman Collection from the sidebar (Category →
+                    Download Postman Collection)
+                  </li>
+                  <li>Import the collection into your Postman workspace</li>
+                  <li>
+                    Add environment variables:
+                    <ul className="list-disc ml-4 mt-1 space-y-1 text-gray-500">
+                      <li>
+                        <code className="text-indigo-300 font-mono">
+                          {api_key}
+                        </code>{" "}
+                        = Your x-api-key value
+                      </li>
+                      <li>
+                        <code className="text-indigo-300 font-mono">
+                          {secret_key}
+                        </code>{" "}
+                        = Your x-secret-key value
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    All request headers will automatically use these variables
+                  </li>
+                </ol>
+              </div>
+
+              {/* Security Note */}
+              <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex gap-2">
+                <svg
+                  className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p className="text-xs text-yellow-200/80">
+                  <strong>Never expose your x-api-key or x-secret-key</strong>{" "}
+                  in client-side code, repositories, or logs. Only use it
+                  server-to-server.
                 </p>
               </div>
             </div>

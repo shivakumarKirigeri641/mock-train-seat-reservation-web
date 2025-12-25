@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom/client";
+import { useEffect } from "react";
 import PaymentSuccessSummaryPage from "./components/PaymentSuccessSummaryPage";
 import SummaryPage from "./components/SummaryPage";
 import LogoutPage from "./components/LogoutPage";
@@ -25,10 +26,25 @@ import APIDocumentationGeneralPage from "./components/APIDocumentationGeneralPag
 import ApiPricingGeneral from "./components/ApiPricingGeneral";
 import ApiTermsPage from "./components/ApiTermsPage";
 import ContactMe from "./components/ContactMe";
+import ConnectionStatusIndicator from "./components/ConnectionStatusIndicator";
+import { healthCheckService } from "./utils/healthCheckService";
+
 const App = () => {
+  useEffect(() => {
+    // Start health checks when app mounts
+    healthCheckService.start();
+
+    // Cleanup on unmount
+    return () => {
+      healthCheckService.stop();
+    };
+  }, []);
+
   return (
     <Provider store={appStore}>
       <div>
+        {/* Connection Status Indicator - shown when connection is unhealthy */}
+        <ConnectionStatusIndicator />
         <Outlet />
       </div>
     </Provider>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Footer from "./Footer";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import axios from "axios";
 // Adjust this path to where your SVG file is located
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
@@ -188,6 +188,86 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* NEW Section: Getting Started Quickly */}
+      <section className="max-w-7xl mx-auto px-6 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-gray-800/30 rounded-3xl p-8 border border-gray-800 mx-auto">
+          <div>
+            <h2 className="text-3xl font-bold text-white mb-6">
+              Simple to Start
+            </h2>
+            <div className="space-y-6">
+              {/* Step 1 */}
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center font-bold">
+                  1
+                </div>
+                <div>
+                  <h4 className="font-bold text-white">Instant Subscription</h4>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Simply sign in with your mobile number and select a plan
+                    that fits your needs. Skip the complex onboarding and long
+                    waiting periods; you will receive your API key and secret
+                    key instantly upon subscription.
+                  </p>
+                  <p className="text-red-400 font-semibold text-xs mt-1">
+                    Note: Contact details are used for essential notifications
+                    only.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center font-bold">
+                  2
+                </div>
+                <div>
+                  <h4 className="font-bold text-white">
+                    Streamlined Documentation
+                  </h4>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Our documentation is designed for clarity, making it easy to
+                    integrate and test your UI logic using Postman. To get
+                    started, simply include your provided x-api-key and
+                    x-secret-key in the request headers.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center font-bold">
+                  3
+                </div>
+                <div>
+                  <h4 className="font-bold text-white">
+                    Pay-As-You-Use Flexibility
+                  </h4>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Explore our affordable pricing structure at our{" "}
+                    <Link
+                      to="/general-api-pricing"
+                      className="text-indigo-400 italic font-semibold underline hover:text-indigo-300"
+                    >
+                      API pricing page
+                    </Link>
+                    . Your purchased API calls never expire, allowing you to use
+                    them at your own pace without deadlines.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => navigate("/general-api-documentation")}
+              className="mt-8 text-indigo-400 font-semibold hover:underline flex items-center gap-2"
+            >
+              View simple documentation &rarr;
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Available API Categories */}
       <section className="max-w-7xl mx-auto px-6 pb-12">
         <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-indigo-500 pl-4">
@@ -234,7 +314,7 @@ const HomePage = () => {
           {/* Card 3: Bike Specs */}
           <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 hover:bg-gray-750 transition-all hover:border-gray-600 group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="text-9xl">🏍️</span>
+              <span className="text-9xl"></span>
             </div>
             <div className="mb-6">
               <div className="w-14 h-14 bg-green-900/30 text-green-400 border border-green-500/20 flex items-center justify-center rounded-xl">
@@ -252,7 +332,7 @@ const HomePage = () => {
           {/* Card 4: Train Reservation */}
           <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 hover:bg-gray-750 transition-all hover:border-gray-600 group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="text-9xl">🚄</span>
+              <span className="text-9xl"></span>
             </div>
             <div className="mb-6">
               <div className="w-14 h-14 bg-purple-900/30 text-purple-400 border border-purple-500/20 flex items-center justify-center rounded-xl">

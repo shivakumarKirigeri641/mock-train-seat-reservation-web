@@ -8,9 +8,9 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // State
-  const [username, setUsername] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [state, setState] = useState(-1); // Default ID 11
+  const [username, setUsername] = useState("Shiva");
+  const [mobile, setMobile] = useState("9886122415");
+  const [state, setState] = useState(11); // Default ID 11
   //const [state, setState] = useState(); // Default ID 11
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("form"); // form | otp
