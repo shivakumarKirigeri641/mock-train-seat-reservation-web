@@ -27,7 +27,7 @@ const LoginPage = () => {
     const fetchStates = async () => {
       try {
         const response = await axios.get(
-          `/mockapis/serverpeuser/states`,
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
           {},
           { widthCredentials: true }
         );
@@ -80,7 +80,7 @@ const LoginPage = () => {
       // API Call: Send OTP
       // Payload structure matched to user request
       const response = await axios.post(
-        `/mockapis/serverpeuser/send-otp`,
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/send-otp`,
         {
           user_name: username,
           mobile_number: mobile,
@@ -117,7 +117,7 @@ const LoginPage = () => {
     try {
       // API Call: Verify OTP
       const response = await axios.post(
-        `/mockapis/serverpeuser/verify-otp`,
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
         {
           mobile_number: mobile,
           otp: otp,

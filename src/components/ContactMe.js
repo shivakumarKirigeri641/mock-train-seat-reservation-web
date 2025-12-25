@@ -27,7 +27,7 @@ const ContactMe = () => {
       try {
         // Replace with your actual endpoint
         const response = await axios.get(
-          `/mockapis/serverpeuser/feedback-categories`,
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/feedback-categories`,
           { withCredentials: true }
         );
         if (response.data && response.data.data.length > 0) {
@@ -53,9 +53,13 @@ const ContactMe = () => {
     setIsSubmitting(true);
     try {
       // Send formData directly (not wrapped in an object unless your backend specifically requires { formData: ... })
-      await axios.post(`/mockapis/serverpeuser/contact-me`, formData, {
-        withCredentials: true,
-      });
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/contact-me`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
       setSubmitted(true);
       setFormData({
         name: "",

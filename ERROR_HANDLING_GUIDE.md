@@ -245,7 +245,7 @@ if (!validation.success) {
 
 ### How It Works
 1. **Interval**: Every 30 seconds
-2. **Endpoint**: `GET /mockapis/health/check`
+2. **Endpoint**: `GET ${process.env.REACT_APP_BACKEND_URL}/mockapis/health/check`
 3. **Timeout**: 5 seconds
 4. **Status Updates**: Notify subscribers on change
 5. **No Alerts**: Only show banner if unhealthy
@@ -386,7 +386,7 @@ REACT_APP_RAZORPAY_KEY_ID=your_razorpay_key
 ### Health Check Parameters
 - Interval: 30 seconds (can adjust in healthCheckService.js)
 - Timeout: 5 seconds
-- Endpoint: `/mockapis/health/check`
+- Endpoint: `${process.env.REACT_APP_BACKEND_URL}/mockapis/health/check`
 
 ---
 

@@ -17,7 +17,9 @@ const HomePage = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const response = await axios.get(`/mockapis/serverpeuser/testimonials`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
+        );
         setTestimonials(response?.data?.data);
       } catch (error) {
         console.error("Failed to fetch testimonials, using fallback.", error);
