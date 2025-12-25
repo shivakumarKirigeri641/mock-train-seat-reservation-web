@@ -18,7 +18,7 @@ const HomePage = () => {
     const fetchTestimonials = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/testimonials`
         );
         setTestimonials(response?.data?.data);
       } catch (error) {

@@ -8,7 +8,7 @@ import { parseError, isAuthError } from "./errorHandler";
 
 // Create custom axios instance
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL,
+  baseURL: process.env.BACKEND_URL,
   timeout: 10000,
   withCredentials: true,
 });

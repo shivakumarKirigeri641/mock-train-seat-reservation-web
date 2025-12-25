@@ -33,7 +33,7 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
 
   const userdetails = useSelector((store) => store.loggedInUser);
-  const BASE_URL = process.env.REACT_APP_BACKEND_URL;
+  const BASE_URL = process.env.BACKEND_URL;
 
   // --- REFACTORED: Fetch Logic wrapped in useCallback ---
   const fetchProfileData = useCallback(async () => {
@@ -44,17 +44,14 @@ const ProfilePage = () => {
       // Fetch Profile and States in parallel
       const [profileResponse, statesResponse] = await Promise.all([
         axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
           {
             withCredentials: true,
           }
         ),
-        axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
-          {
-            withCredentials: true,
-          }
-        ),
+        axios.get(`${process.env.BACKEND_URL}/mockapis/serverpeuser/states`, {
+          withCredentials: true,
+        }),
       ]);
 
       setProfile(profileResponse?.data?.data);
@@ -106,7 +103,7 @@ const ProfilePage = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/verify-email-otp-request`,
         { email: profile?.myemail },
         { withCredentials: true }
       );
@@ -124,7 +121,7 @@ const ProfilePage = () => {
 
     try {
       await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/update-profile`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/update-profile`,
         {
           name: profile.user_name,
           state: profile.state,

@@ -51,7 +51,7 @@ const PaymentSuccessSummaryPage = () => {
       //update thet
       // 1. Fetch User Profile for State Info
       const profileResponse = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
 
@@ -64,7 +64,7 @@ const PaymentSuccessSummaryPage = () => {
       // 2. Fetch Payment Details
       if (paymentId) {
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
           {
             razorpay_payment_id: paymentId,
             summaryFormData: summaryFormData,
@@ -151,7 +151,7 @@ const PaymentSuccessSummaryPage = () => {
     setError(null);
     try {
       response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
         { responseType: "blob", withCredentials: true }
       );
 

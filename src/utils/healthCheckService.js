@@ -14,7 +14,7 @@ class HealthCheckService {
     this.listeners = [];
     this.lastCheckTime = null;
     this.checkInterval = null;
-    this.baseURL = process.env.REACT_APP_BACKEND_URL;
+    this.baseURL = process.env.BACKEND_URL;
   }
 
   /**
@@ -61,7 +61,7 @@ class HealthCheckService {
       );
 
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/health/check`,
+        `${process.env.BACKEND_URL}/mockapis/health/check`,
         {
           signal: controller.signal,
           timeout: HEALTH_CHECK_TIMEOUT,

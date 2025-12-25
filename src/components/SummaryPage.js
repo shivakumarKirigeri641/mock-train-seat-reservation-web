@@ -50,13 +50,13 @@ const SummaryPage = () => {
   });
   const [formErrors, setFormErrors] = useState({});
 
-  const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8888";
+  const BASE_URL = process.env.BACKEND_URL || "http://localhost:8888";
 
   const fetchProfileData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
       const data = response?.data?.data || {};
@@ -145,7 +145,7 @@ const SummaryPage = () => {
 
       // Step 2: Create Payment Order
       const orderRes = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
         { amount: selectedPlan.price },
         { withCredentials: true, timeout: 10000 }
       );
@@ -175,7 +175,7 @@ const SummaryPage = () => {
 
             // Verify payment with backend
             const verifyRes = await axios.post(
-              `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
+              `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
               { ...response, ...formData },
               { withCredentials: true, timeout: 10000 }
             );

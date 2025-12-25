@@ -8,9 +8,9 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // State
-  const [username, setUsername] = useState("Shiva");
-  const [mobile, setMobile] = useState("9886122415");
-  const [state, setState] = useState(11); // Default ID 11
+  const [username, setUsername] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [state, setState] = useState(-1); // Default ID 11
   //const [state, setState] = useState(); // Default ID 11
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("form"); // form | otp
@@ -27,7 +27,7 @@ const LoginPage = () => {
     const fetchStates = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/states`,
           {},
           { widthCredentials: true }
         );
@@ -80,7 +80,7 @@ const LoginPage = () => {
       // API Call: Send OTP
       // Payload structure matched to user request
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/send-otp`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/send-otp`,
         {
           user_name: username,
           mobile_number: mobile,
@@ -117,7 +117,7 @@ const LoginPage = () => {
     try {
       // API Call: Verify OTP
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
         {
           mobile_number: mobile,
           otp: otp,
