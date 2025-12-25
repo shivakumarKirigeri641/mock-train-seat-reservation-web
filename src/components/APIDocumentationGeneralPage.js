@@ -125,8 +125,7 @@ const APIDocumentationGeneralPage = () => {
       setError(null);
       try {
         const response = await axios.get(
-          process.env.REACT_APP_BACKEND_URL +
-            "/mockapis/serverpeuser/all-endpoints",
+          "/mockapis/serverpeuser/all-endpoints",
           { withCredentials: true, timeout: 10000 }
         );
         setApiData(response?.data?.data);
@@ -160,7 +159,7 @@ const APIDocumentationGeneralPage = () => {
       let response = null;
       if (ispostman) {
         response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/postmancollection/${category_details.endpoints[0].id}`,
+          `/mockapis/serverpeuser/download/postmancollection/${category_details.endpoints[0].id}`,
           {
             withCredentials: true,
             responseType: "blob",
@@ -169,7 +168,7 @@ const APIDocumentationGeneralPage = () => {
         );
       } else {
         response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/download/apidoc/${category_details.endpoints[0].id}`,
+          `/mockapis/serverpeuser/download/apidoc/${category_details.endpoints[0].id}`,
           {
             withCredentials: true,
             responseType: "blob",

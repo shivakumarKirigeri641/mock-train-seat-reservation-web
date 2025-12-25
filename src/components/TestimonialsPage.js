@@ -18,9 +18,7 @@ const TestimonialPage = () => {
     const fetchTestimonials = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
-        );
+        const response = await axios.get(`/mockapis/serverpeuser/testimonials`);
         // Check if data exists, otherwise use fallback
         if (response.data && response?.data?.data.length > 0) {
           setTestimonials(response?.data?.data);

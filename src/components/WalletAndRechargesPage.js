@@ -48,7 +48,7 @@ const WalletAndRechargesPage = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
+        `/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
         { withCredentials: true }
       );
       const data = response.data.data;
@@ -131,7 +131,7 @@ const WalletAndRechargesPage = () => {
   const downloadInvoice = async (txn) => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${txn?.id}`,
+        `/mockapis/serverpeuser/loggedinuser/invoices/download/${txn?.id}`,
         { responseType: "blob", withCredentials: true, timeout: 15000 }
       );
 

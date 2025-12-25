@@ -60,13 +60,10 @@ class HealthCheckService {
         HEALTH_CHECK_TIMEOUT
       );
 
-      const response = await axios.get(
-        `${this.baseURL}/mockapis/health/check`,
-        {
-          signal: controller.signal,
-          timeout: HEALTH_CHECK_TIMEOUT,
-        }
-      );
+      const response = await axios.get(`/mockapis/health/check`, {
+        signal: controller.signal,
+        timeout: HEALTH_CHECK_TIMEOUT,
+      });
 
       clearTimeout(timeoutId);
 
