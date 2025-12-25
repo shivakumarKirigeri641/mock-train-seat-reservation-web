@@ -50,8 +50,6 @@ const SummaryPage = () => {
   });
   const [formErrors, setFormErrors] = useState({});
 
-  const BASE_URL = process.env.BACKEND_URL || "http://localhost:8888";
-
   const fetchProfileData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -76,7 +74,7 @@ const SummaryPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [BASE_URL, dispatch, navigate]);
+  }, [process.env.BACKEND_URL, dispatch, navigate]);
 
   useEffect(() => {
     if (!userdetails) {

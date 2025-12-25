@@ -19,9 +19,6 @@ const LoginPage = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [indianStates, setIndianStates] = useState([]);
 
-  // Base URL (Update as needed for prod)
-  // const BASE_URL = "https://serverpe.in";
-
   // --- Fetch States from API ---
   useEffect(() => {
     const fetchStates = async () => {

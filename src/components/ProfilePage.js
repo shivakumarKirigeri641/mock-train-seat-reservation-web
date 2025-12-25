@@ -33,7 +33,6 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
 
   const userdetails = useSelector((store) => store.loggedInUser);
-  const BASE_URL = process.env.BACKEND_URL;
 
   // --- REFACTORED: Fetch Logic wrapped in useCallback ---
   const fetchProfileData = useCallback(async () => {
@@ -75,7 +74,7 @@ const ProfilePage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [BASE_URL, dispatch, navigate]);
+  }, [process.env.BACKEND_URL, dispatch, navigate]);
 
   // Initial Fetch
   useEffect(() => {
