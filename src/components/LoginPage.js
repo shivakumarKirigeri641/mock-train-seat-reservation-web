@@ -223,9 +223,6 @@ const LoginPage = () => {
           <p className="text-gray-300 text-lg font-semibold mb-1">
             Desi API to challenge your UI
           </p>
-          <p className="text-gray-400 text-sm font-light">
-            Mock Train Seat Reservation System
-          </p>
         </div>
       </div>
 
