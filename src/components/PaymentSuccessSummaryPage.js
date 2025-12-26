@@ -51,7 +51,7 @@ const PaymentSuccessSummaryPage = () => {
       //update thet
       // 1. Fetch User Profile for State Info
       const profileResponse = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
 
@@ -64,16 +64,16 @@ const PaymentSuccessSummaryPage = () => {
       // 2. Fetch Payment Details
       if (paymentId) {
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/status`,
           {
             razorpay_payment_id: paymentId,
             summaryFormData: summaryFormData,
           },
           { withCredentials: true }
         );
-        console.log(response.data?.data);
-        if (response.data?.data?.successstatus) {
-          const data = response.data.data;
+        console.log(response?.data?.data);
+        if (response?.data?.data?.successstatus) {
+          const data = response?.data.data;
           setresultFullOrders(data);
           setOrderDetails({
             transaction_id: data.result_transaction.razorpay_order_id,
@@ -103,7 +103,7 @@ const PaymentSuccessSummaryPage = () => {
     } catch (error) {
       console.error("Failed to fetch details", error);
 
-      if (error.response && error.response.status === 401) {
+      if (error?.response && error?.response?.status === 401) {
         dispatch(removeloggedInUser());
         navigate("/user-login");
       } else if (error.code === "ERR_NETWORK") {
@@ -150,8 +150,8 @@ const PaymentSuccessSummaryPage = () => {
   const handleDownloadInvoice = async () => {
     setError(null);
     try {
-      response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
+      const response = await axios.get(
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
         { responseType: "blob", withCredentials: true }
       );
 

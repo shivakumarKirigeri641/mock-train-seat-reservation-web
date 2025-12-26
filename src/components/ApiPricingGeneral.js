@@ -16,8 +16,10 @@ const ApiPricingGeneral = () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/api-plans`,
-          { withCredentials: true }
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/api-plans`,
+          {
+            withCredentials: true,
+          }
         );
         setPlans(response?.data?.data);
       } catch (error) {

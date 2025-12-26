@@ -5,6 +5,13 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import loadRazorpay from "../utils/loadRazorPay";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+import ErrorDisplayModal from "./ErrorDisplayModal";
+import {
+  parseError,
+  isAuthError,
+  validateRazorpayResponse,
+  getErrorSummary,
+} from "../utils/errorHandler";
 
 // --- NavItem Component ---
 const NavItem = ({ to, label, active = false }) => (
@@ -18,37 +25,6 @@ const NavItem = ({ to, label, active = false }) => (
   >
     {label}
   </Link>
-);
-
-// --- Error Modal ---
-const ErrorModal = ({ message, onClose }) => (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-    <div className="bg-gray-800 border border-red-500/50 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl">
-      <div className="w-16 h-16 bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </div>
-      <h3 className="text-xl font-bold text-white text-center mb-2">Error</h3>
-      <p className="text-gray-400 text-center mb-6 text-sm">{message}</p>
-      <button
-        onClick={onClose}
-        className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-semibold transition-colors"
-      >
-        Close
-      </button>
-    </div>
-  </div>
 );
 
 const SummaryPage = () => {
@@ -74,13 +50,11 @@ const SummaryPage = () => {
   });
   const [formErrors, setFormErrors] = useState({});
 
-  const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8888";
-
   const fetchProfileData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
       const data = response?.data?.data || {};
@@ -100,7 +74,7 @@ const SummaryPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [BASE_URL, dispatch, navigate]);
+  }, [process.env.BACKEND_URL, dispatch, navigate]);
 
   useEffect(() => {
     if (!userdetails) {
@@ -151,21 +125,36 @@ const SummaryPage = () => {
     setErrorMsg(null);
 
     try {
-      console.log("loading razorpay");
+      // Step 1: Load Razorpay SDK
       const res = await loadRazorpay();
-      console.log("loading razorpayj....");
       if (!res) {
-        setErrorMsg("Razorpay SDK failed to load.");
+        const razorpayError = {
+          type: "RAZORPAY_ERROR",
+          message:
+            "Razorpay payment gateway failed to load. Please check your internet connection and try again.",
+          statusCode: null,
+          details: null,
+        };
+        setErrorMsg(razorpayError.message);
+        console.error("Razorpay SDK load failed");
         setIsProcessing(false);
         return;
       }
 
+      // Step 2: Create Payment Order
       const orderRes = await axios.post(
-        `${BASE_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/order`,
         { amount: selectedPlan.price },
-        { withCredentials: true }
+        { withCredentials: true, timeout: 10000 }
       );
 
+      if (!orderRes.data?.id) {
+        throw new Error(
+          "Failed to create payment order. Invalid response from server."
+        );
+      }
+
+      // Step 3: Configure Razorpay Options
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID,
         amount: orderRes.data.amount,
@@ -175,23 +164,46 @@ const SummaryPage = () => {
         order_id: orderRes.data.id,
         handler: async function (response) {
           try {
+            // Validate Razorpay response
+            const validation = validateRazorpayResponse(response);
+            if (!validation.success) {
+              setErrorMsg(validation.message);
+              return;
+            }
+
+            // Verify payment with backend
             const verifyRes = await axios.post(
-              `${BASE_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
+              `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/razorpay/verify`,
               { ...response, ...formData },
-              { withCredentials: true }
+              { withCredentials: true, timeout: 10000 }
             );
+
             if (verifyRes?.data?.statuscode) {
+              // Payment successful
               navigate(
                 `/payment-success?payment_id=${response.razorpay_payment_id}`,
                 { state: formData }
               );
             } else {
-              setErrorMsg(
-                "Payment verification failed. Please contact support."
-              );
+              const errorMsg =
+                verifyRes?.data?.message ||
+                "Payment verification failed. Please contact support.";
+              setErrorMsg(errorMsg);
+              console.error("Payment verification failed:", verifyRes.data);
             }
           } catch (err) {
-            setErrorMsg("An error occurred during verification.");
+            const parsedError = parseError(err);
+            console.error("Payment verification error:", parsedError);
+
+            if (isAuthError(parsedError)) {
+              dispatch(removeloggedInUser());
+              navigate("/user-login");
+            } else {
+              setErrorMsg(
+                parsedError.message ||
+                  "An error occurred while verifying your payment. Please contact support with your payment ID."
+              );
+            }
           }
         },
         prefill: {
@@ -200,17 +212,31 @@ const SummaryPage = () => {
           contact: formData.mobile_number,
         },
         theme: { color: "#4f46e5" },
-        modal: { ondismiss: () => setIsProcessing(false) },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+            // User closed payment modal without paying
+            console.info("Payment modal closed by user");
+          },
+        },
       };
 
-      console.log(options);
+      // Step 4: Open Razorpay Checkout
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
     } catch (error) {
-      setErrorMsg(
-        `Failed to initiate payment. Possible error: Error code:${error?.response?.status}, message:${error?.response?.data?.message}`
-      );
-      console.log(error);
+      const parsedError = parseError(error);
+      console.error("Payment initiation error:", parsedError);
+
+      if (isAuthError(parsedError)) {
+        dispatch(removeloggedInUser());
+        navigate("/user-login");
+      } else {
+        setErrorMsg(
+          parsedError.message ||
+            "Failed to initiate payment. Please check your details and try again."
+        );
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -219,15 +245,45 @@ const SummaryPage = () => {
   if (isLoading)
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-        Loading...
+        <div className="flex flex-col items-center gap-4">
+          <svg
+            className="animate-spin h-12 w-12 text-indigo-500"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <p className="text-gray-400">Loading payment details...</p>
+        </div>
       </div>
     );
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
-      {errorMsg && (
-        <ErrorModal message={errorMsg} onClose={() => setErrorMsg(null)} />
-      )}
+      {/* Error Modal with enhanced error handling */}
+      <ErrorDisplayModal
+        isOpen={!!errorMsg}
+        message={errorMsg}
+        onClose={() => setErrorMsg(null)}
+        onRetry={() => {
+          setErrorMsg(null);
+          // Form will still be populated, user can retry
+        }}
+        errorType="RAZORPAY_ERROR"
+        showDetails={false}
+      />
 
       <nav className="bg-gray-900 border-b border-gray-800 p-4 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">

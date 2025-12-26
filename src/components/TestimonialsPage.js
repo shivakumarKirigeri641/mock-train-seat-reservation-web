@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useNavigate } from "react-router";
 import axios from "axios";
 import Footer from "./Footer";
@@ -19,9 +20,10 @@ const TestimonialPage = () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/testimonials`
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/testimonials`
         );
         // Check if data exists, otherwise use fallback
+        console.log("testimonials:", response.data?.data);
         if (response.data && response?.data?.data.length > 0) {
           setTestimonials(response?.data?.data);
         } else {
@@ -42,7 +44,7 @@ const TestimonialPage = () => {
   }, []);
 
   // --- Filtering Logic ---
-  const filteredTestimonials = testimonials.filter((t) => {
+  const filteredTestimonials = testimonials?.filter((t) => {
     if (filterRole === "All") return true;
     return t.category_name === filterRole;
   });
@@ -65,12 +67,16 @@ const TestimonialPage = () => {
       <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo Section */}
             <div
               onClick={() => navigate("/")}
-              className="flex-shrink-0 font-bold text-2xl tracking-tighter text-white cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
             >
-              ServerPe<span className="text-indigo-500">.in</span>
+              <img
+                src={ServerPeLogo}
+                alt="ServerPe Logo"
+                className="w-35 h-16 group-hover:scale-105 transition-transform"
+              />
             </div>
 
             {/* Desktop Menu */}
@@ -227,20 +233,22 @@ const TestimonialPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sortedTestimonials.length > 0 ? (
-              sortedTestimonials.map((t) => (
+            {sortedTestimonials?.length > 0 ? (
+              sortedTestimonials?.map((t) => (
                 <div
                   key={t.id}
                   className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl hover:border-indigo-500/50 transition-colors flex flex-col h-full"
                 >
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-3xl border border-gray-700 shadow-inner shrink-0">
-                      {t.avatar}
+                      {t?.avatar}
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-lg">{t.name}</h4>
+                      <h4 className="text-white font-bold text-lg">
+                        {t.user_name}
+                      </h4>
                       <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium bg-indigo-900/30 px-2 py-1 rounded inline-block mt-1">
-                        {t.role}
+                        {t.category_name}
                       </p>
                     </div>
                   </div>
@@ -249,12 +257,12 @@ const TestimonialPage = () => {
                       "
                     </span>
                     <p className="text-gray-300 text-base leading-relaxed relative z-10 pl-2">
-                      {t.text}
+                      {t?.message}
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-gray-700 text-right">
                     <span className="text-xs text-gray-500 font-mono">
-                      {new Date(t.date).toLocaleDateString()}
+                      {new Date(t?.created_at).toLocaleDateString()}
                     </span>
                   </div>
                 </div>

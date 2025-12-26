@@ -48,7 +48,7 @@ const WalletAndRechargesPage = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/wallet-recharges`,
         { withCredentials: true }
       );
       const data = response.data.data;
@@ -129,24 +129,40 @@ const WalletAndRechargesPage = () => {
 
   // Mock Download Function
   const downloadInvoice = async (txn) => {
-    response = await axios.get(
-      `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${txn?.id}`,
-      { responseType: "blob", withCredentials: true }
-    );
+    try {
+      const response = await axios.get(
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${txn?.id}`,
+        { responseType: "blob", withCredentials: true, timeout: 15000 }
+      );
 
-    const blob = new Blob([response.data], {
-      type: "application/pdf",
-    });
+      if (!response.data || response.data.size === 0) {
+        alert("Invoice file is empty or invalid. Please try again.");
+        return;
+      }
 
-    const url = window.URL.createObjectURL(blob);
+      const blob = new Blob([response.data], {
+        type: "application/pdf",
+      });
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ServerPe_Invoice_${txn?.id}.pdf`;
-    document.body.appendChild(a);
-    a.click();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ServerPe_Invoice_${txn?.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
 
-    a.remove();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Invoice download error:", error);
+      const errorMsg =
+        error.response?.status === 401
+          ? "Your session has expired. Please log in again."
+          : error.response?.data?.message
+          ? `Download failed: ${error.response.data.message}`
+          : "Failed to download invoice. Please try again.";
+      alert(errorMsg);
+    }
   };
 
   // ---------------- LOADING STATE ----------------

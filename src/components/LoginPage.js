@@ -19,15 +19,12 @@ const LoginPage = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [indianStates, setIndianStates] = useState([]);
 
-  // Base URL (Update as needed for prod)
-  // const BASE_URL = "https://serverpe.in";
-
   // --- Fetch States from API ---
   useEffect(() => {
     const fetchStates = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/states`,
+          `${process.env.BACKEND_URL}/mockapis/serverpeuser/states`,
           {},
           { widthCredentials: true }
         );
@@ -80,7 +77,7 @@ const LoginPage = () => {
       // API Call: Send OTP
       // Payload structure matched to user request
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/send-otp`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/send-otp`,
         {
           user_name: username,
           mobile_number: mobile,
@@ -117,7 +114,7 @@ const LoginPage = () => {
     try {
       // API Call: Verify OTP
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
+        `${process.env.BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
         {
           mobile_number: mobile,
           otp: otp,
