@@ -713,26 +713,6 @@ const APIDocumentationGeneralPage = () => {
                     📍 Get your API key from your Dashboard
                   </p>
                 </div>
-
-                {/* X-Secret-Key */}
-                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <code className="text-indigo-400 font-semibold text-sm">
-                      x-secret-key
-                    </code>
-                    <span className="px-2 py-1 bg-red-500/20 text-red-400 text-[10px] font-bold rounded">
-                      REQUIRED
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mb-2">
-                    Your secret key for enhanced security. Keep this key
-                    confidential and never share it publicly or in client-side
-                    code.
-                  </p>
-                  <p className="text-[11px] text-gray-500 italic">
-                    📍 Get your secret key from your Dashboard
-                  </p>
-                </div>
               </div>
 
               {/* Postman Integration Info */}
@@ -767,12 +747,6 @@ const APIDocumentationGeneralPage = () => {
                           {api_key}
                         </code>{" "}
                         = Your x-api-key value
-                      </li>
-                      <li>
-                        <code className="text-indigo-300 font-mono">
-                          {secret_key}
-                        </code>{" "}
-                        = Your x-secret-key value
                       </li>
                     </ul>
                   </li>

@@ -33,7 +33,6 @@ const menuItems = [
     path: "/api-documentation",
     icon: <FiBookOpen />,
   },*/
-  { label: "Profile", path: "/profile", icon: <FiUser /> },
   { label: "Logout", path: "/logout", icon: <FiClock /> },
 ];
 

@@ -46,23 +46,21 @@ const SummaryPage = () => {
     user_name: "",
     myemail: "",
     mobile_number: "",
-    address: "",
   });
   const [formErrors, setFormErrors] = useState({});
 
   const fetchProfileData = useCallback(async () => {
     setIsLoading(true);
     try {
+      console.log("test");
       const response = await axios.get(
         `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/user-profile`,
         { withCredentials: true }
       );
+      console.log(response?.data);
       const data = response?.data?.data || {};
       setFormData({
-        user_name: data.user_name || "",
-        myemail: data.myemail || "",
         mobile_number: data.mobile_number || "",
-        address: data.address || "",
       });
     } catch (error) {
       if (error.response?.status === 401) {
@@ -82,7 +80,7 @@ const SummaryPage = () => {
       return;
     }
     fetchProfileData();
-  }, [userdetails, navigate, fetchProfileData]);
+  }, []);
 
   const validateForm = () => {
     let errors = {};
@@ -100,9 +98,6 @@ const SummaryPage = () => {
     } else if (!phoneRegex.test(formData.mobile_number)) {
       errors.mobile_number = "Enter a valid 10-digit Indian mobile number";
     }
-    if (!formData.address.trim())
-      errors.address = "Billing address is required";
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -385,27 +380,6 @@ const SummaryPage = () => {
                 {formErrors.mobile_number && (
                   <p className="text-red-500 text-[10px] mt-1">
                     {formErrors.mobile_number}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
-                  Billing Address
-                </label>
-                <textarea
-                  name="address"
-                  rows="2"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  className={`w-full bg-gray-900 border ${
-                    formErrors.address ? "border-red-500" : "border-gray-700"
-                  } rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none`}
-                  placeholder="Street, City, State, ZIP"
-                />
-                {formErrors.address && (
-                  <p className="text-red-500 text-[10px] mt-1">
-                    {formErrors.address}
                   </p>
                 )}
               </div>

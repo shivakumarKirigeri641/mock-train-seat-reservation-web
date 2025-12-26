@@ -258,7 +258,6 @@ const WalletAndRechargesPage = () => {
                 active={true}
               />
               <NavItem to="/give-feedback" label="Give feedback" />
-              <NavItem to="/profile" label="Profile" />
             </div>
 
             {/* Logout */}
@@ -351,12 +350,6 @@ const WalletAndRechargesPage = () => {
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 Give feedback
-              </Link>
-              <Link
-                to="/profile"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Profile
               </Link>
               <Link
                 to="/logout"

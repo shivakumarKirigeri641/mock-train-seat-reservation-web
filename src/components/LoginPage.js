@@ -1,49 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addloggedInUser } from "../store/slices/loggedInUserSlice";
+import ServerPeLogo from "../images/ServerPe_Logo.svg";
+import "../styles/loginpage.css"; // Custom CSS for animations
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // State
-  const [username, setUsername] = useState("");
+
+  // State Management
   const [mobile, setMobile] = useState("");
-  const [state, setState] = useState(-1); // Default ID 11
-  //const [state, setState] = useState(); // Default ID 11
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState("form"); // form | otp
+  const [step, setStep] = useState("mobile"); // mobile | otp
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [indianStates, setIndianStates] = useState([]);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [mobileForOtp, setMobileForOtp] = useState("");
 
-  // --- Fetch States from API ---
+  // OTP Timer countdown
   useEffect(() => {
-    const fetchStates = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.BACKEND_URL}/mockapis/serverpeuser/states`,
-          {},
-          { widthCredentials: true }
-        );
-        // Assuming response.data is: [{ id: 1, name: "Karnataka" }, ...]
-        // If it's just an array of strings, the map below will need adjustment.
-        setIndianStates(response?.data?.data);
-      } catch (error) {
-        console.error("Failed to fetch states", error);
-        // Fallback or error handling can be added here
-      }
-    };
-    fetchStates();
-  }, []);
+    let interval;
+    if (otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [otpTimer]);
 
   // Clear specific error when user types
-  useEffect(() => {
-    if (username) setErrors((prev) => ({ ...prev, username: "" }));
-  }, [username]);
-
   useEffect(() => {
     if (mobile) setErrors((prev) => ({ ...prev, mobile: "" }));
   }, [mobile]);
@@ -56,55 +45,98 @@ const LoginPage = () => {
     if (agreedToTerms) setErrors((prev) => ({ ...prev, terms: "" }));
   }, [agreedToTerms]);
 
-  const validateForm = () => {
-    let err = {};
-    if (!username.trim()) err.username = "Username is required.";
-    if (!mobile.match(/^[6-9]\d{9}$/))
-      err.mobile = "Enter valid 10-digit mobile number.";
-    if (!state) err.state = "Select your state.";
-    if (!agreedToTerms) err.terms = "You must agree to the Terms & Conditions.";
-    setErrors(err);
-    return Object.keys(err).length === 0;
+  // Validate mobile number format
+  const validateMobile = (mobileNum) => {
+    const mobileRegex = /^[6-9]\d{9}$/;
+    return mobileRegex.test(mobileNum);
   };
 
+  // Validate OTP format
+  const validateOTP = (otpValue) => {
+    const otpRegex = /^\d{4,6}$/;
+    return otpRegex.test(otpValue);
+  };
+
+  // Handle Send OTP
   const handleSendOtp = async () => {
-    if (!validateForm()) return;
+    let err = {};
+
+    // Validation
+    if (!mobile.trim()) {
+      err.mobile = "Mobile number is required.";
+    } else if (!validateMobile(mobile)) {
+      err.mobile =
+        "Please enter a valid 10-digit mobile number starting with 6-9.";
+    }
+
+    if (!agreedToTerms) {
+      err.terms = "You must agree to the Terms & Conditions to proceed.";
+    }
+
+    if (Object.keys(err).length > 0) {
+      setErrors(err);
+      return;
+    }
 
     setIsLoading(true);
     setErrors({});
+    setSuccessMessage("");
 
     try {
       // API Call: Send OTP
-      // Payload structure matched to user request
       const response = await axios.post(
         `${process.env.BACKEND_URL}/mockapis/serverpeuser/send-otp`,
         {
-          user_name: username,
           mobile_number: mobile,
-          stateid: parseInt(state), // Ensure ID is sent as integer
         },
         { withCredentials: true }
       );
 
-      if (response.data.successstatus) {
+      if (response.data.successstatus || response.status === 200) {
         setStep("otp");
+        setMobileForOtp(mobile);
         setOtp("");
+        setOtpTimer(180); // 2 minutes timer
+        setSuccessMessage(`OTP sent to ${mobile}. Valid for 3 minutes.`);
       } else {
-        setErrors({ form: response.data.error || "Failed to send OTP." });
+        setErrors({
+          form: response.data.error || "Failed to send OTP. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Send OTP Error:", error);
-      setErrors({
-        form: error.response?.data?.error || "Network error. Please try again.",
-      });
+      let errorMsg = "Network error. Please try again.";
+
+      if (error.response?.status === 400) {
+        errorMsg =
+          error.response?.data?.error ||
+          "Invalid mobile number. Please check and try again.";
+      } else if (error.response?.status === 429) {
+        errorMsg =
+          "Too many attempts. Please wait a few minutes before trying again.";
+      } else if (error.response?.status === 500) {
+        errorMsg = "Server error. Please try again later.";
+      }
+
+      setErrors({ form: errorMsg });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handle Verify OTP
   const handleVerifyOtp = async () => {
-    if (!otp.match(/^\d{4,6}$/)) {
-      setErrors({ otp: "Enter valid OTP (4-6 digits)." });
+    let err = {};
+
+    // Validation
+    if (!otp.trim()) {
+      err.otp = "OTP is required.";
+    } else if (!validateOTP(otp)) {
+      err.otp = "Please enter a valid OTP (4-6 digits).";
+    }
+
+    if (Object.keys(err).length > 0) {
+      setErrors(err);
       return;
     }
 
@@ -116,55 +148,94 @@ const LoginPage = () => {
       const response = await axios.post(
         `${process.env.BACKEND_URL}/mockapis/serverpeuser/verify-otp`,
         {
-          mobile_number: mobile,
+          mobile_number: mobileForOtp,
           otp: otp,
         },
         { withCredentials: true }
       );
 
-      if (response.data.successstatus) {
-        // localStorage.setItem("token", response.data.token); // Store token if needed
-        //call redux to store the user details
+      if (response.data.successstatus || response.status === 200) {
+        // Store user details in Redux
         dispatch(addloggedInUser(response?.data?.data));
-        navigate("/user-home");
+        // Navigate to home with success animation
+        setTimeout(() => {
+          navigate("/user-home");
+        }, 500);
       } else {
-        setErrors({ otp: response.data.error || "Invalid OTP." });
+        setErrors({
+          otp:
+            response.data.error || "Invalid OTP. Please check and try again.",
+        });
       }
     } catch (error) {
       console.error("Verify OTP Error:", error);
-      setErrors({
-        otp:
-          error.response?.data?.error ||
-          "Verification failed. Please try again.",
-      });
+      let errorMsg = "Verification failed. Please try again.";
+
+      if (error.response?.status === 400) {
+        errorMsg = "Invalid OTP. Please check and try again.";
+      } else if (error.response?.status === 401) {
+        errorMsg = "OTP expired. Please request a new one.";
+      } else if (error.response?.status === 429) {
+        errorMsg = "Too many attempts. Please wait before trying again.";
+      }
+
+      setErrors({ otp: errorMsg });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handle Edit Mobile Number
+  const handleEditMobile = () => {
+    setStep("mobile");
+    setOtp("");
+    setOtpTimer(0);
+    setErrors({});
+    setSuccessMessage("");
+  };
+
   const handleKeyDown = (e, action) => {
-    if (e.key === "Enter") action();
+    if (e.key === "Enter" && !isLoading) {
+      action();
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-950 px-4 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden relative">
-      {/* Background Decorative Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl opacity-50 pointer-events-none animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-3xl opacity-50 pointer-events-none animate-pulse"></div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4 font-sans selection:bg-indigo-500 selection:text-white overflow-hidden relative">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
 
-      {/* Main Card */}
-      <motion.div
-        transition={{ duration: 0.5 }}
-        className="relative bg-gray-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/50 z-10"
-      >
+      {/* Header Section */}
+      <div className="w-full max-w-2xl mb-4 relative z-10 animate-fadeInDown">
+        <div className="text-center mb-2">
+          <img
+            src={ServerPeLogo}
+            alt="ServerPe Logo"
+            className="h-16 mx-auto mb-4"
+          />
+          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-purple-300 to-indigo-300 mb-2">
+            ServerPe App Solutions
+          </h1>
+          <p className="text-gray-300 text-lg font-semibold mb-1">
+            Desi API to challenge your UI
+          </p>
+        </div>
+      </div>
+
+      {/* Main Login Card */}
+      <div className="relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-2xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700/50 z-10 animate-slideUp">
+        {/* Glow Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 rounded-3xl pointer-events-none group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-all duration-500"></div>
+
         {/* Header Icon */}
-        <motion.div
-          transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-          className="flex justify-center mb-6"
-        >
-          <div className="p-4 bg-gray-900/80 rounded-full border border-gray-600/50 shadow-inner group">
+        <div className="flex justify-center mb-8 animate-bounceIn">
+          <div className="p-4 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-full border border-indigo-500/30 shadow-lg shadow-indigo-500/10 group hover:shadow-indigo-500/30 transition-all duration-300">
             <svg
-              className="w-10 h-10 text-indigo-500 group-hover:scale-110 transition-transform duration-300"
+              className="w-10 h-10 text-indigo-400 group-hover:text-indigo-300 group-hover:scale-110 transition-all duration-300"
               fill="none"
               strokeWidth="2"
               stroke="currentColor"
@@ -173,119 +244,156 @@ const LoginPage = () => {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
               />
             </svg>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Title */}
+        {/* Title Section */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white leading-tight tracking-tight">
-            Subscribe for mock APIs
-          </h2>
-          <p className="text-indigo-400 text-xs font-medium tracking-wide uppercase mt-1">
-            - Your mock seat is pakka -
+          <h2 className="text-3xl font-bold text-white mb-2">Secure Login</h2>
+          <p className="text-gray-400 text-sm">
+            Enter your mobile number to get started with your account
           </p>
         </div>
 
-        {/* Global Form Error */}
-        {errors.form && (
-          <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg text-red-200 text-sm text-center animate-shake">
-            {errors.form}
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-300 text-sm text-center animate-slideDown">
+            ✓ {successMessage}
           </div>
         )}
 
-        {/* Form Content Swapper */}
-        <div className="relative overflow-hidden min-h-[320px]">
-          <AnimatePresence mode="wait">
-            {/* STEP 1: INITIAL FORM */}
-            {step === "form" && (
-              <motion.div
-                key="form"
-                transition={{ duration: 0.3 }}
-                className="space-y-5"
-              >
-                {/* Username Input */}
-                <div className="group">
-                  <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    className={`w-full px-4 py-3 bg-gray-900/50 border ${
-                      errors.username
-                        ? "border-red-500/50 focus:border-red-500"
-                        : "border-gray-600 focus:border-indigo-500"
-                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all`}
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, handleSendOtp)}
-                  />
-                  {errors.username && (
-                    <p className="text-red-400 text-xs mt-1 ml-1 animate-pulse">
-                      {errors.username}
-                    </p>
-                  )}
-                </div>
+        {/* Global Form Error */}
+        {errors.form && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm text-center animate-shake">
+            ✕ {errors.form}
+          </div>
+        )}
 
-                {/* Mobile Input */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                    Mobile Number
-                  </label>
+        {/* Form Content */}
+        <div className="relative overflow-hidden">
+          {/* STEP 1: MOBILE NUMBER */}
+          {step === "mobile" && (
+            <div className="space-y-6 animate-fadeIn">
+              {/* Mobile Number Input */}
+              <div className="group">
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                  Mobile Number
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
+                    <span>+91</span>
+                  </div>
                   <input
                     type="tel"
-                    className={`w-full px-4 py-3 bg-gray-900/50 border ${
+                    inputMode="numeric"
+                    className={`w-full pl-12 pr-4 py-3.5 bg-gray-900/40 border ${
                       errors.mobile
-                        ? "border-red-500/50 focus:border-red-500"
-                        : "border-gray-600 focus:border-indigo-500"
-                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all`}
-                    placeholder="98765 43210"
+                        ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20"
+                        : "border-gray-600/50 focus:border-indigo-500 focus:ring-indigo-500/20"
+                    } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300`}
+                    placeholder="9876543210"
                     value={mobile}
                     maxLength={10}
-                    onChange={(e) => setMobile(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      setMobile(value);
+                    }}
                     onKeyDown={(e) => handleKeyDown(e, handleSendOtp)}
+                    disabled={isLoading}
                   />
-                  {errors.mobile && (
-                    <p className="text-red-400 text-xs mt-1 ml-1 animate-pulse">
-                      {errors.mobile}
-                    </p>
-                  )}
                 </div>
+                {errors.mobile && (
+                  <p className="text-red-400 text-xs mt-2 ml-1 animate-slideDown flex items-center gap-1">
+                    <span>✕</span> {errors.mobile}
+                  </p>
+                )}
+                {mobile && validateMobile(mobile) && !errors.mobile && (
+                  <p className="text-emerald-400 text-xs mt-2 ml-1 animate-fadeIn flex items-center gap-1">
+                    <span>✓</span> Valid mobile number
+                  </p>
+                )}
+              </div>
 
-                {/* State Dropdown */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                    State
-                  </label>
-                  <div className="relative">
-                    <select
-                      className={`w-full px-4 py-3 bg-gray-900/50 border ${
-                        errors.state ? "border-red-500/50" : "border-gray-600"
-                      } rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none transition-all cursor-pointer`}
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
+              {/* Terms & Conditions Checkbox */}
+              <div className="flex items-start gap-3 p-3 bg-gray-900/30 rounded-lg border border-gray-700/30 hover:border-gray-600/30 transition-all">
+                <input
+                  id="terms"
+                  type="checkbox"
+                  className="w-5 h-5 mt-0.5 bg-gray-900 border border-gray-600 rounded cursor-pointer focus:ring-2 focus:ring-indigo-500 focus:ring-offset-gray-800 text-indigo-600 accent-indigo-600 transition-all"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                />
+                <div className="flex-1 text-sm">
+                  <label
+                    htmlFor="terms"
+                    className="text-gray-300 cursor-pointer"
+                  >
+                    I agree to the{" "}
+                    <a
+                      href="/api-terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 underline font-semibold transition-colors"
                     >
-                      <option value="" className="text-gray-500">
-                        Select state
-                      </option>
-                      {indianStates?.length > 0 ? (
-                        indianStates?.map((s) => (
-                          <option key={s?.id || s} value={s?.id || s}>
-                            {s?.state_name || s}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="" disabled>
-                          Loading states...
-                        </option>
-                      )}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                      Terms & Conditions
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/privacy-policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 underline font-semibold transition-colors"
+                    >
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+              </div>
+              {errors.terms && (
+                <p className="text-red-400 text-xs animate-slideDown flex items-center gap-1 ml-1">
+                  <span>✕</span> {errors.terms}
+                </p>
+              )}
+
+              {/* Send OTP Button */}
+              <button
+                onClick={handleSendOtp}
+                disabled={isLoading || !mobile}
+                className="w-full relative group bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 disabled:from-indigo-800 disabled:to-indigo-800 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="flex items-center justify-center gap-2 relative z-10">
+                  {isLoading ? (
+                    <>
                       <svg
-                        className="h-4 w-4"
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Sending OTP...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -293,212 +401,216 @@ const LoginPage = () => {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
                         />
                       </svg>
-                    </div>
-                  </div>
-                  {errors.state && (
-                    <p className="text-red-400 text-xs mt-1 ml-1 animate-pulse">
-                      {errors.state}
-                    </p>
+                      Send OTP Code
+                    </>
                   )}
                 </div>
+              </button>
 
-                {/* Terms & Conditions Checkbox */}
-                <div className="flex items-start mt-2">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="terms"
-                      aria-describedby="terms"
-                      type="checkbox"
-                      className="w-4 h-4 bg-gray-900 border border-gray-600 rounded focus:ring-2 focus:ring-indigo-500 focus:ring-offset-gray-800 text-indigo-600"
-                      checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="terms" className="text-gray-400">
-                      I agree to the{" "}
-                      <span
-                        className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
-                        onClick={() => window.open("/api-terms", "_blank")}
-                      >
-                        API Terms & Conditions
-                      </span>
-                    </label>
-                  </div>
-                </div>
-                {errors.terms && (
-                  <p className="text-red-400 text-xs mt-1 ml-1 animate-pulse">
-                    {errors.terms}
+              {/* Info Box */}
+              <div className="p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-lg text-center">
+                <p className="text-xs text-gray-400">
+                  💡 OTP will be sent via SMS. Valid for 3 minutes.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: OTP VERIFICATION */}
+          {step === "otp" && (
+            <div className="space-y-6 animate-fadeIn">
+              {/* Verification Info */}
+              <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-4 text-center">
+                <p className="text-gray-300 text-sm mb-1">
+                  Enter the code sent to
+                </p>
+                <p className="font-bold text-indigo-300 text-lg">
+                  {mobileForOtp}
+                </p>
+              </div>
+
+              {/* OTP Input */}
+              <div className="group">
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2 text-center">
+                  Enter OTP Code
+                </label>
+                <input
+                  autoFocus
+                  type="text"
+                  inputMode="numeric"
+                  className={`w-full px-4 py-4 bg-gray-900/40 border ${
+                    errors.otp
+                      ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20"
+                      : "border-gray-600/50 focus:border-emerald-500 focus:ring-emerald-500/20"
+                  } rounded-xl text-white placeholder-gray-500 text-center tracking-[0.3em] text-3xl font-mono focus:outline-none focus:ring-2 transition-all duration-300`}
+                  placeholder="0000"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setOtp(value);
+                  }}
+                  onKeyDown={(e) => handleKeyDown(e, handleVerifyOtp)}
+                  disabled={isLoading}
+                />
+                {errors.otp && (
+                  <p className="text-red-400 text-xs mt-2 text-center animate-slideDown flex items-center justify-center gap-1">
+                    <span>✕</span> {errors.otp}
                   </p>
                 )}
+              </div>
 
-                {/* Action Button */}
-                <button
-                  onClick={handleSendOtp}
-                  disabled={isLoading}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/30 transition-all transform active:scale-[0.98] mt-4 flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
-                    "Send OTP Code"
-                  )}
-                </button>
-              </motion.div>
-            )}
-
-            {/* STEP 2: OTP VERIFICATION */}
-            {step === "otp" && (
-              <motion.div
-                key="otp"
-                transition={{ duration: 0.3 }}
-                className="space-y-6 pt-2"
-              >
-                {/* Info Banner */}
-                <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-4 text-center">
-                  <p className="text-gray-300 text-sm">
-                    Enter the code sent to <br />
+              {/* Timer */}
+              <div className="text-center">
+                {otpTimer > 0 ? (
+                  <p className="text-sm text-gray-400">
+                    Resend OTP in{" "}
                     <span className="font-bold text-indigo-400 text-lg">
-                      {mobile}
+                      {otpTimer}s
                     </span>
                   </p>
-                </div>
-
-                {/* OTP Input */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 text-center">
-                    One Time Password
-                  </label>
-                  <input
-                    autoFocus
-                    type="text"
-                    className={`w-full px-4 py-3 bg-gray-900/50 border ${
-                      errors.otp
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-600 focus:border-emerald-500"
-                    } rounded-xl text-white placeholder-gray-600 text-center tracking-[0.5em] text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all`}
-                    placeholder="••••"
-                    maxLength={4}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, handleVerifyOtp)}
-                  />
-                  {errors.otp && (
-                    <p className="text-red-400 text-xs mt-2 text-center animate-pulse">
-                      {errors.otp}
-                    </p>
-                  )}
-                </div>
-
-                {/* Verify Button */}
-                <button
-                  onClick={handleVerifyOtp}
-                  disabled={isLoading}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all transform active:scale-[0.98] flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
-                    "Verify & Login"
-                  )}
-                </button>
-
-                {/* Back Link */}
-                <div className="text-center">
+                ) : (
                   <button
-                    onClick={() => {
-                      setStep("form");
-                      setErrors({});
-                    }}
-                    className="text-gray-500 hover:text-indigo-400 text-sm transition-colors flex items-center justify-center gap-2 mx-auto"
+                    onClick={handleSendOtp}
+                    className="text-sm text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Edit mobile number
+                    Resend OTP
                   </button>
+                )}
+              </div>
+
+              {/* Verify Button */}
+              <button
+                onClick={handleVerifyOtp}
+                disabled={isLoading || !otp}
+                className="w-full relative group bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 disabled:from-emerald-800 disabled:to-emerald-800 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="flex items-center justify-center gap-2 relative z-10">
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      Verify & Login
+                    </>
+                  )}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </button>
+
+              {/* Edit Mobile Button */}
+              <button
+                onClick={handleEditMobile}
+                className="w-full py-2.5 text-gray-400 hover:text-indigo-400 border border-gray-700/50 hover:border-indigo-500/30 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Edit Mobile Number
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* --- Back to Home Link --- */}
-        <div className="text-center mt-6">
+        {/* Back to Home Link */}
+        <div className="text-center mt-8 pt-6 border-t border-gray-700/30">
           <button
             onClick={() => navigate("/")}
-            className="text-gray-500 hover:text-indigo-400 text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto group"
+            className="text-gray-400 hover:text-indigo-400 text-sm font-medium transition-colors flex items-center justify-center gap-2 mx-auto group"
           >
             <span className="group-hover:-translate-x-1 transition-transform">
-              &larr;
+              ←
             </span>
             Back to Home
           </button>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Disclaimer */}
-      <motion.div className="mt-8 max-w-md text-center px-4">
-        <p className="text-[10px] text-gray-500 leading-relaxed border border-gray-700/50 p-3 rounded-lg bg-gray-800/30 backdrop-blur-sm">
-          <span className="font-bold text-red-400 block mb-1">
-            ⚠️ DISCLAIMER
-          </span>
-          This is a sample demo UI developed with provided APIs for testing &
-          learning purposes only. No real data is processed. Check the developer
-          console for API logs.
-        </p>
-      </motion.div>
+      {/* Footer Info */}
+      <div className="mt-10 max-w-md text-center px-4 relative z-10 animate-fadeInUp">
+        <div className="p-4 bg-gradient-to-r from-gray-800/40 to-gray-900/40 backdrop-blur-sm border border-gray-700/30 rounded-lg">
+          <p className="text-xs text-gray-400 leading-relaxed mb-3">
+            <span className="block font-bold text-indigo-300 mb-2">
+              🔒 Secure & Private
+            </span>
+            Your data is encrypted and safe. This demo uses mock APIs for
+            testing purposes only.
+          </p>
+          <div className="flex justify-center gap-3 pt-3 border-t border-gray-700/30">
+            <a
+              href="/api-terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
+            >
+              Terms
+            </a>
+            <span className="text-gray-600">|</span>
+            <a
+              href="/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
+            >
+              Privacy
+            </a>
+            <span className="text-gray-600">|</span>
+            <a
+              href="/contact-me"
+              className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
+            >
+              Contact
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

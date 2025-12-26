@@ -235,7 +235,6 @@ const FeedbackForm = () => {
                 label="Give feedback"
                 active={true}
               />
-              <NavItem to="/profile" label="Profile" />
             </div>
 
             {/* Logout */}
@@ -328,12 +327,6 @@ const FeedbackForm = () => {
                 className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
               >
                 Give feedback
-              </Link>
-              <Link
-                to="/profile"
-                className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
-              >
-                Profile
               </Link>
               <Link
                 to="/logout"

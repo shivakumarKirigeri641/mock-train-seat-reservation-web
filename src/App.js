@@ -21,7 +21,6 @@ import AboutMe from "./components/AboutMe";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsAndConditions from "./components/TermsAndConditions";
 import WalletAndRechargesPage from "./components/WalletAndRechargesPage";
-import ProfilePage from "./components/ProfilePage";
 import APIDocumentationGeneralPage from "./components/APIDocumentationGeneralPage";
 import ApiPricingGeneral from "./components/ApiPricingGeneral";
 import ApiTermsPage from "./components/ApiTermsPage";
@@ -80,7 +79,6 @@ const appRouter = createBrowserRouter([
           { path: "/wallet-recharge", element: <WalletAndRechargesPage /> },
           { path: "/give-feedback", element: <FeedbackForm /> },
           { path: "/plan-summary", element: <SummaryPage /> },
-          { path: "/profile", element: <ProfilePage /> },
           { path: "/refund-policy", element: <RefundPolicyPage /> },
           {
             path: "/payment-success",
