@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import ServerPeLogo from "../images/ServerPe_Logo.jpg";
-import ServerPeLogo from "../images/ServerPe_Logo.jpg";
+import ServerPeLogo from "../images/ServerPe_Logo.svg";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const ApiUsage = () => {
   const navigate = useNavigate();
@@ -114,8 +114,13 @@ const ApiUsage = () => {
   // ---------------- LOADING STATE ----------------
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-6 animate-pulse">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center text-white">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        </div>
+        <div className="flex flex-col items-center gap-6 animate-pulse relative z-10">
           <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700">
             <svg
               className="w-8 h-8 text-indigo-500 animate-spin"
@@ -150,8 +155,13 @@ const ApiUsage = () => {
   // ---------------- ERROR STATE ----------------
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white px-6">
-        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center text-white px-6">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        </div>
+        <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center relative z-10">
           <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
             <svg
               className="w-8 h-8"
@@ -189,20 +199,27 @@ const ApiUsage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- TOP NAVIGATION BAR --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
             <div
               onClick={() => navigate("/user-home")}
-              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+              className="flex items-center gap-3 cursor-pointer group"
             >
               <img
                 src={ServerPeLogo}
                 alt="ServerPe Logo"
-                className="w-35 h-16 group-hover:scale-105 transition-transform"
+                className="h-14 group-hover:scale-105 transition-transform duration-300"
               />
             </div>
 
@@ -326,12 +343,14 @@ const ApiUsage = () => {
       </nav>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-white mb-8">Usage Analytics</h1>
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-10">
+        <h1 className="text-3xl font-bold text-white mb-8 animate-fadeInDown">
+          Usage Analytics
+        </h1>
 
         {/* 1. Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10 animate-slideUp">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 p-6 rounded-2xl shadow-lg hover:border-gray-600/50 transition-all hover:shadow-xl">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Total Calls
             </p>
@@ -342,7 +361,7 @@ const ApiUsage = () => {
               Lifetime requests
             </span>
           </div>
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 p-6 rounded-2xl shadow-lg hover:border-gray-600/50 transition-all hover:shadow-xl">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Avg. Latency
             </p>
@@ -351,7 +370,7 @@ const ApiUsage = () => {
             </h3>
             <span className="text-xs text-gray-500 mt-1">Global average</span>
           </div>
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 p-6 rounded-2xl shadow-lg hover:border-gray-600/50 transition-all hover:shadow-xl">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               GET Requests
             </p>
@@ -360,7 +379,7 @@ const ApiUsage = () => {
             </h3>
             <span className="text-xs text-gray-500 mt-1">Read operations</span>
           </div>
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-lg">
+          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 p-6 rounded-2xl shadow-lg hover:border-gray-600/50 transition-all hover:shadow-xl">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               POST Requests
             </p>
@@ -372,9 +391,12 @@ const ApiUsage = () => {
         </div>
 
         {/* 2. Usage Graph (CSS Bar Chart) */}
-        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-10 shadow-xl">
-          <h3 className="text-lg font-bold text-white mb-6">
-            Traffic Overview
+        <div
+          className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 rounded-2xl p-8 mb-10 shadow-lg animate-slideUp"
+          style={{ animationDelay: "0.1s" }}
+        >
+          <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <span className="text-indigo-500">📊</span> Traffic Overview
           </h3>
           <div className="flex items-end justify-between h-48 gap-2 sm:gap-4">
             {dailyStats?.map((item, index) => {
@@ -412,9 +434,12 @@ const ApiUsage = () => {
         </div>
 
         {/* 3. Detailed Logs & Filters */}
-        <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden">
+        <div
+          className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 rounded-2xl shadow-lg overflow-hidden animate-slideUp"
+          style={{ animationDelay: "0.2s" }}
+        >
           {/* Header & Filters */}
-          <div className="p-6 border-b border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-6 border-b border-gray-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-gray-800/50 to-transparent">
             <h3 className="text-lg font-bold text-white">Request Logs</h3>
             <div className="flex flex-wrap gap-3">
               <select
@@ -444,7 +469,7 @@ const ApiUsage = () => {
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-400">
-              <thead className="text-xs text-gray-500 uppercase bg-gray-900/50">
+              <thead className="text-xs text-gray-500 uppercase bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-700/50">
                 <tr>
                   <th className="px-6 py-4">Time</th>
                   <th className="px-6 py-4">Method</th>
@@ -518,7 +543,7 @@ const ApiUsage = () => {
           </div>
 
           {/* Pagination Footer */}
-          <div className="bg-gray-900/30 px-6 py-4 border-t border-gray-700 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-gray-900/60 to-gray-900/30 px-6 py-4 border-t border-gray-700/50 flex items-center justify-between">
             <span className="text-xs text-gray-500">
               Showing {filteredLogs.length} results
             </span>

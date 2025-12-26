@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
 import ConfettiSparkles from "./ConfettiSparkles";
-import ServerPeLogo from "../images/ServerPe_Logo.jpg";
+import ServerPeLogo from "../images/ServerPe_Logo.svg";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 const UserHomePage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ const UserHomePage = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
   // State for Credentials Visibility
-  const [showSecret, setShowSecret] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
 
   const fetchDashboardData = useCallback(async () => {
@@ -200,7 +200,13 @@ const UserHomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
       {/* --- WELCOME SNACKBAR --- */}
       {showWelcomeMessage && <ConfettiSparkles />}
       {showWelcomeMessage && (
@@ -232,18 +238,18 @@ const UserHomePage = () => {
       )}
 
       {/* --- NAVIGATION BAR --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
             <div
               onClick={() => navigate("/user-home")}
-              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+              className="flex items-center gap-3 cursor-pointer group"
             >
               <img
                 src={ServerPeLogo}
                 alt="ServerPe Logo"
-                className="w-35 h-16 group-hover:scale-105 transition-transform"
+                className="h-14 group-hover:scale-105 transition-transform duration-300"
               />
             </div>
 
@@ -454,101 +460,8 @@ const UserHomePage = () => {
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
-                  Client Secret
-                </label>
-                <div className="relative group">
-                  <input
-                    type={showSecret ? "text" : "password"}
-                    readOnly
-                    value={userData?.user_details?.secret_key || ""}
-                    className="w-full bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded-lg p-3 pr-20 focus:ring-1 focus:ring-indigo-500 focus:outline-none font-mono"
-                  />
-                  <div className="absolute right-2 top-2 flex items-center gap-1">
-                    <button
-                      onClick={() => setShowSecret(!showSecret)}
-                      className="p-1 text-gray-500 hover:text-white transition-colors"
-                      title={showSecret ? "Hide" : "Show"}
-                    >
-                      {showSecret ? (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleCopy(userData?.user_details?.secret_key, "secret")
-                      }
-                      className="p-1 text-gray-500 hover:text-white transition-colors"
-                      title="Copy Secret"
-                    >
-                      {copiedField === "secret" ? (
-                        <svg
-                          className="w-5 h-5 text-green-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
               <div className="mt-6 pt-4 border-t border-gray-700">
-                <p className="text-xs text-red-400 flex items-center gap-1">
+                <p className="text-xs text-cyan-400 flex items-center gap-1">
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -559,10 +472,10 @@ const UserHomePage = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  Keep your Client Secret confidential.
+                  Keep your API Key confidential.
                 </p>
               </div>
             </div>
