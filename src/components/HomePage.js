@@ -228,8 +228,8 @@ const HomePage = () => {
                   <p className="text-gray-400 text-sm mt-1">
                     Our documentation is designed for clarity, making it easy to
                     integrate and test your UI logic using Postman. To get
-                    started, simply include your provided x-api-key and
-                    x-secret-key in the request headers.
+                    started, simply include your provided x-api-key in the
+                    request headers.
                   </p>
                 </div>
               </div>
