@@ -764,23 +764,52 @@ const APIDocumentationGeneralPage = () => {
                     {activeEndpoint.description}
                   </p>
 
-                  <div className="mt-6 flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 break-all shadow-inner overflow-x-auto">
-                    <svg
-                      className="w-4 h-4 text-gray-600 shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  {/* Updated Endpoint Display with Copy Option */}
+                  <div className="mt-6 flex items-center justify-between gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg font-mono text-xs md:text-sm text-gray-300 shadow-inner overflow-hidden">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <svg
+                        className="w-4 h-4 text-gray-600 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                        />
+                      </svg>
+                      <span className="text-indigo-400 truncate">
+                        {activeEndpoint?.endpoint}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(activeEndpoint?.endpoint);
+                        // Optional: You could add a local "copied" state here if you want a visual checkmark
+                        alert("Endpoint URL copied!");
+                      }}
+                      className="flex items-center gap-1 px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors shrink-0 border border-gray-700"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                      />
-                    </svg>
-                    <span className="text-indigo-400 whitespace-normal break-all">
-                      {activeEndpoint?.endpoint}
-                    </span>
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                        />
+                      </svg>
+                      <span className="text-[10px] font-bold uppercase tracking-wider">
+                        Copy
+                      </span>
+                    </button>
                   </div>
                 </div>
 
