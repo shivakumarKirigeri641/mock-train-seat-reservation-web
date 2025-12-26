@@ -150,7 +150,7 @@ const PaymentSuccessSummaryPage = () => {
   const handleDownloadInvoice = async () => {
     setError(null);
     try {
-      response = await axios.get(
+      const response = await axios.get(
         `${process.env.BACKEND_URL}/mockapis/serverpeuser/loggedinuser/invoices/download/${resultFullOrders?.result_credit?.id}`,
         { responseType: "blob", withCredentials: true }
       );
