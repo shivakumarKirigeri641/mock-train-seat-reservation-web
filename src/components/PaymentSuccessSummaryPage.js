@@ -71,9 +71,9 @@ const PaymentSuccessSummaryPage = () => {
           },
           { withCredentials: true }
         );
-        console.log(response.data?.data);
-        if (response.data?.data?.successstatus) {
-          const data = response.data.data;
+        console.log(response?.data?.data);
+        if (response?.data?.data?.successstatus) {
+          const data = response?.data.data;
           setresultFullOrders(data);
           setOrderDetails({
             transaction_id: data.result_transaction.razorpay_order_id,
@@ -103,7 +103,7 @@ const PaymentSuccessSummaryPage = () => {
     } catch (error) {
       console.error("Failed to fetch details", error);
 
-      if (error.response && error.response.status === 401) {
+      if (error?.response && error?.response?.status === 401) {
         dispatch(removeloggedInUser());
         navigate("/user-login");
       } else if (error.code === "ERR_NETWORK") {
