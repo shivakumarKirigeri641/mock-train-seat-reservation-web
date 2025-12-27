@@ -295,19 +295,26 @@ const ApiPricing = () => {
                   <div className="h-12 bg-gray-700 rounded-xl mt-6"></div>
                 </div>
               ))
-            : plans.map((plan) => (
+            : plans.map((plan, index) => (
                 <div
                   key={plan.id}
                   className={`relative rounded-2xl border ${
                     plan.color || "border-gray-600"
                   } ${
                     plan.bg || "bg-gray-800"
-                  } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300`}
+                  } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      {plan.badge}
+                  {plan.price_name === "Standard" ? (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-indigo-400/50">
+                      ⭐ Popular
                     </div>
+                  ) : (
+                    plan.badge && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        {plan.badge}
+                      </div>
+                    )
                   )}
 
                   <div className="text-center mb-6">
@@ -403,6 +410,64 @@ const ApiPricing = () => {
                   </button>
                 </div>
               ))}
+
+          {/* Coming Soon Card */}
+          <div
+            className="relative rounded-2xl border border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-blue-400/50">
+              🚀 Coming Soon
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+              <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center border border-blue-500/30 mb-4">
+                <svg
+                  className="w-8 h-8 text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-3">
+                New Plans In Development
+              </h3>
+              <p className="text-gray-400 text-sm mb-6">
+                We're building exclusive plans based on your feedback and needs.
+              </p>
+              <div className="space-y-2 w-full">
+                <p className="text-xs text-gray-500">
+                  Have suggestions? Share your feedback
+                </p>
+                <a
+                  href="mailto:feedback@serverpe.in"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors border border-blue-500/30 font-medium text-sm"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  feedback@serverpe.in
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-16 text-center border-t border-gray-800 pt-8">

@@ -234,6 +234,40 @@ const TestimonialPage = () => {
           </div>
         </div>
 
+        {/* Privacy & Credibility Notice */}
+        <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/30 rounded-2xl p-6 mb-8 animate-fadeInDown">
+          <div className="flex gap-4">
+            <div className="text-blue-400 text-2xl flex-shrink-0">🔒</div>
+            <div>
+              <h3 className="text-white font-semibold mb-2">
+                Privacy & Verified Feedback
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Developers and API consumers generally prefer privacy. We
+                respect that choice by displaying testimonials as{" "}
+                <span className="text-indigo-400 font-medium">
+                  'Verified User'
+                </span>
+                . Each feedback below comes from{" "}
+                <span className="text-indigo-400 font-medium">
+                  experienced developers
+                </span>{" "}
+                who have thoroughly tested our APIs and shared valuable{" "}
+                <span className="text-indigo-400 font-medium">
+                  suggestions, improvements, and real-world insights
+                </span>{" "}
+                to help us serve you better. Have suggestions? Share them at{" "}
+                <a
+                  href="mailto:feedback@serverpe.in"
+                  className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors underline"
+                >
+                  feedback@serverpe.in
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* --- Testimonials Grid --- */}
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -248,12 +282,12 @@ const TestimonialPage = () => {
                   className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl hover:border-indigo-500/50 transition-colors flex flex-col h-full"
                 >
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-3xl border border-gray-700 shadow-inner shrink-0">
-                      {t?.avatar}
+                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold border border-indigo-400/50 shadow-lg shrink-0">
+                      {t?.avatar || "👤"}
                     </div>
                     <div>
                       <h4 className="text-white font-bold text-lg">
-                        {t.user_name}
+                        Verified User
                       </h4>
                       <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium bg-indigo-900/30 px-2 py-1 rounded inline-block mt-1">
                         {t.category_name}

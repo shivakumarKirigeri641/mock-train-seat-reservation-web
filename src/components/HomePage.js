@@ -411,6 +411,30 @@ const HomePage = () => {
             What Developers Says...
           </h2>
 
+          {/* Privacy & Credibility Notice */}
+          <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/30 rounded-xl p-4 mb-8">
+            <div className="flex gap-3">
+              <div className="text-blue-400 text-xl flex-shrink-0">🔒</div>
+              <p className="text-gray-300 text-sm">
+                Developers prefer privacy. Each testimonial comes from{" "}
+                <span className="text-indigo-400 font-medium">
+                  experienced developers
+                </span>{" "}
+                who tested our APIs and shared valuable{" "}
+                <span className="text-indigo-400 font-medium">
+                  feedback & improvements
+                </span>
+                . Want to share your feedback?{" "}
+                <a
+                  href="mailto:feedback@serverpe.in"
+                  className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors underline"
+                >
+                  feedback@serverpe.in
+                </a>
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {testimonials?.map((t) => (
               <div
@@ -418,11 +442,11 @@ const HomePage = () => {
                 className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-lg"
               >
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-2xl border border-gray-700">
-                    {t.avatar}
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-xl font-bold border border-indigo-400/50">
+                    {t.avatar || "👤"}
                   </div>
                   <div>
-                    <h4 className="text-white font-bold">{t.user_name}</h4>
+                    <h4 className="text-white font-bold">Verified User</h4>
                     <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium">
                       {t.category_name}
                     </p>
