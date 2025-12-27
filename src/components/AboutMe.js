@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 // Mocking the logo path as an external import is expected in the user environment
 // but for the sake of this file, we assume the asset exists or can be replaced with a placeholder.
-const ServerPeLogo = "https://via.placeholder.com/140x64?text=ServerPe";
+import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 
 const AboutMe = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
