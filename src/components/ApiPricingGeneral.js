@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const ApiPricingGeneral = () => {
   const navigate = useNavigate();
@@ -33,9 +34,16 @@ const ApiPricingGeneral = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -157,9 +165,9 @@ const ApiPricingGeneral = () => {
       </nav>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 relative z-10">
         {/* Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-16 animate-fadeInDown">
           <h2 className="text-indigo-400 font-semibold tracking-wider uppercase text-sm mb-3">
             Pay-As-You-Use
           </h2>
@@ -176,9 +184,9 @@ const ApiPricingGeneral = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideUp">
           {isLoading
-            ? Array.from({ length: 4 }).map((_, index) => (
+            ? Array.from({ length: 4 })?.map((_, index) => (
                 <div
                   key={index}
                   className="bg-gray-800 border border-gray-700 rounded-2xl p-6 h-96 animate-pulse"
@@ -193,7 +201,7 @@ const ApiPricingGeneral = () => {
                   <div className="h-12 bg-gray-700 rounded-xl mt-6"></div>
                 </div>
               ))
-            : plans.map((plan) => (
+            : plans?.map((plan) => (
                 <div
                   key={plan.id}
                   className={`relative rounded-2xl border ${

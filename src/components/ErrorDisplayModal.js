@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 /**
  * Professional Error Display Modal/Popup
@@ -156,20 +157,24 @@ const ErrorDisplayModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in p-4">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
       <div
-        className={`${styling.background} border ${styling.border} rounded-2xl p-8 max-w-sm w-full shadow-2xl transform transition-all duration-300`}
+        className={`${styling.background} border ${styling.border} rounded-2xl p-8 max-w-sm w-full shadow-2xl transform transition-all duration-300 animate-slideUp bg-gradient-to-br from-red-900/20 to-red-900/10`}
       >
         {/* Error Icon */}
         <div
-          className={`w-16 h-16 ${styling.background} ${styling.headerColor} rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20`}
+          className={`w-16 h-16 ${styling.background} ${styling.headerColor} rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20 animate-slideUp`}
+          style={{ animationDelay: "0.1s" }}
         >
           {getErrorIcon()}
         </div>
 
         {/* Error Type Badge */}
         {errorType && (
-          <div className="flex justify-center mb-4">
+          <div
+            className="flex justify-center mb-4 animate-slideUp"
+            style={{ animationDelay: "0.2s" }}
+          >
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold border uppercase tracking-wider ${styling.badge}`}
             >
@@ -180,26 +185,36 @@ const ErrorDisplayModal = ({
 
         {/* Error Title */}
         <h3
-          className={`text-xl font-bold text-center mb-2 ${styling.headerColor}`}
+          className={`text-xl font-bold text-center mb-2 ${styling.headerColor} animate-slideUp`}
+          style={{ animationDelay: "0.3s" }}
         >
           {getErrorTitle()}
         </h3>
 
         {/* Status Code if available */}
         {statusCode && (
-          <p className="text-center text-xs text-gray-500 mb-3">
+          <p
+            className="text-center text-xs text-gray-500 mb-3 animate-slideUp"
+            style={{ animationDelay: "0.4s" }}
+          >
             Status Code: {statusCode}
           </p>
         )}
 
         {/* Error Message */}
-        <p className="text-gray-300 text-center mb-6 text-sm leading-relaxed">
+        <p
+          className="text-gray-300 text-center mb-6 text-sm leading-relaxed animate-slideUp"
+          style={{ animationDelay: "0.5s" }}
+        >
           {message}
         </p>
 
         {/* Details Section */}
         {details && showDetails && (
-          <div className="mb-6">
+          <div
+            className="mb-6 animate-slideUp"
+            style={{ animationDelay: "0.6s" }}
+          >
             <button
               onClick={() => setExpanded(!expanded)}
               className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-2 mb-2"
@@ -235,7 +250,10 @@ const ErrorDisplayModal = ({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div
+          className="flex gap-3 animate-slideUp"
+          style={{ animationDelay: "0.7s" }}
+        >
           {onRetry && (
             <button
               onClick={onRetry}
@@ -255,7 +273,10 @@ const ErrorDisplayModal = ({
         </div>
 
         {/* Help Text */}
-        <p className="text-center text-xs text-gray-500 mt-4">
+        <p
+          className="text-center text-xs text-gray-500 mt-4 animate-slideUp"
+          style={{ animationDelay: "0.8s" }}
+        >
           If this problem persists, please contact support or try again later.
         </p>
       </div>
@@ -273,7 +294,7 @@ export const ErrorToast = ({ message, onClose, duration = 5000 }) => {
   }, [duration, onClose]);
 
   return (
-    <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in z-40">
+    <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slideUp z-40">
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path
           fillRule="evenodd"

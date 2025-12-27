@@ -3,6 +3,7 @@ import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useNavigate } from "react-router";
 import axios from "axios";
 import Footer from "./Footer";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const TestimonialPage = () => {
   const navigate = useNavigate();
@@ -62,9 +63,16 @@ const TestimonialPage = () => {
   const roles = ["All", ...new Set(testimonials.map((t) => t.role))];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}

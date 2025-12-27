@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
 import { removeloggedInUser } from "../store/slices/loggedInUserSlice";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const ApiPricing = () => {
   const navigate = useNavigate();
@@ -73,14 +74,19 @@ const ApiPricing = () => {
   // VIEW: Error State
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex flex-col">
-        <nav className="border-b border-gray-800 h-20 flex items-center px-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white flex flex-col">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        </div>
+        <nav className="border-b border-gray-700/50 h-20 flex items-center px-6 relative z-10">
           <div className="font-bold text-xl tracking-tighter text-white">
             ServerPe<span className="text-indigo-500">.in</span>
           </div>
         </nav>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
           <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center">
             <div className="w-16 h-16 bg-red-900/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <svg
@@ -122,9 +128,16 @@ const ApiPricing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* NAVIGATION BAR */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-md border-b border-gray-800 transition-all">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -248,8 +261,8 @@ const ApiPricing = () => {
       </nav>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-16 animate-fadeInDown">
           <h2 className="text-indigo-400 font-semibold tracking-wider uppercase text-sm mb-3">
             Pay-As-You-Use
           </h2>
@@ -265,7 +278,7 @@ const ApiPricing = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideUp">
           {isLoading
             ? Array.from({ length: 4 }).map((_, index) => (
                 <div

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const ContactMe = () => {
   const navigate = useNavigate();
@@ -76,9 +77,16 @@ const ContactMe = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -197,8 +205,8 @@ const ContactMe = () => {
       </nav>
 
       {/* --- Main Content --- */}
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16 relative z-10">
+        <div className="text-center mb-12 animate-fadeInDown">
           <h1 className="text-4xl font-bold text-white mb-4">
             How is ServerPe?
           </h1>
@@ -214,7 +222,7 @@ const ContactMe = () => {
           </p>
         </div>
 
-        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-xl">
+        <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700/50 rounded-2xl p-8 shadow-xl animate-slideUp">
           {submitted ? (
             <div className="text-center py-12 animate-fade-in">
               <div className="w-16 h-16 bg-green-900/30 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/20">
