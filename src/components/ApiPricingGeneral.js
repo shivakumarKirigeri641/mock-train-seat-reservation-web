@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link, useNavigate } from "react-router";
 import axios from "axios";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const ApiPricingGeneral = () => {
   const navigate = useNavigate();
@@ -33,9 +34,16 @@ const ApiPricingGeneral = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -157,9 +165,9 @@ const ApiPricingGeneral = () => {
       </nav>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 relative z-10">
         {/* Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-16 animate-fadeInDown">
           <h2 className="text-indigo-400 font-semibold tracking-wider uppercase text-sm mb-3">
             Pay-As-You-Use
           </h2>
@@ -176,9 +184,9 @@ const ApiPricingGeneral = () => {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideUp">
           {isLoading
-            ? Array.from({ length: 4 }).map((_, index) => (
+            ? Array.from({ length: 4 })?.map((_, index) => (
                 <div
                   key={index}
                   className="bg-gray-800 border border-gray-700 rounded-2xl p-6 h-96 animate-pulse"
@@ -193,19 +201,26 @@ const ApiPricingGeneral = () => {
                   <div className="h-12 bg-gray-700 rounded-xl mt-6"></div>
                 </div>
               ))
-            : plans.map((plan) => (
+            : plans?.map((plan, index) => (
                 <div
                   key={plan.id}
                   className={`relative rounded-2xl border ${
                     plan.color || "border-gray-600"
                   } ${
                     plan.bg || "bg-gray-800"
-                  } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300`}
+                  } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      {plan.badge}
+                  {plan.price_name === "Standard" ? (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-indigo-400/50">
+                      ⭐ Popular
                     </div>
+                  ) : (
+                    plan.badge && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        {plan.badge}
+                      </div>
+                    )
                   )}
 
                   <div className="text-center mb-6">
@@ -218,8 +233,10 @@ const ApiPricingGeneral = () => {
                         {plan.price}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2 font-medium text-indigo-400">
-                      One-time payment
+                    <p className="text-xs mt-2 font-medium text-indigo-400">
+                      {plan.price_name === "Free"
+                        ? "On first time login"
+                        : "One-time payment"}
                     </p>
                   </div>
 
@@ -305,6 +322,64 @@ const ApiPricingGeneral = () => {
                   </button>
                 </div>
               ))}
+
+          {/* Coming Soon Card */}
+          <div
+            className="relative rounded-2xl border border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp"
+            style={{ animationDelay: "0.4s" }}
+          >
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-blue-400/50">
+              🚀 Coming Soon
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+              <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center border border-blue-500/30 mb-4">
+                <svg
+                  className="w-8 h-8 text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-3">
+                New Plans In Development
+              </h3>
+              <p className="text-gray-400 text-sm mb-6">
+                We're building exclusive plans based on your feedback and needs.
+              </p>
+              <div className="space-y-2 w-full">
+                <p className="text-xs text-gray-500">
+                  Have suggestions? Share your feedback
+                </p>
+                <a
+                  href="mailto:feedback@serverpe.in"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors border border-blue-500/30 font-medium text-sm"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  feedback@serverpe.in
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Trust/Footer Note */}

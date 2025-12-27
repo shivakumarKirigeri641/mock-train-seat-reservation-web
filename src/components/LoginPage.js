@@ -11,8 +11,8 @@ const LoginPage = () => {
   const dispatch = useDispatch();
 
   // State Management
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
+  const [mobile, setMobile] = useState("9886122415");
+  const [otp, setOtp] = useState("1234");
   const [step, setStep] = useState("mobile"); // mobile | otp
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);

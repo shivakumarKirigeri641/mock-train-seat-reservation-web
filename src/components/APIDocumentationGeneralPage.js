@@ -2,6 +2,7 @@ import axios from "axios";
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 // ---------------- SUB-COMPONENTS ----------------
 
@@ -195,7 +196,7 @@ const APIDocumentationGeneralPage = () => {
       } else {
         link.setAttribute(
           "download",
-          `${category_details.category}-api-doc.zip`
+          `${category_details.category}-api-doc.pdf`
         );
       }
 
@@ -245,20 +246,28 @@ const APIDocumentationGeneralPage = () => {
   // ---------------- LOADING SCREEN ----------------
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-6">
-          {/* Logo Section */}
-          <div
-            onClick={() => navigate("/")}
-            className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
-          >
-            <img
-              src={ServerPeLogo}
-              alt="ServerPe Logo"
-              className="w-35 h-16 group-hover:scale-105 transition-transform"
-            />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center text-white">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        </div>
+        <div className="flex flex-col items-center gap-6 animate-pulse relative z-10">
+          <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700">
+            <svg
+              className="w-8 h-8 text-indigo-500 animate-spin"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
           </div>
-
           <div className="text-center space-y-2">
             <h3 className="text-xl font-bold tracking-tight text-white">
               Loading Documentation
@@ -267,8 +276,6 @@ const APIDocumentationGeneralPage = () => {
               Fetching endpoints...
             </p>
           </div>
-
-          {/* Progress Bar */}
           <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
             <div className="h-full bg-indigo-500 animate-loading-bar"></div>
           </div>
@@ -278,7 +285,14 @@ const APIDocumentationGeneralPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* Error Notification */}
       {error && (
         <div className="fixed top-20 right-4 z-40 max-w-sm w-full">
@@ -308,7 +322,7 @@ const APIDocumentationGeneralPage = () => {
       )}
 
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -433,7 +447,7 @@ const APIDocumentationGeneralPage = () => {
       </nav>
 
       {/* --- DOCS LAYOUT --- */}
-      <div className="flex flex-col md:flex-row flex-1 max-w-7xl mx-auto w-full relative">
+      <div className="flex flex-col md:flex-row flex-1 max-w-7xl mx-auto w-full relative z-10">
         {/* Mobile Sidebar Toggle (for Docs) */}
         <div className="md:hidden w-full bg-gray-800/50 p-4 border-b border-gray-800 flex justify-between items-center sticky top-20 z-40">
           <span className="text-sm font-semibold text-gray-400">
@@ -638,10 +652,10 @@ const APIDocumentationGeneralPage = () => {
         </aside>
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 w-full min-w-0 p-4 md:p-8 lg:p-12 overflow-hidden">
+        <main className="flex-1 w-full min-w-0 p-4 md:p-8 lg:p-12 overflow-hidden relative z-10">
           <div className="max-w-4xl mx-auto space-y-10">
             {/* Disclaimer */}
-            <div className="p-4 bg-orange-900/20 border border-orange-500/20 rounded-xl flex gap-3 items-start">
+            <div className="p-4 bg-orange-900/20 border border-orange-500/20 rounded-xl flex gap-3 items-start animate-slideUp">
               <div className="p-1 bg-orange-500/20 rounded-full mt-0.5 shrink-0">
                 <svg
                   className="w-3.5 h-3.5 text-orange-400"
@@ -672,7 +686,10 @@ const APIDocumentationGeneralPage = () => {
             </div>
 
             {/* API Keys Information Section */}
-            <div className="p-6 bg-indigo-900/20 border border-indigo-500/30 rounded-xl space-y-4">
+            <div
+              className="p-6 bg-gradient-to-br from-indigo-900/30 to-indigo-900/10 border border-indigo-500/30 rounded-2xl space-y-4 animate-slideUp"
+              style={{ animationDelay: "0.1s" }}
+            >
               <div className="flex items-center gap-3">
                 <div className="p-1.5 bg-indigo-500/20 rounded-full">
                   <svg
@@ -779,7 +796,10 @@ const APIDocumentationGeneralPage = () => {
 
             {/* Endpoint Info */}
             {activeEndpoint && (
-              <div className="space-y-6">
+              <div
+                className="space-y-6 animate-slideUp"
+                style={{ animationDelay: "0.2s" }}
+              >
                 <div className="border-b border-gray-800 pb-8">
                   <div className="flex items-center gap-3 mb-4 flex-wrap">
                     <MethodBadge method={activeEndpoint.method} />

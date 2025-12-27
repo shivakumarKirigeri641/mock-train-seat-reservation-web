@@ -3,6 +3,7 @@ import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useNavigate } from "react-router";
 import axios from "axios";
 import Footer from "./Footer";
+import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 const TestimonialPage = () => {
   const navigate = useNavigate();
@@ -62,9 +63,16 @@ const TestimonialPage = () => {
   const roles = ["All", ...new Set(testimonials.map((t) => t.role))];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -226,6 +234,40 @@ const TestimonialPage = () => {
           </div>
         </div>
 
+        {/* Privacy & Credibility Notice */}
+        <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/30 rounded-2xl p-6 mb-8 animate-fadeInDown">
+          <div className="flex gap-4">
+            <div className="text-blue-400 text-2xl flex-shrink-0">🔒</div>
+            <div>
+              <h3 className="text-white font-semibold mb-2">
+                Privacy & Verified Feedback
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Developers and API consumers generally prefer privacy. We
+                respect that choice by displaying testimonials as{" "}
+                <span className="text-indigo-400 font-medium">
+                  'Verified User'
+                </span>
+                . Each feedback below comes from{" "}
+                <span className="text-indigo-400 font-medium">
+                  experienced developers
+                </span>{" "}
+                who have thoroughly tested our APIs and shared valuable{" "}
+                <span className="text-indigo-400 font-medium">
+                  suggestions, improvements, and real-world insights
+                </span>{" "}
+                to help us serve you better. Have suggestions? Share them at{" "}
+                <a
+                  href="mailto:feedback@serverpe.in"
+                  className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors underline"
+                >
+                  feedback@serverpe.in
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* --- Testimonials Grid --- */}
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -240,12 +282,12 @@ const TestimonialPage = () => {
                   className="bg-gray-800 border border-gray-700 p-8 rounded-2xl shadow-xl hover:border-indigo-500/50 transition-colors flex flex-col h-full"
                 >
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-gray-900 rounded-full flex items-center justify-center text-3xl border border-gray-700 shadow-inner shrink-0">
-                      {t?.avatar}
+                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold border border-indigo-400/50 shadow-lg shrink-0">
+                      {t?.avatar || "👤"}
                     </div>
                     <div>
                       <h4 className="text-white font-bold text-lg">
-                        {t.user_name}
+                        Verified User
                       </h4>
                       <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium bg-indigo-900/30 px-2 py-1 rounded inline-block mt-1">
                         {t.category_name}

@@ -30,9 +30,16 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* --- Navigation Bar --- */}
-      <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo Section */}
@@ -404,6 +411,30 @@ const HomePage = () => {
             What Developers Says...
           </h2>
 
+          {/* Privacy & Credibility Notice */}
+          <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/30 rounded-xl p-4 mb-8">
+            <div className="flex gap-3">
+              <div className="text-blue-400 text-xl flex-shrink-0">🔒</div>
+              <p className="text-gray-300 text-sm">
+                Developers prefer privacy. Each testimonial comes from{" "}
+                <span className="text-indigo-400 font-medium">
+                  experienced developers
+                </span>{" "}
+                who tested our APIs and shared valuable{" "}
+                <span className="text-indigo-400 font-medium">
+                  feedback & improvements
+                </span>
+                . Want to share your feedback?{" "}
+                <a
+                  href="mailto:feedback@serverpe.in"
+                  className="text-indigo-400 font-semibold hover:text-indigo-300 transition-colors underline"
+                >
+                  feedback@serverpe.in
+                </a>
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {testimonials?.map((t) => (
               <div
@@ -411,11 +442,11 @@ const HomePage = () => {
                 className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-lg"
               >
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-2xl border border-gray-700">
-                    {t.avatar}
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-xl font-bold border border-indigo-400/50">
+                    {t.avatar || "👤"}
                   </div>
                   <div>
-                    <h4 className="text-white font-bold">{t.user_name}</h4>
+                    <h4 className="text-white font-bold">Verified User</h4>
                     <p className="text-indigo-400 text-xs uppercase tracking-wide font-medium">
                       {t.category_name}
                     </p>
