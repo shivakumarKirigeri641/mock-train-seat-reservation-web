@@ -196,7 +196,7 @@ const APIDocumentationGeneralPage = () => {
       } else {
         link.setAttribute(
           "download",
-          `${category_details.category}-api-doc.zip`
+          `${category_details.category}-api-doc.pdf`
         );
       }
 

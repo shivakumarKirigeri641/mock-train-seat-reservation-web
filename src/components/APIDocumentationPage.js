@@ -197,7 +197,7 @@ const APIDocumentationGeneralPage = () => {
       if (ispostman) {
         link.setAttribute("download", `${category_details.category}.json`);
       } else {
-        link.setAttribute("download", `${category_details.category}.zip`);
+        link.setAttribute("download", `${category_details.category}.pdf`);
       }
       document.body.appendChild(link);
       link.click();
@@ -547,7 +547,7 @@ const APIDocumentationGeneralPage = () => {
                           <div className="bg-indigo-500/5 border border-indigo-500/10 rounded p-2">
                             <p className="text-[12px] italic text-gray-400 leading-tight">
                               <span className="text-indigo-400 font-bold block mb-1">
-                                About Docs (.zip):
+                                About Docs (.pdf):
                               </span>
                               Includes offline documentation in{" "}
                               <span className="text-gray-300">.md</span>,{" "}
