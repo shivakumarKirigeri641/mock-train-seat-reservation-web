@@ -375,7 +375,7 @@ const ApiPricing = () => {
                           />
                         </svg>
                       </div>
-                      <span className="text-gray-300 text-sm font-semibold text-green-400">
+                      <span className="text-sm font-semibold text-green-400">
                         Lifetime Validity
                       </span>
                     </li>
