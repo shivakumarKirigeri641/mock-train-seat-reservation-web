@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
 import "../styles/loginpage.css"; // Use same animations as LoginPage
 
 /**
@@ -294,22 +295,31 @@ export const ErrorToast = ({ message, onClose, duration = 5000 }) => {
   }, [duration, onClose]);
 
   return (
-    <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slideUp z-40">
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path
-          fillRule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-          clipRule="evenodd"
+    <>
+      <Helmet>
+        <title>ServerPe™ – Desi Mock APIs for Frontend & UI Development</title>
+        <meta
+          name="description"
+          content="ServerPe provides desi mock APIs for frontend developers to build and test UI without real backend dependencies."
         />
-      </svg>
-      <span className="text-sm">{message}</span>
-      <button
-        onClick={onClose}
-        className="ml-2 hover:opacity-80 transition-opacity"
-      >
-        ✕
-      </button>
-    </div>
+      </Helmet>
+      <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slideUp z-40">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <span className="text-sm">{message}</span>
+        <button
+          onClick={onClose}
+          className="ml-2 hover:opacity-80 transition-opacity"
+        >
+          ✕
+        </button>
+      </div>
+    </>
   );
 };
 

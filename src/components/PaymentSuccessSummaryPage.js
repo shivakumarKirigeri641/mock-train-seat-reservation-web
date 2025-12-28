@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Helmet } from "react-helmet";
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
@@ -265,59 +266,277 @@ const PaymentSuccessSummaryPage = () => {
 
   // ---------------- MAIN CONTENT ----------------
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
+    <>
+      <Helmet>
+        <title>ServerPe™ – Desi Mock APIs for Frontend & UI Development</title>
+        <meta
+          name="description"
+          content="ServerPe provides desi mock APIs for frontend developers to build and test UI without real backend dependencies."
+        />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        </div>
 
-      {/* --- Confetti Animation --- */}
-      <ConfettiSparkles />
+        {/* --- Confetti Animation --- */}
+        <ConfettiSparkles />
 
-      {/* --- NAVIGATION BAR --- */}
-      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg\">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div
-              className="flex items-center gap-3 cursor-pointer group"
-              onClick={() => navigate("/user-home")}
-            >
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <span className="text-xl">⚡</span>
-              </div>
-              {/* Logo Section */}
+        {/* --- NAVIGATION BAR --- */}
+        <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg\">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between h-20">
+              {/* Logo */}
               <div
+                className="flex items-center gap-3 cursor-pointer group"
                 onClick={() => navigate("/user-home")}
-                className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
               >
-                <img
-                  src={ServerPeLogo}
-                  alt="ServerPe Logo"
-                  className="w-35 h-16 group-hover:scale-105 transition-transform"
-                />
+                <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <span className="text-xl">⚡</span>
+                </div>
+                {/* Logo Section */}
+                <div
+                  onClick={() => navigate("/user-home")}
+                  className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
+                >
+                  <img
+                    src={ServerPeLogo}
+                    alt="ServerPe Logo"
+                    className="w-35 h-16 group-hover:scale-105 transition-transform"
+                  />
+                </div>
+              </div>
+
+              {/* Desktop Menu */}
+              <div className="hidden lg:flex items-center space-x-2">
+                <NavItem to="/user-home" label="Home" />
+                <NavItem to="/api-usage" label="API Usage" />
+                <NavItem to="/api-documentation" label="API Documentation" />
+                <NavItem to="/api-pricing" label="API Pricing" />
+                <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
+                <NavItem to="/give-feedback" label="Give feedback" />
+              </div>
+
+              {/* Logout */}
+              <div className="hidden lg:flex items-center">
+                <button
+                  onClick={() => navigate("/logout")}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
+                >
+                  <span>Logout</span>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Mobile Toggle */}
+              <div className="lg:hidden flex items-center">
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-gray-300 hover:text-white focus:outline-none"
+                >
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d={
+                        isMobileMenuOpen
+                          ? "M6 18L18 6M6 6l12 12"
+                          : "M4 6h16M4 12h16M4 18h16"
+                      }
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Desktop Menu */}
-            <div className="hidden lg:flex items-center space-x-2">
-              <NavItem to="/user-home" label="Home" />
-              <NavItem to="/api-usage" label="API Usage" />
-              <NavItem to="/api-documentation" label="API Documentation" />
-              <NavItem to="/api-pricing" label="API Pricing" />
-              <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
-              <NavItem to="/give-feedback" label="Give feedback" />
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
+              <div className="px-4 py-4 flex flex-col space-y-2">
+                <Link
+                  to="/user-home"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/api-usage"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  API Usage
+                </Link>
+                <Link
+                  to="/api-documentation"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  API Documentation
+                </Link>
+                <Link
+                  to="/api-pricing"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  API Pricing
+                </Link>
+                <Link
+                  to="/wallet-recharge"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  Wallet & Recharge
+                </Link>
+                <Link
+                  to="/give-feedback"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  Give feedback
+                </Link>
+                <Link
+                  to="/logout"
+                  className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
+                >
+                  Logout
+                </Link>
+              </div>
+            </div>
+          )}
+        </nav>
+
+        {/* --- MAIN CONTENT --- */}
+        <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-16 flex flex-col items-center justify-center relative z-10">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl w-full text-center animate-fade-in-up">
+            {/* Success Icon */}
+            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg
+                className="w-10 h-10 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
             </div>
 
-            {/* Logout */}
-            <div className="hidden lg:flex items-center">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Payment Successful!
+            </h1>
+            <p className="text-gray-400 mb-8">Thank you for your purchase.</p>
+
+            {/* Order Details */}
+            {orderDetails && taxDetails && (
+              <div className="bg-gray-900/50 rounded-xl p-6 mb-8 text-left space-y-3 border border-gray-700">
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Transaction ID</span>
+                  <span className="text-white font-mono text-sm">
+                    {orderDetails.transaction_id}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Plan Purchased</span>
+                  <span className="text-indigo-400 font-medium">
+                    {orderDetails.plan_name}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Date & time</span>
+                  <span className="text-gray-300 text-sm">
+                    {new Date(
+                      resultFullOrders?.result_credit?.created_at
+                    ).toLocaleString("en-IN", {
+                      timeZone: "Asia/Kolkata",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Email</span>
+                  <span className="text-gray-300 text-sm">
+                    {resultFullOrders?.result_credit?.myemail}
+                  </span>
+                </div>
+
+                <div className="border-t border-gray-700 my-2"></div>
+
+                {/* Tax Breakup */}
+                <div className="flex justify-between">
+                  <span className="text-gray-400 text-sm">Base Amount</span>
+                  <span className="text-gray-300 text-sm">
+                    ₹{taxDetails.baseAmount}
+                  </span>
+                </div>
+
+                {taxDetails.isKarnataka ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400 text-sm">CGST (9%)</span>
+                      <span className="text-gray-300 text-sm">
+                        ₹{taxDetails.cgst}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400 text-sm">SGST (9%)</span>
+                      <span className="text-gray-300 text-sm">
+                        ₹{taxDetails.sgst}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400 text-sm">IGST (18%)</span>
+                    <span className="text-gray-300 text-sm">
+                      ₹{taxDetails.igst}
+                    </span>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-700 pt-3 flex justify-between">
+                  <span className="text-gray-300 font-semibold">
+                    Total Paid
+                  </span>
+                  <span className="text-white font-bold text-lg">
+                    ₹{orderDetails.amount}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Buttons Row */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
               <button
-                onClick={() => navigate("/logout")}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
+                onClick={handleDownloadInvoice}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
               >
-                <span>Logout</span>
                 <svg
                   className="w-4 h-4"
                   fill="none"
@@ -328,230 +547,23 @@ const PaymentSuccessSummaryPage = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                   />
                 </svg>
+                Download Invoice
               </button>
             </div>
 
-            {/* Mobile Toggle */}
-            <div className="lg:hidden flex items-center">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-300 hover:text-white focus:outline-none"
-              >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d={
-                      isMobileMenuOpen
-                        ? "M6 18L18 6M6 6l12 12"
-                        : "M4 6h16M4 12h16M4 18h16"
-                    }
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
-            <div className="px-4 py-4 flex flex-col space-y-2">
-              <Link
-                to="/user-home"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Home
-              </Link>
-              <Link
-                to="/api-usage"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Usage
-              </Link>
-              <Link
-                to="/api-documentation"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Documentation
-              </Link>
-              <Link
-                to="/api-pricing"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Pricing
-              </Link>
-              <Link
-                to="/wallet-recharge"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Wallet & Recharge
-              </Link>
-              <Link
-                to="/give-feedback"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Give feedback
-              </Link>
-              <Link
-                to="/logout"
-                className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
-              >
-                Logout
-              </Link>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-16 flex flex-col items-center justify-center relative z-10">
-        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl w-full text-center animate-fade-in-up">
-          {/* Success Icon */}
-          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-10 h-10 text-green-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="3"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Payment Successful!
-          </h1>
-          <p className="text-gray-400 mb-8">Thank you for your purchase.</p>
-
-          {/* Order Details */}
-          {orderDetails && taxDetails && (
-            <div className="bg-gray-900/50 rounded-xl p-6 mb-8 text-left space-y-3 border border-gray-700">
-              <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Transaction ID</span>
-                <span className="text-white font-mono text-sm">
-                  {orderDetails.transaction_id}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Plan Purchased</span>
-                <span className="text-indigo-400 font-medium">
-                  {orderDetails.plan_name}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Date & time</span>
-                <span className="text-gray-300 text-sm">
-                  {new Date(
-                    resultFullOrders?.result_credit?.created_at
-                  ).toLocaleString("en-IN", {
-                    timeZone: "Asia/Kolkata",
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                    hour12: true,
-                  })}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Email</span>
-                <span className="text-gray-300 text-sm">
-                  {resultFullOrders?.result_credit?.myemail}
-                </span>
-              </div>
-
-              <div className="border-t border-gray-700 my-2"></div>
-
-              {/* Tax Breakup */}
-              <div className="flex justify-between">
-                <span className="text-gray-400 text-sm">Base Amount</span>
-                <span className="text-gray-300 text-sm">
-                  ₹{taxDetails.baseAmount}
-                </span>
-              </div>
-
-              {taxDetails.isKarnataka ? (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">CGST (9%)</span>
-                    <span className="text-gray-300 text-sm">
-                      ₹{taxDetails.cgst}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400 text-sm">SGST (9%)</span>
-                    <span className="text-gray-300 text-sm">
-                      ₹{taxDetails.sgst}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex justify-between">
-                  <span className="text-gray-400 text-sm">IGST (18%)</span>
-                  <span className="text-gray-300 text-sm">
-                    ₹{taxDetails.igst}
-                  </span>
-                </div>
-              )}
-
-              <div className="border-t border-gray-700 pt-3 flex justify-between">
-                <span className="text-gray-300 font-semibold">Total Paid</span>
-                <span className="text-white font-bold text-lg">
-                  ₹{orderDetails.amount}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Buttons Row */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
             <button
-              onClick={handleDownloadInvoice}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              onClick={() => navigate("/user-home")}
+              className="text-indigo-400 hover:text-indigo-300 text-sm hover:underline"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-              Download Invoice
+              Go to Dashboard Now
             </button>
           </div>
-
-          <button
-            onClick={() => navigate("/user-home")}
-            className="text-indigo-400 hover:text-indigo-300 text-sm hover:underline"
-          >
-            Go to Dashboard Now
-          </button>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 

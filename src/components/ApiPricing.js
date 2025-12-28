@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { Helmet } from "react-helmet";
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
@@ -128,329 +129,53 @@ const ApiPricing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* NAVIGATION BAR */}
-      <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo Section */}
-            <div
-              onClick={() => navigate("/user-home")}
-              className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
-            >
-              <img
-                src={ServerPeLogo}
-                alt="ServerPe Logo"
-                className="w-35 h-16 group-hover:scale-105 transition-transform"
-              />
-            </div>
-
-            <div className="hidden lg:flex items-center space-x-2">
-              <NavItem to="/user-home" label="Home" />
-              <NavItem to="/api-usage" label="API Usage" />
-              <NavItem to="/api-documentation" label="API Documentation" />
-              <NavItem to="/api-pricing" label="API Pricing" active={true} />
-              <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
-              <NavItem to="/give-feedback" label="Give feedback" />
-            </div>
-
-            <div className="hidden lg:flex items-center">
-              <button
-                onClick={() => navigate("/logout")}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
-              >
-                <span>Logout</span>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="lg:hidden flex items-center">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-300 hover:text-white focus:outline-none"
-              >
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d={
-                      isMobileMenuOpen
-                        ? "M6 18L18 6M6 6l12 12"
-                        : "M4 6h16M4 12h16M4 18h16"
-                    }
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+    <>
+      <Helmet>
+        <title>ServerPe™ – Desi Mock APIs for Frontend & UI Development</title>
+        <meta
+          name="description"
+          content="ServerPe provides desi mock APIs for frontend developers to build and test UI without real backend dependencies."
+        />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
-            <div className="px-4 py-4 flex flex-col space-y-2">
-              <Link
-                to="/user-home"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+        {/* NAVIGATION BAR */}
+        <nav className="sticky top-0 z-50 bg-gradient-to-b from-gray-900/95 to-gray-900/80 backdrop-blur-md border-b border-gray-700/50 transition-all shadow-lg">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center justify-between h-20">
+              {/* Logo Section */}
+              <div
+                onClick={() => navigate("/user-home")}
+                className="flex items-center gap-3 cursor-pointer group border-2 bg-transparent"
               >
-                Home
-              </Link>
-              <Link
-                to="/api-usage"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Usage
-              </Link>
-              <Link
-                to="/api-documentation"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                API Documentation
-              </Link>
-              <Link
-                to="/api-pricing"
-                className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
-              >
-                API Pricing
-              </Link>
-              <Link
-                to="/wallet-recharge"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Wallet & Recharge
-              </Link>
-              <Link
-                to="/give-feedback"
-                className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
-              >
-                Give feedback
-              </Link>
-              <Link
-                to="/logout"
-                className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
-              >
-                Logout
-              </Link>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* MAIN CONTENT */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fadeInDown">
-          <h2 className="text-indigo-400 font-semibold tracking-wider uppercase text-sm mb-3">
-            Pay-As-You-Use
-          </h2>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            No Sign-ups. Just Your Number. 😀 <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-              Just Pay For What You Need.
-            </span>
-          </h1>
-          <p className="text-gray-400 text-lg">
-            Stop worrying about monthly bills or expiring plans or sharing
-            personal details. Buy credits once and use them forever—they never
-            expire.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideUp">
-          {isLoading
-            ? Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-800 border border-gray-700 rounded-2xl p-6 h-96 flex flex-col animate-pulse"
-                >
-                  <div className="h-6 w-1/2 bg-gray-700 rounded mb-4 mx-auto"></div>
-                  <div className="h-10 w-2/3 bg-gray-700 rounded mb-6 mx-auto"></div>
-                  <div className="h-px bg-gray-700 mb-6"></div>
-                  <div className="space-y-4 flex-1">
-                    <div className="h-4 bg-gray-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-700 rounded w-5/6"></div>
-                  </div>
-                  <div className="h-12 bg-gray-700 rounded-xl mt-6"></div>
-                </div>
-              ))
-            : plans.map((plan, index) => (
-                <div
-                  key={plan.id}
-                  className={`relative rounded-2xl border ${
-                    plan.color || "border-gray-600"
-                  } ${
-                    plan.bg || "bg-gray-800"
-                  } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {plan.price_name === "Standard" ? (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-indigo-400/50">
-                      ⭐ Popular
-                    </div>
-                  ) : (
-                    plan.badge && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                        {plan.badge}
-                      </div>
-                    )
-                  )}
-
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      {plan.price_name}
-                    </h3>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-sm text-gray-400">₹</span>
-                      <span className="text-4xl font-extrabold text-white">
-                        {plan.price}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2 font-medium text-indigo-400">
-                      One-time payment
-                    </p>
-                  </div>
-
-                  <div className="w-full h-px bg-gray-700 mb-6"></div>
-
-                  <ul className="space-y-4 mb-8 flex-1">
-                    <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
-                        <svg
-                          className="w-3.5 h-3.5 text-indigo-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-300 text-sm">
-                        <strong className="text-white">
-                          {plan.api_calls_count}
-                        </strong>{" "}
-                        API Calls
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-900/50 flex items-center justify-center border border-green-500/30">
-                        <svg
-                          className="w-3.5 h-3.5 text-green-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 12l2 2 4-4"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-semibold text-green-400">
-                        Lifetime Validity
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
-                        <svg
-                          className="w-3.5 h-3.5 text-indigo-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-300 text-sm">
-                        Rate Limit: {plan.rate_limit}/sec
-                      </span>
-                    </li>
-                  </ul>
-
-                  <button
-                    onClick={() =>
-                      navigate("/plan-summary", { state: { plan } })
-                    }
-                    className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
-                  >
-                    Buy Credits
-                  </button>
-                </div>
-              ))}
-
-          {/* Coming Soon Card */}
-          <div
-            className="relative rounded-2xl border border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp"
-            style={{ animationDelay: "0.4s" }}
-          >
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-blue-400/50">
-              🚀 Coming Soon
-            </div>
-
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-              <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center border border-blue-500/30 mb-4">
-                <svg
-                  className="w-8 h-8 text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+                <img
+                  src={ServerPeLogo}
+                  alt="ServerPe Logo"
+                  className="w-35 h-16 group-hover:scale-105 transition-transform"
+                />
               </div>
-              <h3 className="text-lg font-bold text-white mb-3">
-                New Plans In Development
-              </h3>
-              <p className="text-gray-400 text-sm mb-6">
-                We're building exclusive plans based on your feedback and needs.
-              </p>
-              <div className="space-y-2 w-full">
-                <p className="text-xs text-gray-500">
-                  Have suggestions? Share your feedback
-                </p>
-                <a
-                  href="mailto:feedback@serverpe.in"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors border border-blue-500/30 font-medium text-sm"
+
+              <div className="hidden lg:flex items-center space-x-2">
+                <NavItem to="/user-home" label="Home" />
+                <NavItem to="/api-usage" label="API Usage" />
+                <NavItem to="/api-documentation" label="API Documentation" />
+                <NavItem to="/api-pricing" label="API Pricing" active={true} />
+                <NavItem to="/wallet-recharge" label="Wallet & Recharge" />
+                <NavItem to="/give-feedback" label="Give feedback" />
+              </div>
+
+              <div className="hidden lg:flex items-center">
+                <button
+                  onClick={() => navigate("/logout")}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
                 >
+                  <span>Logout</span>
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -461,42 +186,328 @@ const ApiPricing = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                     />
                   </svg>
-                  feedback@serverpe.in
-                </a>
+                </button>
+              </div>
+
+              <div className="lg:hidden flex items-center">
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-gray-300 hover:text-white focus:outline-none"
+                >
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d={
+                        isMobileMenuOpen
+                          ? "M6 18L18 6M6 6l12 12"
+                          : "M4 6h16M4 12h16M4 18h16"
+                      }
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-16 text-center border-t border-gray-800 pt-8">
-          <div className="inline-flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-full border border-gray-700">
-            <svg
-              className="w-5 h-5 text-green-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="text-sm text-gray-300">
-              Secure One-Time Payment via Razorpay / UPI
-            </span>
+          {isMobileMenuOpen && (
+            <div className="lg:hidden bg-gray-800 border-b border-gray-700 animate-in slide-in-from-top-2 duration-300">
+              <div className="px-4 py-4 flex flex-col space-y-2">
+                <Link
+                  to="/user-home"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/api-usage"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  API Usage
+                </Link>
+                <Link
+                  to="/api-documentation"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  API Documentation
+                </Link>
+                <Link
+                  to="/api-pricing"
+                  className="block px-4 py-3 bg-gray-700 text-white rounded-lg"
+                >
+                  API Pricing
+                </Link>
+                <Link
+                  to="/wallet-recharge"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  Wallet & Recharge
+                </Link>
+                <Link
+                  to="/give-feedback"
+                  className="block px-4 py-3 text-gray-300 hover:bg-gray-700 rounded-lg"
+                >
+                  Give feedback
+                </Link>
+                <Link
+                  to="/logout"
+                  className="block px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg"
+                >
+                  Logout
+                </Link>
+              </div>
+            </div>
+          )}
+        </nav>
+
+        {/* MAIN CONTENT */}
+        <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16 animate-fadeInDown">
+            <h2 className="text-indigo-400 font-semibold tracking-wider uppercase text-sm mb-3">
+              Pay-As-You-Use
+            </h2>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              No Sign-ups. Just Your Number. 😀 <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                Just Pay For What You Need.
+              </span>
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Stop worrying about monthly bills or expiring plans or sharing
+              personal details. Buy credits once and use them forever—they never
+              expire.
+            </p>
           </div>
-          <p className="mt-4 text-xs text-gray-500">
-            * No recurring charges. Credits are only deducted on successful
-            (2xx) responses and remain in your account until used.
-          </p>
-        </div>
-      </main>
-    </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slideUp">
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-800 border border-gray-700 rounded-2xl p-6 h-96 flex flex-col animate-pulse"
+                  >
+                    <div className="h-6 w-1/2 bg-gray-700 rounded mb-4 mx-auto"></div>
+                    <div className="h-10 w-2/3 bg-gray-700 rounded mb-6 mx-auto"></div>
+                    <div className="h-px bg-gray-700 mb-6"></div>
+                    <div className="space-y-4 flex-1">
+                      <div className="h-4 bg-gray-700 rounded w-full"></div>
+                      <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                    </div>
+                    <div className="h-12 bg-gray-700 rounded-xl mt-6"></div>
+                  </div>
+                ))
+              : plans.map((plan, index) => (
+                  <div
+                    key={plan.id}
+                    className={`relative rounded-2xl border ${
+                      plan.color || "border-gray-600"
+                    } ${
+                      plan.bg || "bg-gray-800"
+                    } p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {plan.price_name === "Standard" ? (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-indigo-400/50">
+                        ⭐ Popular
+                      </div>
+                    ) : (
+                      plan.badge && (
+                        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                          {plan.badge}
+                        </div>
+                      )
+                    )}
+
+                    <div className="text-center mb-6">
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {plan.price_name}
+                      </h3>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-sm text-gray-400">₹</span>
+                        <span className="text-4xl font-extrabold text-white">
+                          {plan.price}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2 font-medium text-indigo-400">
+                        One-time payment
+                      </p>
+                    </div>
+
+                    <div className="w-full h-px bg-gray-700 mb-6"></div>
+
+                    <ul className="space-y-4 mb-8 flex-1">
+                      <li className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
+                          <svg
+                            className="w-3.5 h-3.5 text-indigo-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-gray-300 text-sm">
+                          <strong className="text-white">
+                            {plan.api_calls_count}
+                          </strong>{" "}
+                          API Calls
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-green-900/50 flex items-center justify-center border border-green-500/30">
+                          <svg
+                            className="w-3.5 h-3.5 text-green-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M9 12l2 2 4-4"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-semibold text-green-400">
+                          Lifetime Validity
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-indigo-900/50 flex items-center justify-center border border-indigo-500/30">
+                          <svg
+                            className="w-3.5 h-3.5 text-indigo-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M13 10V3L4 14h7v7l9-11h-7z"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-gray-300 text-sm">
+                          Rate Limit: {plan.rate_limit}/sec
+                        </span>
+                      </li>
+                    </ul>
+
+                    <button
+                      onClick={() =>
+                        navigate("/plan-summary", { state: { plan } })
+                      }
+                      className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors shadow-lg shadow-indigo-500/25"
+                    >
+                      Buy Credits
+                    </button>
+                  </div>
+                ))}
+
+            {/* Coming Soon Card */}
+            <div
+              className="relative rounded-2xl border border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 p-6 flex flex-col shadow-xl hover:scale-105 transition-transform duration-300 animate-slideUp"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-blue-400/50">
+                🚀 Coming Soon
+              </div>
+
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center border border-blue-500/30 mb-4">
+                  <svg
+                    className="w-8 h-8 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">
+                  New Plans In Development
+                </h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  We're building exclusive plans based on your feedback and
+                  needs.
+                </p>
+                <div className="space-y-2 w-full">
+                  <p className="text-xs text-gray-500">
+                    Have suggestions? Share your feedback
+                  </p>
+                  <a
+                    href="mailto:feedback@serverpe.in"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors border border-blue-500/30 font-medium text-sm"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    feedback@serverpe.in
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-16 text-center border-t border-gray-800 pt-8">
+            <div className="inline-flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-full border border-gray-700">
+              <svg
+                className="w-5 h-5 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="text-sm text-gray-300">
+                Secure One-Time Payment via Razorpay / UPI
+              </span>
+            </div>
+            <p className="mt-4 text-xs text-gray-500">
+              * No recurring charges. Credits are only deducted on successful
+              (2xx) responses and remain in your account until used.
+            </p>
+          </div>
+        </main>
+      </div>
+    </>
   );
 };
 
