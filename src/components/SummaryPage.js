@@ -373,6 +373,11 @@ const SummaryPage = () => {
                   } rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none`}
                   placeholder="email@example.com"
                 />
+                {/* Note for Email usage */}
+                <p className="text-red-300 text-[12px] mt-1 italic">
+                  Note: This email will be used for payment notifications and
+                  sending your official tax invoice.
+                </p>
                 {formErrors.myemail && (
                   <p className="text-red-500 text-[10px] mt-1">
                     {formErrors.myemail}

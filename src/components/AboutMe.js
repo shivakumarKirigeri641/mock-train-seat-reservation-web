@@ -3,12 +3,13 @@ import React, { useState } from "react";
 // Mocking the logo path as an external import is expected in the user environment
 // but for the sake of this file, we assume the asset exists or can be replaced with a placeholder.
 import ServerPeLogo from "../images/ServerPe_Logo.jpg";
+import { useNavigate } from "react-router";
 
 const AboutMe = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // In a real app, these would come from useNavigate()
-  const navigate = (path) => console.log("Navigating to:", path);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
