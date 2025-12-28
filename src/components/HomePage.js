@@ -367,6 +367,51 @@ const HomePage = () => {
           </div>
         </section>
 
+        {/* --- MODIFIED: USE CASES SECTION --- */}
+        <section className="max-w-7xl mx-auto px-6 pb-24">
+          <h2 className="text-2xl font-bold text-white mb-10 text-center md:text-left border-l-4 border-cyan-500 pl-4">
+            Endless Use Cases
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 flex flex-col items-center text-center">
+              <div className="text-3xl mb-4">💻</div>
+              <h4 className="text-white font-bold mb-2">
+                Frontend Development
+              </h4>
+              <p className="text-gray-400 text-sm">
+                Build pixel-perfect UIs with real-world structured data before
+                the backend is even ready.
+              </p>
+            </div>
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 flex flex-col items-center text-center">
+              <div className="text-3xl mb-4">🚀</div>
+              <h4 className="text-white font-bold mb-2">Startups & MVPs</h4>
+              <p className="text-gray-400 text-sm">
+                Launch your prototype faster. Use our APIs to power your MVP for
+                investor pitches and early demos.
+              </p>
+            </div>
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 flex flex-col items-center text-center">
+              <div className="text-3xl mb-4">📊</div>
+              <h4 className="text-white font-bold mb-2">
+                Project Presentations
+              </h4>
+              <p className="text-gray-400 text-sm">
+                Impress your audience with dynamic data during college projects
+                or corporate presentations.
+              </p>
+            </div>
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 p-6 rounded-2xl border border-gray-700 flex flex-col items-center text-center">
+              <div className="text-3xl mb-4">🛠️</div>
+              <h4 className="text-white font-bold mb-2">Postman Integration</h4>
+              <p className="text-gray-400 text-sm">
+                Test complex logic and integration workflows seamlessly using
+                Postman or any API client.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* --- NEW: Upcoming API Categories Section --- */}
         <section className="max-w-7xl mx-auto px-6 pb-24">
           <div className="flex items-center gap-3 mb-10">
